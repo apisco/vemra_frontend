@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-poppins);
+}
+
+@theme {
+  --color-brand-950: #03323d;
+  --color-brand-800: #085f70;
+  --color-brand-700: #0b7a8e;
+  --color-brand-600: #0e96ac;
+  --color-brand-400: #0f7b54;
+  --color-brand-50: #f0f4f6;
+
+  --color-neutral-*: initial;
+  --color-neutral-900: #14232a;
+  --color-neutral-800: #37474e;
+  --color-neutral-700: #4c5e65;
+  --color-neutral-400: #8ca2ac;
+  --color-neutral-200: #dde6e9;
+  --color-neutral-100: #f0f4f6;
+  --color-neutral-50: #f7f9fa; 
+
+  --color-success-600: #0f7b54;
+  --color-success-500: #0f7b54;
+  --color-success-50: #e8f5ee;
+  --color-warning-600: #d97706;
+  --color-warning-500: #c77e12;
+  --color-warning-50: #fffbeb;
+  --color-error-600: #c13832;
+  --color-error-50: #fdf2f2;
+
+  --text-display-xl: 3rem;
+  --text-display-lg: 2.25rem;
+  --text-heading-xl: 2rem;
+  --text-heading-lg: 1.75rem;
+  --text-heading-md: 1.375rem;
+  --text-heading-sm: 1.125rem;
+  --text-body-lg: 1rem;
+  --text-body-md: 0.875rem;
+  --text-body-sm: 0.8125rem;
+  --text-label-md: 0.875rem;
+  --text-label-sm: 0.75rem;
+  --text-caption: 0.6875rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: initial;
+  --radius-3xl: initial;
+  --radius-4xl: initial;
+
+  --shadow-*: initial;
+  --shadow-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.08); /* cards, dropdowns */
+  --shadow-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.12); /* modals, popovers */
+  --shadow-elevation-3: 0 8px 24px rgba(0, 0, 0, 0.16); /* fixed nav, toasts */
+}

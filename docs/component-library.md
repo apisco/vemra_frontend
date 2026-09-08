@@ -361,10 +361,10 @@ arbitrary colour utility, no Tailwind default shadow, no cleared radius step, an
 anywhere. `npx next build` succeeds with `/`, `/_not-found` and `/design-system` all prerendered
 static.
 
-Run the build from the folder's real on-disk name. Until the pending case-only rename lands, a cwd
-spelled `VEMRA_FRONTEND` against an on-disk `vemra_frontend` fails at the `/_global-error`
-prerender with `Invariant: Expected workStore to be initialized` — a duplicate-module artefact of
-the path casing, not a fault in any component.
+Run the build from `vemra_frontend` — the folder's real and canonical on-disk name. A cwd spelled
+`VEMRA_FRONTEND` against it fails at the `/_global-error` prerender with `Invariant: Expected
+workStore to be initialized`, which is a duplicate-module artefact of Windows' case-insensitive
+filesystem, not a fault in any component.
 
 ## Derived from tokens
 

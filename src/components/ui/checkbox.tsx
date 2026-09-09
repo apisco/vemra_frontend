@@ -24,8 +24,6 @@ export function Checkbox({
 }: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // `indeterminate` is a DOM property with no HTML attribute, so React cannot
-  // set it declaratively.
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.indeterminate = indeterminate;
@@ -66,8 +64,6 @@ export function Checkbox({
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 hidden items-center justify-center text-white peer-indeterminate:flex peer-disabled:text-neutral-700"
         >
-          {/* `bg-current` so the bar inherits the colour set above — `peer-*`
-              variants only resolve against a sibling, not a grandparent. */}
           <span className="h-0.5 w-2.5 rounded-full bg-current" />
         </span>
       </span>

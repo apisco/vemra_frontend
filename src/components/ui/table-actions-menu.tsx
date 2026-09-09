@@ -9,7 +9,6 @@ export interface TableAction {
   id: string;
   label: string;
   onSelect: () => void;
-  /** Renders the item in `error-600`, for Delete / Reject / Revoke. */
   isDestructive?: boolean;
   disabled?: boolean;
 }
@@ -51,7 +50,6 @@ export function TableActionsMenu({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Land on the first enabled item, matching the menu-button pattern.
     itemRefs.current.find((node) => node && !node.disabled)?.focus();
 
     function onPointerDown(event: PointerEvent) {
@@ -69,8 +67,6 @@ export function TableActionsMenu({
 
     document.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("resize", onDismiss);
-    // `true` so a scroll in any ancestor, including the table's own scroller,
-    // dismisses rather than leaving the panel behind.
     window.addEventListener("scroll", onDismiss, true);
 
     return () => {
@@ -128,7 +124,6 @@ export function TableActionsMenu({
         moveFocus(0, -1);
         break;
       case "Tab":
-        // A menu is a single tab stop; tabbing out closes it.
         close(false);
         break;
       default:
@@ -162,7 +157,6 @@ export function TableActionsMenu({
           ref={menuRef}
           role="menu"
           aria-label={label}
-          // Runtime geometry only — see the component note above.
           style={{ top: rect.top, right: rect.right }}
           className="fixed z-50 min-w-44 rounded-md border border-neutral-200 bg-white py-1 shadow-elevation-1"
         >

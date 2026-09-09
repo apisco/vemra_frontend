@@ -7,7 +7,6 @@ export type TrendDirection = "up" | "down" | "flat";
 
 export interface StatCardTrend {
   direction: TrendDirection;
-  /** Reads as the sentence the user sees, e.g. "+12% vs last month". */
   label: string;
 }
 

@@ -1,0 +1,143 @@
+import type { ReactNode } from "react";
+
+import { DASHBOARD_SECTION, LANDLORD_PANEL, TENANT_PANEL } from "@/constants/marketing";
+import type { PanelRow } from "@/constants/marketing";
+import { cn } from "@/lib/cn";
+import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
+
+import { SectionHeading } from "./section-heading";
+
+export function DashboardPreviewSection() {
+  return (
+    <section className="bg-neutral-50">
+      <div
+        className={cn(
+          CONTAINER,
+          SECTION_GUTTER,
+          "flex flex-col gap-6 py-8 md:gap-9 md:py-16 lg:gap-14 lg:py-25",
+        )}
+      >
+        <SectionHeading
+          align="center"
+          subheading={
+            <span className="hidden lg:inline">
+              {DASHBOARD_SECTION.subheading}
+            </span>
+          }
+        >
+          <span className="md:hidden">{DASHBOARD_SECTION.headingMobile}</span>
+          <span className="hidden md:inline">{DASHBOARD_SECTION.heading}</span>
+        </SectionHeading>
+
+        <div className="flex flex-col gap-4 md:gap-6 lg:flex-row lg:gap-8">
+          <Panel
+            title={TENANT_PANEL.title}
+            badge={
+              <span className="rounded-sm bg-brand-600 px-2 py-1 text-label-sm font-semibold text-brand-950">
+                {TENANT_PANEL.badge}
+              </span>
+            }
+            rows={TENANT_PANEL.rows}
+            footer={
+              <div className="flex flex-col gap-2 lg:gap-3">
+                <div className="flex flex-wrap gap-x-1 text-body-sm lg:justify-between lg:gap-x-2">
+                  <p className="text-neutral-700">
+                    <span className="lg:hidden">
+                      {TENANT_PANEL.progress.labelMobile}
+                    </span>
+                    <span className="hidden lg:inline">
+                      {TENANT_PANEL.progress.label}
+                    </span>
+                  </p>
+                  <p className="text-neutral-700 lg:text-neutral-900">
+                    {TENANT_PANEL.progress.value}
+                  </p>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-label={TENANT_PANEL.progress.label}
+                  aria-valuenow={TENANT_PANEL.progress.percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  className="h-1.5 w-full overflow-clip rounded-sm bg-neutral-100 lg:h-2"
+                >
+                  <div
+                    className="h-full rounded-sm bg-brand-700"
+                    style={{ width: `${TENANT_PANEL.progress.percent}%` }}
+                  />
+                </div>
+              </div>
+            }
+            hideRowsOnMobile
+          />
+
+          <Panel
+            title={LANDLORD_PANEL.title}
+            badge={
+              <span className="rounded-sm bg-brand-700/10 px-2 py-1 text-label-sm font-semibold text-brand-700">
+                {LANDLORD_PANEL.badge}
+              </span>
+            }
+            rows={LANDLORD_PANEL.rows}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+interface PanelProps {
+  title: string;
+  badge: ReactNode;
+  rows: readonly PanelRow[];
+  footer?: ReactNode;
+  hideRowsOnMobile?: boolean;
+}
+
+function Panel({ title, badge, rows, footer, hideRowsOnMobile }: PanelProps) {
+  return (
+    <article className="flex flex-1 flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-4 md:gap-5 md:p-6 lg:gap-6 lg:p-8">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-body-md font-semibold text-neutral-900 md:font-display md:text-heading-sm md:leading-[28px]">
+          {title}
+        </h3>
+        <span className="hidden md:inline">{badge}</span>
+      </div>
+
+      <dl
+        className={cn(
+          "flex flex-col gap-4 md:gap-3",
+          hideRowsOnMobile && "hidden md:flex",
+        )}
+      >
+        {rows.map((row) => (
+          <div
+            key={row.label}
+            className={cn(
+              "flex items-baseline justify-between gap-3",
+              !row.showOnMobile && "hidden md:flex",
+              !row.showOnTablet && "md:hidden lg:flex",
+            )}
+          >
+            <dt className="text-body-md text-neutral-700">{row.label}</dt>
+            <dd
+              className={cn(
+                "text-body-md leading-[20px] font-semibold",
+                row.isEmphasised ? "text-brand-700" : "text-neutral-900",
+              )}
+            >
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {footer && (
+        <>
+          <hr className="border-neutral-200 md:hidden lg:block" />
+          <div className="md:hidden lg:block">{footer}</div>
+        </>
+      )}
+    </article>
+  );
+}

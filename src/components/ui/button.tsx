@@ -43,6 +43,31 @@ const SPINNER_SIZE: Record<ButtonSize, string> = {
   lg: "size-5",
 };
 
+export interface ButtonClassesOptions {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  className?: string;
+}
+
+export function buttonClasses({
+  variant = "primary",
+  size = "md",
+  fullWidth = false,
+  className,
+}: ButtonClassesOptions = {}): string {
+  return cn(
+    "inline-flex items-center justify-center gap-2 rounded-md text-label-md font-semibold whitespace-nowrap transition-colors",
+    "active:brightness-95",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700",
+    "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-200 disabled:text-neutral-700 disabled:brightness-100 disabled:hover:bg-neutral-200",
+    VARIANT_CLASSES[variant],
+    SIZE_CLASSES[size],
+    fullWidth && "w-full",
+    className,
+  );
+}
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -63,16 +88,7 @@ export function Button({
       type={type}
       disabled={isInactive}
       aria-busy={isLoading || undefined}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md text-label-md font-semibold whitespace-nowrap transition-colors",
-        "active:brightness-95",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700",
-        "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-200 disabled:text-neutral-700 disabled:brightness-100 disabled:hover:bg-neutral-200",
-        VARIANT_CLASSES[variant],
-        SIZE_CLASSES[size],
-        fullWidth && "w-full",
-        className,
-      )}
+      className={buttonClasses({ variant, size, fullWidth, className })}
       {...props}
     >
       {isLoading ? (

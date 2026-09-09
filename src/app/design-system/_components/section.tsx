@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
-
 export function Section({
   id,
   title,
@@ -12,7 +11,6 @@ export function Section({
 }: {
   id: string;
   title: string;
-  /** Source frame, so a reviewer can open the design beside the code. */
   figma: string;
   description?: string;
   children: ReactNode;

@@ -20,7 +20,7 @@
   --color-neutral-400: #8ca2ac;
   --color-neutral-200: #dde6e9;
   --color-neutral-100: #f0f4f6;
-  --color-neutral-50: #f7f9fa; 
+  --color-neutral-50: #f7f9fa;
 
   --color-success-600: #0f7b54;
   --color-success-500: #0f7b54;
@@ -53,7 +53,7 @@
   --radius-4xl: initial;
 
   --shadow-*: initial;
-  --shadow-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.08); /* cards, dropdowns */
-  --shadow-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.12); /* modals, popovers */
-  --shadow-elevation-3: 0 8px 24px rgba(0, 0, 0, 0.16); /* fixed nav, toasts */
+  --shadow-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-elevation-3: 0 8px 24px rgba(0, 0, 0, 0.16);
 }

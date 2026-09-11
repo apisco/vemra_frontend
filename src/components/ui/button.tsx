@@ -18,7 +18,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   iconLeft?: ReactNode;
   iconRight?: ReactNode;
-   isLoading?: boolean;
+  isLoading?: boolean;
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {

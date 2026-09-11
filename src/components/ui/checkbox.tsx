@@ -1,21 +1,25 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
+export type CheckboxAlign = "center" | "start";
+
 export interface CheckboxProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "className"> {
-  label: string;
+  label: ReactNode;
   hideLabel?: boolean;
-    indeterminate?: boolean;
+  align?: CheckboxAlign;
+  indeterminate?: boolean;
   containerClassName?: string;
 }
 
 export function Checkbox({
   label,
   hideLabel = false,
+  align = "center",
   indeterminate = false,
   containerClassName,
   disabled = false,
@@ -33,7 +37,8 @@ export function Checkbox({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-2",
+        "inline-flex gap-2",
+        align === "start" ? "items-start" : "items-center",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         containerClassName,
       )}

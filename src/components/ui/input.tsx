@@ -118,13 +118,13 @@ export function Input({
         <p id={errorId} role="alert" className="text-label-sm text-error-600">
           {error}
         </p>
-      ) : (
-        helperText && (
-          <p id={helperId} className="text-label-sm text-neutral-700">
-            {helperText}
-          </p>
-        )
-      )}
+      ) : null}
+
+      {helperText ? (
+        <p id={helperId} className="text-label-sm text-neutral-700">
+          {helperText}
+        </p>
+      ) : null}
     </div>
   );
 }

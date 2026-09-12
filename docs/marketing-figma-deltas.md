@@ -36,9 +36,10 @@ twice over ("Do not invent extra features beyond the supplied designs").
 **Property showcase** is not on M1 either. It is M2, so `PropertyCard` was derived from the real
 M2 grid and ships at `/browse` rather than being guessed onto the landing page.
 
-M3–M7 (listing detail, search empty state, about/contact, public profile, 404) are separate
+M3–M6 (listing detail, search empty state, about/contact, public profile) are separate
 marketing screens, not sections in the Phase 3 build order, and are untouched. Their nav and
-footer links therefore 404 in this phase — see §7.
+footer links therefore 404 in this phase — see §7. M7 (404) was also out of the build order but
+has since been built on request; see §12.
 
 ## 2. Header: no transparent-over-hero state exists
 
@@ -115,7 +116,8 @@ no invented groups, no placeholder icons.
 
 Only `/` and `/browse` exist in this phase, so the other five footer links and three nav links
 resolve to 404 until their screens are built. Hrefs are still the real intended paths rather than
-`#`, so nothing needs rewriting later.
+`#`, so nothing needs rewriting later. Since §12 those links land on the designed M7 screen rather
+than Next's built-in fallback.
 
 ## 8. Component-reuse notes
 
@@ -181,3 +183,60 @@ text-on-background (invisible text). **That was wrong.** Both are a 10% `brand-7
 teal text; `get_design_context` strips fill alpha and reports the tint as an opaque fill. The
 `brand-400` = `#0f7b54` reading was also confirmed correct against swatch `18:15`
 ("Charts / Accent 2") — no token change needed.
+
+## 12. Error screens: 404 built from M7, 500 has no design at all
+
+**404 (M7)** is fully designed at all three widths — `6:13` (1440), `108:3970` (768),
+`101:4043` (390) — and is implemented verbatim at `src/app/not-found.tsx`. It was not in the
+Phase 3 build order (§1 notes M3–M7 as out of scope), so it is a late addition, built on request.
+
+Three readings taken from the frames rather than assumed:
+
+| Element  | 390          | 768           | 1440          |
+| -------- | ------------ | ------------- | ------------- |
+| Numeral  | 96 / 96 / -2 | 120 / 120 / -4 | 140 / 140 / -4 |
+| Headline | 22 / 30      | 32 / 40       | 32 / 40       |
+| Body     | 14 / 22      | 16 / 24       | 16 / 24       |
+
+(size / line-height / letter-spacing, px.) The numeral sizes are off the token scale — the largest
+`--text-*` token is `display-xl` at 48px — so they are arbitrary values, consistent with the
+precedent set in §5. The **404→headline gap differs per width**: 12px at 390 and 768, but **0px at
+1440**, where the two lines butt together deliberately. That is `gap-3 lg:gap-0`, not an oversight.
+
+Structurally the mobile frame nests the body copy *inside* the numeral group (gap 12), while 768
+and 1440 make it a sibling (gap 40). One DOM serves all three via `-mt-5 md:mt-0` on the body.
+
+The screen carries **no header and no footer** at any width — the 768 frame has explicit
+`header-dummy-spacer` / `footer-dummy-spacer` placeholders (`108:3971`, `108:3985`), confirming
+the omission is deliberate. So `not-found.tsx` sits at the app root, outside `(marketing)`, and
+renders only inside the root layout. The 390 frame's iOS status bar and home indicator are device
+chrome, not app UI, and are dropped — matching the Phase 4 precedent.
+
+`LogoMark` gained a `standalone` size (`h-8 md:h-10` mark, 28px/36px bold wordmark at every
+width) because the screen wants the wordmark at 28px even at 390, which none of `responsive`,
+`fixed` or `hero` provide. This is additive: no existing call site changes.
+
+### The 500 reuses the M7 design
+
+**There is no 500, server-error or generic-error frame anywhere in the file** — not in
+`🌐 Public / Marketing [50:2]`, not among the seven SH pattern sheets. M7 is the only error screen
+designed. `src/app/error.tsx` was built on explicit request and **renders the M7 design unchanged**:
+same layout, type scale, spacing, colours and single primary "Back to browse rentals" button. The
+two screens share `ErrorScreen` and `ErrorBackLink`, so they cannot drift apart.
+
+Only two values are written rather than read from Figma:
+
+- **Numeral `500`** in place of `404`. It inherits M7's 96/120/140px responsive scale exactly.
+- **Copy** — "Something went wrong" and "Something failed on our end. It is usually temporary, so
+  try again in a moment." No Figma source exists for either.
+
+An earlier revision added a second **Try again** button wired to Next 16's `retry` prop. That was
+dropped on request in favour of matching M7 exactly, so `error.tsx` takes no props and recovery is
+a browser refresh. If a retry affordance is wanted later, `retry` is the stable Next 16 prop —
+note the older `reset` name is no longer the recommended one.
+
+If a 500 is ever designed, the numeral scale and the copy are the only things to check.
+
+`global-error.tsx` was **not** built. It replaces the root layout, so it cannot use the app's
+fonts or global styles without duplicating them, and it only fires for a throw inside the root
+layout itself. Errors in every page and nested layout are already covered by `app/error.tsx`.

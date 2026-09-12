@@ -1,21 +1,17 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 
 export type LogoMarkVariant = "default" | "onDark";
 
-export type LogoMarkSize = "responsive" | "fixed" | "hero";
+export type LogoMarkSize = "responsive" | "fixed" | "hero" | "standalone";
 
 const MARK_CLASSES: Record<LogoMarkSize, string> = {
-  responsive: "size-7 md:size-8",
-  fixed: "size-7",
-  hero: "size-7 lg:size-10",
-};
-
-const GLYPH_INSET_CLASSES: Record<LogoMarkSize, string> = {
-  responsive: "inset-1.5",
-  fixed: "inset-1.5",
-  hero: "inset-1.5 lg:inset-2.5",
+  responsive: "h-7 md:h-8",
+  fixed: "h-7",
+  hero: "h-7 lg:h-10",
+  standalone: "h-8 md:h-10",
 };
 
 const WORD_CLASSES: Record<LogoMarkSize, string> = {
@@ -23,16 +19,12 @@ const WORD_CLASSES: Record<LogoMarkSize, string> = {
     "text-[18px] leading-[28px] font-semibold md:text-[22px] md:leading-[30px] md:font-bold",
   fixed: "text-[18px] leading-[28px] font-semibold",
   hero: "text-[18px] leading-[28px] font-semibold lg:text-heading-lg lg:leading-[36px] lg:font-bold",
+  standalone: "text-heading-lg leading-[36px] font-bold",
 };
 
-const SQUARE_CLASSES: Record<LogoMarkVariant, string> = {
-  default: "bg-brand-700",
-  onDark: "bg-neutral-50",
-};
-
-const GLYPH_CLASSES: Record<LogoMarkVariant, string> = {
-  default: "bg-white",
-  onDark: "bg-brand-700",
+const MARK_SOURCES: Record<LogoMarkVariant, string> = {
+  default: "/logo.png",
+  onDark: "/logo-light.png",
 };
 
 const WORD_TONE_CLASSES: Record<LogoMarkVariant, string> = {
@@ -66,22 +58,15 @@ export function LogoMark({
         className,
       )}
     >
-      <span
+      <Image
+        src={MARK_SOURCES[variant]}
+        alt=""
         aria-hidden="true"
-        className={cn(
-          "relative shrink-0 rounded-md",
-          MARK_CLASSES[size],
-          SQUARE_CLASSES[variant],
-        )}
-      >
-        <span
-          className={cn(
-            "absolute rounded-sm",
-            GLYPH_INSET_CLASSES[size],
-            GLYPH_CLASSES[variant],
-          )}
-        />
-      </span>
+        width={275}
+        height={240}
+        priority
+        className={cn("w-auto shrink-0", MARK_CLASSES[size])}
+      />
       <span
         className={cn(
           "font-display",

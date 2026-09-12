@@ -4,7 +4,12 @@ import { cn } from "@/lib/cn";
 
 export type AuthHeaderAlign = "responsive" | "center" | "start";
 
-export type AuthHeaderVariant = "form" | "compact" | "status" | "display";
+export type AuthHeaderVariant =
+  | "form"
+  | "compact"
+  | "status"
+  | "display"
+  | "welcome";
 
 const ALIGN_CLASSES: Record<AuthHeaderAlign, string> = {
   responsive: "items-center text-center md:items-start md:text-left",
@@ -17,6 +22,7 @@ const WRAPPER_CLASSES: Record<AuthHeaderVariant, string> = {
   compact: "gap-2",
   status: "gap-4 lg:gap-5",
   display: "gap-2",
+  welcome: "gap-2",
 };
 
 const TITLE_CLASSES: Record<AuthHeaderVariant, string> = {
@@ -24,6 +30,7 @@ const TITLE_CLASSES: Record<AuthHeaderVariant, string> = {
   compact: "text-heading-md leading-[30px]",
   status: "text-heading-md leading-[30px]",
   display: "text-heading-md leading-[30px] md:text-heading-xl md:leading-[40px]",
+  welcome: "text-heading-lg leading-[36px] md:text-heading-xl md:leading-[40px]",
 };
 
 const DESCRIPTION_CLASSES: Record<AuthHeaderVariant, string> = {
@@ -31,6 +38,7 @@ const DESCRIPTION_CLASSES: Record<AuthHeaderVariant, string> = {
   compact: "leading-[20px] md:leading-[22px]",
   status: "leading-[22px]",
   display: "leading-[20px] md:leading-[22px]",
+  welcome: "leading-[22px] md:text-neutral-800",
 };
 
 export interface AuthHeaderProps {

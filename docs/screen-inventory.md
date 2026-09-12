@@ -47,7 +47,8 @@ Section `Onboarding Flow [50:3]`. No app shell; centred card on the page backgro
 
 ## 3. Tenant — 26 screens
 
-Section `🏠 Tenant Flow [50:4]`. Dashboard shell with the tenant sidebar (`82:162`).
+Section `🏠 Tenant Flow [50:4]`. Dashboard shell with the tenant sidebar (`82:162`), **except TN1**,
+which has no shell and is built on `AuthLayout` in phase 4.
 
 | #    | Screen                      | 1440    | 768      | 390      |
 | ---- | --------------------------- | ------- | -------- | -------- |
@@ -80,7 +81,8 @@ Section `🏠 Tenant Flow [50:4]`. Dashboard shell with the tenant sidebar (`82:
 
 ## 4. Landlord — 22 screens
 
-Section `🏢 Landlord Flow [50:5]`. Dashboard shell with the landlord sidebar (`82:236`).
+Section `🏢 Landlord Flow [50:5]`. Dashboard shell with the landlord sidebar (`82:236`), **except
+LL1**, which has no shell and is built on `AuthLayout` in phase 4.
 
 | #    | Screen                      | 1440    | 768      | 390      |
 | ---- | --------------------------- | ------- | -------- | -------- |
@@ -109,7 +111,8 @@ Section `🏢 Landlord Flow [50:5]`. Dashboard shell with the landlord sidebar (
 
 ## 5. Agent — 6 screens
 
-Section `👤 Agent Flow [50:6]`. Dashboard shell with the agent sidebar (`82:294`).
+Section `👤 Agent Flow [50:6]`. Dashboard shell with the agent sidebar (`82:294`), **except AG1**,
+which has no shell and is built on `AuthLayout` in phase 4.
 
 | #   | Screen                | 1440    | 768      | 390      |
 | --- | --------------------- | ------- | -------- | -------- |
@@ -181,12 +184,16 @@ Four layouts cover all 79 product screens.
 
 1. **`PublicLayout`** — top nav + footer. Covers M1–M7. Full-bleed sections, content capped and
    centred; nav collapses to a hamburger at 768.
-2. **`AuthLayout`** — centred card on the page background, no nav. Covers AU1–AU11.
+2. **`AuthLayout`** — no nav. Two arrangements through one optional `aside` slot: a centred column
+   on the page background (AU1–AU3, AU5–AU11 and the three onboarding-complete screens), and a
+   **split two-panel** layout with a dark `brand-950` aside at `md`+ for AU4 login. Covers
+   AU1–AU11 **and TN1/LL1/AG1**, which carry no dashboard shell — `15:165` is the first frame that
+   instantiates `Sidebar / Tenant` (`82:163`).
 3. **`DashboardLayout`** — 260px role sidebar + topbar + scrolling content. Covers TN, LL, AG and
-   AD — 61 of the 79 screens. The sidebar is the **only** part that varies by role, and the design
-   provides all five as separate frames: tenant `82:162`, landlord `82:236`, agent `82:294`,
-   admin `82:344`, super admin `82:393`. So this is one layout taking a nav-items prop, not five
-   layouts. Below 1024 the sidebar becomes an off-canvas drawer.
+   AD — 58 of the 79 screens, TN1/LL1/AG1 excluded per the entry above. The sidebar is the **only**
+   part that varies by role, and the design provides all five as separate frames: tenant `82:162`,
+   landlord `82:236`, agent `82:294`, admin `82:344`, super admin `82:393`. So this is one layout
+   taking a nav-items prop, not five layouts. Below 1024 the sidebar becomes an off-canvas drawer.
 4. **`EmailLayout`** — 600/640px table shell. Covers EM1–EM13.
 
 Two recurring intra-page patterns cut across the four layouts and should be built once:
@@ -204,7 +211,7 @@ Ordered so that each phase unblocks the next and nothing is built twice.
 | ----- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | 0     | Design tokens                        | Done. Locked.                                                                                         |
 | 1     | Component library                    | Current phase. Every later phase composes these.                                                      |
-| 2     | `AuthLayout` + AU1–AU11              | Simplest shell, no sidebar. Establishes forms, validation and the role routing that gates every dashboard. |
+| 2     | `AuthLayout` + AU1–AU11 + TN1/LL1/AG1 | Simplest shell, no sidebar. Establishes forms, validation and the role routing that gates every dashboard. The three onboarding-complete screens share this shell, not `DashboardLayout`. |
 | 3     | `DashboardLayout` + tenant TN1–TN26  | Largest role (26 screens) and the most complete in the design, so it sets the patterns — tables, stat rows, empty states, skeletons — that the other three roles reuse. |
 | 4     | Landlord LL1–LL22                    | Same shell, swapped sidebar. Adds the listing-creation flow.                                          |
 | 5     | Agent AG1–AG6                        | Same shell. Smallest role.                                                                            |

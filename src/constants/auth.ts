@@ -320,3 +320,90 @@ export const VERIFY_EMAIL_STATES: Record<
     ctaLabel: "Send a new link",
   },
 };
+
+export interface OnboardingStep {
+  title: string;
+  detail: string;
+}
+
+export interface OnboardingCompleteCopy {
+  metaTitle: string;
+  title: string;
+  description: string;
+  stepsLabel: string;
+  steps: readonly OnboardingStep[];
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
+  tenant: {
+    metaTitle: "Tenant account ready · Vemra",
+    title: "You're all set, Aisha",
+    description:
+      "Your tenant account is ready. You can browse verified homes and message landlords or agents directly.",
+    stepsLabel: "What to do next",
+    steps: [
+      {
+        title: "Browse verified homes",
+        detail: "Every listing shows a verified landlord or agent",
+      },
+      {
+        title: "Apply when you find one you like",
+        detail: "Usually reviewed within 2-3 days",
+      },
+      {
+        title: "Manage rent from your dashboard",
+        detail: "See due dates and set up a payment plan anytime",
+      },
+    ],
+    ctaLabel: "Browse homes",
+    ctaHref: "/browse",
+  },
+  landlord: {
+    metaTitle: "Landlord account ready · Vemra",
+    title: "You're verified, Daniel",
+    description:
+      "Your landlord account is ready. Tenants will see your verified badge on every listing you publish.",
+    stepsLabel: "What to do next",
+    steps: [
+      {
+        title: "List your first property",
+        detail: "Takes about 5 minutes",
+      },
+      {
+        title: "Connect your payout account",
+        detail: "So you can withdraw rent once it clears",
+      },
+      {
+        title: "Invite an agent (optional)",
+        detail: "Assign someone to oversee day-to-day",
+      },
+    ],
+    ctaLabel: "List your first property",
+    ctaHref: "/list-your-property",
+  },
+  agent: {
+    metaTitle: "Agent account ready · Vemra",
+    title: "You're verified, Priya",
+    description:
+      "Your agent account is ready. Once a landlord assigns you to a property, it'll show up right here.",
+    stepsLabel: "What to do next",
+    steps: [
+      {
+        title: "Wait for a property invitation",
+        detail: "Landlords assign agents from their dashboard",
+      },
+      {
+        title: "Manage tenant contact",
+        detail: "Messages, viewings, and maintenance in one inbox",
+      },
+      {
+        title: "Track rent status per unit",
+        detail: "See what's due and what's cleared",
+      },
+    ],
+    ctaLabel: "Go to your dashboard",
+    ctaHref: "/",
+  },
+};

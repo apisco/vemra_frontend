@@ -12,7 +12,8 @@ export type AuthLayoutWidth =
   | "wide"
   | "content"
   | "contentLg"
-  | "otp";
+  | "otp"
+  | "welcome";
 
 export type AuthLayoutGap = "xs" | "sm" | "md" | "lg" | "flat";
 
@@ -30,6 +31,7 @@ const WIDTH_CLASSES: Record<AuthLayoutWidth, string> = {
   content: "lg:max-w-[500px]",
   contentLg: "lg:max-w-[520px]",
   otp: "md:max-w-[500px] lg:max-w-[480px]",
+  welcome: "md:max-w-[560px]",
 };
 
 const GAP_CLASSES: Record<AuthLayoutGap, string> = {

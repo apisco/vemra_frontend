@@ -7,7 +7,8 @@ This document is written incrementally, one screen at a time, as each screen's d
 retrieved and built. Screens covered so far: **AU1 sign up — role picker**, **AU2 sign up —
 details**, **AU3 identity verification**, **AU4 login**, **AU5 forgot password**, **AU6 reset
 password**, **AU7 email verified**, **AU8 two-factor setup**, **AU9 verification pending**,
-**AU10 verification rejected**.
+**AU10 verification rejected**, **AU11 terms & privacy**, and **TN1/LL1/AG1 onboarding complete**
+— all 13 screens of the phase.
 
 ---
 
@@ -27,7 +28,7 @@ was derived from.
 | Password strength meter | drawn in the DS, in no auth frame | the DS Inputs showcase specimen — see §6 |
 | Confirm-password on sign up | absent | AU6's field pattern; AU2 draws four fields and no confirm |
 | Reset-password success screen | absent | AU7's status pattern |
-| Welcome screen | resolved to AU1 | user decision: AU1 is the entry screen, no separate `/welcome` |
+| Welcome screen (brief item 1, the *entry* screen) | resolved to AU1 | user decision: AU1 is the entry screen, so no `/welcome` **entry** route was built. Not to be confused with `/welcome/[role]`, which is brief item 10 — the onboarding-**completion** screen, fully designed as TN1/LL1/AG1 and built in §20 |
 
 ## 2. Contradictions between the brief and the design
 
@@ -164,6 +165,12 @@ delta is recorded rather than absorbed.
 | 23px | AU9/AU10 pill height (768 only) | `Badge size="md"` (24px) | 1px; the 1440 and 390 frames draw 24 exactly — see §3 |
 | 78 / 106px | AU9/AU10 pill width (768 only) | `Badge size="md"` (intrinsic) | +4px over the 74 / 102 drawn at 1440 and 390 — the tablet frame uses the real component instance |
 | 10px | AU9/AU10 pill padding-x | `Badge size="md"` (`px-3`, 12px) | 2px; identical to the AU1 role-tag delta above |
+| `#edf8f5` | TN1/LL1/AG1 badge outer + step-number fill | `success-50 #e8f5ee` | nearest (−5 / −3 / −7) — see §20 |
+| `#1E9E6A` | TN1/LL1/AG1 check stroke | `success-600 #0f7b54` | nearest; same mapping as `#198754` above |
+| `#bce3df` | TN1/LL1/AG1 inner badge layer (44px) | **none** | no token in reach — reported, not retrofitted; badge renders single-tone — see §20 |
+| 20px | TN1/LL1/AG1 mobile vertical padding | `AuthLayout` `py-10` (40px) | 20px; the shared auth convention is kept rather than forked — see §20 |
+| 10px | TN1/LL1/AG1 logo gap | `LogoMark` `gap-2` (8px) | 2px; identical to the AU7 logo-gap delta above |
+| 72 / 40 / 40 / 20 / 36px | TN1/LL1/AG1 badge, logo, gap, card padding, step circle (768 only) | the 390 + 1440 values | the whole tablet tier is non-monotonic — larger at 768 than at 1440 — and was not built; per-dimension table in §20 |
 
 Figma effect styles map to shadow tokens **exactly**, and the MCP's inline `drop-shadow-[…]`
 conversion is lossy — the styles list is authoritative:
@@ -344,6 +351,11 @@ AU10's alert-triangle (`error`), both exact Figma path exports. `StatusIcon`'s `
 AU9 and AU10 draw those glyphs at a 28px leaf; AU7's badge leaf is 32px. AU7's states render at
 32px, matching AU7's own designed badge. `StatusIcon` will need a size axis when AU9/AU10 are
 built — their badge padding has not been measured yet and is deliberately not guessed here.
+
+**Resolved.** AU9/AU10 were measured and the axis was added: `md` (`p-4 [&_svg]:size-6
+md:p-4.5 md:[&_svg]:size-7`) with `lg` kept as the default so AU7 did not move — see §3. A third
+size `sm` and a `shape` axis followed for the onboarding-complete screens — see §20. All four
+additions are additive; no existing call site changed.
 
 ## 10. Corrections to `docs/screen-inventory.md`
 
@@ -784,7 +796,12 @@ rendered, so calling them from `segmented-control.tsx` failed the build with
 `buttonClasses` is callable from servers: `button.tsx` has no `"use client"`. Any future shared
 class helper consumed by both a client control and a server caller belongs in its own plain module.
 
-## 19. Values inferred while the Figma MCP tools were unavailable
+## 19. Values inferred while the Figma MCP tools were unavailable (AU1–AU11 only)
+
+**Scope.** This section covers AU1–AU11, which were built while the Figma MCP tools were not
+exposed. It does **not** apply to TN1/LL1/AG1: by the time those were built the tools were
+available, so every value in §20 is measured from `get_design_context` rather than inferred. The
+table below is a record of what had to be reconstructed, not a standing limitation of the phase.
 
 The plan anticipated this: `mcp__figma__get_design_context` is not exposed in the implementation
 session. `ListMcpResourcesTool` confirms the `figma` server is connected but publishes resources
@@ -854,3 +871,142 @@ is listed here rather than presented as measured:
 | Tablet copy truncation | AU11 | full strings at all widths | `109:3677` abbreviates sections 1–2 and omits sections 4–5 and the whole Privacy document; desktop and mobile agree on the full strings, so tablet is a mock, not a copy spec — see §18 |
 | Title type size | AU11 | `text-heading-lg leading-[36px] lg:text-heading-xl lg:leading-[44px]` | inferred from the line-height ratio (title 32/44 = 1.375 against section headings 22/30 = 1.364); the 306px hug measures ~7% wider than a 32px prediction — see §18 |
 | Footer link size at desktop | AU11 | `text-body-md` (14px) at every width | measures ~13px at desktop against ~14px at tablet/mobile; 13px is `body-sm`, which no other footer link in the repo uses — see §18 |
+
+## 20. TN1, LL1 and AG1 — the onboarding-complete screens
+
+The last three screens of phase 4, and the first for which **`get_design_context` was available**.
+Everything below is therefore *measured*, not inferred — §19's limitation does not apply to this
+section. Fills, radii and strokes come back as `var(--token, #hex)`, so the token mapping is
+authoritative rather than reconstructed from `page.xml` geometry.
+
+All three frames are structurally identical — logo → success badge → title + description → three
+numbered step cards → full-width CTA — and differ only in copy. One `OnboardingComplete` component
+driven by `ONBOARDING_COMPLETE[role]` covers all three, behind a single `/welcome/[role]` route
+with `generateStaticParams` over `tenant | landlord | agent` and `dynamicParams = false`.
+`next build` prerenders all three as `●` SSG.
+
+### The tablet tier is non-monotonic and was not built
+
+The 768 frames inflate **every** dimension above the 1440 frames, which would render a 768 viewport
+larger than a 1440 one:
+
+| Element | 390 | 768 | 1440 | Built |
+| - | - | - | - | - |
+| Success badge | 64 | **72** | 64 | 64 at every width |
+| Logo | 28 | **40** | 32 | `h-7 md:h-8` (mobile 28, desktop 32) |
+| Container gap | 24 | **40** | 32 | `gap-6 md:gap-8` |
+| Step-card padding | 16 | **20** | 18 | `p-4 md:p-4.5` |
+| Step-number circle | 32 | **36** | 32 | `size-8` |
+| Body copy | 14/22 | **16/24** | 14/22 | 14/22 at every width |
+| Container width | 358 | **670** | 602 | `md:max-w-[560px]` |
+
+Two tiers were built instead — mobile below `md`, desktop at `md`+ — taking the 390 and 1440
+readings, which agree with each other on the direction of every one of those scales. This is the
+same treatment §3 already applies to AU1's logo and AU8's card width, and the deltas above are the
+record of what was dropped.
+
+**The tenant tablet copy was rejected on the same grounds.** 768 draws longer step details than
+either 390 or 1440. Two frames to one, matching the AU1 and AU8 copy resolutions in §3.
+
+Where **desktop and mobile themselves disagree** — landlord step 2, tenant step 3, and tenant's
+step 1 and 2 titles — the longer desktop form wins, because the shorter form loses information.
+
+### The badge is a squircle here and a circle on AU7, by design
+
+`get_design_context` on AU7 (`135:4209`) returns an arbitrary radius of `var(--radius/full, 9999px)`
+— i.e. a true circle; the welcome
+frames return `radius/xl` (16px). Both are authoritative, so this is a real difference, not a slip
+in either frame. `StatusIcon` therefore gained an **additive** `shape` axis (`circle | squircle`,
+defaulting to `circle`) and an `sm` size, leaving all four existing call sites — AU7, AU9, AU10 and
+`verify-email-panel` — rendering exactly as before.
+
+`rounded-full` had to move out of `StatusIcon`'s base string into the new `SHAPE_CLASSES` map:
+`cn` is a plain join, not `tailwind-merge`, so two unprefixed utilities setting `border-radius`
+would resolve by stylesheet order rather than argument order, and the base would always win.
+
+`sm` is `p-5.5 [&_svg]:size-5` — 22 + 20 + 22 = **64px**, matching the drawn badge and its 20px
+glyph exactly.
+
+### The check glyph is the existing icon, scaled
+
+The welcome frames draw a 20×20 check path; `src/components/icons/check-icon.tsx` is 14×14. The
+two are the same path at a 10/7 ratio, verified point by point: 11.6662 × 10/7 = 16.666,
+3.5 × 10/7 = 5, 5.25017 × 10/7 = 7.5002, 9.9162 × 10/7 = 14.166, 2.3338 × 10/7 = 3.334,
+6.99975 × 10/7 = 9.9996. No new asset was added — the existing `CheckIcon` is reused at `size-5`.
+
+### Three off-token greens, two snapped and one reported
+
+| Figma value | Where | Token used | Delta |
+| - | - | - | - |
+| `#edf8f5` | badge outer fill, step-number circle fill | `success-50 #e8f5ee` | nearest (−5 / −3 / −7), comparable to the accepted `#edf2f4`→`neutral-100` in §4 |
+| `#1E9E6A` | check stroke | `success-600 #0f7b54` | nearest — the same mapping §4 already records for `#198754` |
+| `#bce3df` | the 44px **inner** badge layer | **none** | no token in reach — reported, not retrofitted |
+
+`#bce3df` sits between `success-50` (far lighter) and `success-600` (far darker), and the token
+layer publishes no `success-100` or `success-200`. The numerically nearest token is
+`neutral-200 #dde6e9`, a grey-blue **border** colour that is semantically wrong for a success
+badge. This follows the `#2ec4b6` precedent in §4: reported rather than approximated.
+
+**Consequence, stated plainly:** the badge renders single-tone — `bg-success-50` with a
+`text-success-600` glyph — and loses the subtle two-tone ring the design draws. That is the same
+resolution AU7's own badge already received in §3, so the two screens stay consistent with each
+other. Adding the ring would require a new token, which this phase may not do.
+
+### Everything else
+
+- **Device chrome dropped.** The mobile frames are full iOS mockups — a status bar reading "9:41",
+  a hamburger header, a tab bar and a home indicator. No other auth screen carries them, they are
+  not product UI, and reproducing a hard-coded clock would be inventing interface. Same treatment
+  as the marketing precedent and §2. The **logo is kept** and centred at all tiers, matching
+  `AuthLayout`'s default and AU7.
+- **The agent CTA has no destination in this phase.** The frame reads "Go to your dashboard", but
+  no dashboard route exists — `DashboardLayout` is phase 5+. Tenant and landlord resolve exactly
+  (`/browse`, `/list-your-property`); agent is pointed at `/` as an honest placeholder rather than
+  inventing a `/dashboard` route that would 404. **This is the one link on these three screens that
+  does not go where its label says**, and it should be repointed when the agent dashboard lands.
+- **Mobile vertical padding is 40px against the designed 20.** `AuthLayout`'s shared
+  `px-5 py-10 md:px-12 lg:py-20` is used unchanged; forking it per screen would break the
+  convention every other auth screen follows, for a 20px gain.
+- **The logo gap is 8px against the designed 10.** `LogoMark`'s existing `gap-2`, identical to the
+  AU7 delta already recorded in §4.
+- **Step-detail copy at 12px maps to `text-label-sm`.** Exact size match; the name says *label* but
+  the token is 0.75rem, which is the drawn value. `text-caption` (0.6875rem) would be 1px short.
+- **The description colour is breakpoint-dependent**, and only the colour: `#4c5e65`
+  (`neutral-700`) at mobile, `#37474e` (`neutral-800`) at desktop, at 14px/22px in **both**. Built
+  `md:text-neutral-800`, which resolves correctly under a plain-join `cn` because Tailwind 4 emits
+  variant utilities after unprefixed ones.
+
+### Reuse, and why two components are new
+
+`AuthLayout`, `AuthHeader`, `StatusIcon`, `LogoMark`, `CheckIcon` and `buttonClasses` compose the
+whole screen. Three shared components were extended **additively**, so no gated screen moved:
+
+- `StatusIcon` — new `sm` size, new `shape` axis, both defaulted to existing behaviour.
+- `AuthHeader` — new `welcome` variant. The existing `display` variant does not fit: its mobile
+  title is 22/30 and this screen needs 28/36. Editing the shared base was not an option either,
+  because the base bakes in `text-neutral-700` and this description is breakpoint-dependent.
+- `AuthLayout` — new `welcome` width (`md:max-w-[560px]`). The existing `xl`
+  (`md:max-w-[520px] lg:max-w-[560px]`) does not fit: the design is 560 at **both** `md` and `lg`.
+
+No new gap key was needed — the drawn 24→32px container gap is exactly the existing `flat` key.
+Padding and justification needed no change either; `px-5 py-10 md:px-12 lg:py-20` with the default
+`justify="top"` reproduces the drawn geometry at every width:
+
+- 390: 390 − 40 = **350** ✓
+- 768: 768 − 96 = 672, centred 560 → x = **104** ✓
+- 1440: 1440 − 96 = 1344, centred 560 → x = **440** ✓; vertically 900 − 160 = 740, centred 602 →
+  y = **149** ✓
+
+**`OnboardingStepCard` is a new component rather than an `AuthCard` variant**, for two independent
+reasons. `AuthCard`'s base hardcodes `flex-col` — and because Tailwind emits `flex-row` *before*
+`flex-col`, a variant could never override it under a plain-join `cn` — while the step card is a
+row. And all seven `AuthCard` variants carry a shadow; the step card has none. `role-card.tsx` is
+the existing precedent for a self-contained card that owns its own surface classes, and this
+follows it, including owning its own `<li>` the way `role-card.tsx` owns its `<label>`.
+
+The numeral is `aria-hidden` and the list is an `<ol aria-label>`, so the ordinal is announced by
+list semantics rather than read twice — the `verification-checklist.tsx` idiom.
+
+**`AuthLayout logoSize="none"` plus a manual centred `LogoMark`.** The built-in logo is `self-start`
+and `AuthLayoutLogo` has no `"responsive"` member, so the layout's own slot cannot centre it. This
+matches how `verification-status.tsx` already handles the same requirement.

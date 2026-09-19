@@ -9,8 +9,7 @@ import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
 
 export const metadata: Metadata = {
   title: "Browse rentals · Vemra",
-  description:
-    "Every listing comes from a verified landlord or agent — check who they are before you reach out.",
+  description: BROWSE_PAGE.subheading,
 };
 
 export default function BrowsePage() {

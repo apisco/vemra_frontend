@@ -25,7 +25,6 @@ export const metadata: Metadata = {
 const BUTTON_VARIANTS: ButtonVariant[] = [
   "primary",
   "secondary",
-  "outline",
   "ghost",
   "destructive",
 ];
@@ -128,7 +127,7 @@ export default function DesignSystemPage() {
             Trailing
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             iconLeft={<PlaceholderIcon />}
             iconRight={<PlaceholderIcon />}
           >

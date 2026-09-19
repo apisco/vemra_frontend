@@ -16,7 +16,7 @@ export interface OnboardingCompleteProps {
 export function OnboardingComplete({ copy }: OnboardingCompleteProps) {
   return (
     <AuthLayout width="welcome" gap="flat" logoSize="none">
-      <LogoMark size="responsive" className="self-center" />
+      <LogoMark className="self-center" />
       <div className="flex flex-col items-center gap-6 md:gap-4">
         <StatusIcon size="sm" shape="squircle">
           <CheckIcon />

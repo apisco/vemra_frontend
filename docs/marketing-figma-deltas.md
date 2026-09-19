@@ -70,12 +70,18 @@ Design System tokens are locked, so these are reported rather than added.
 | Figma value | Figma name              | Used by                                                        | Rendered as                    |
 | ----------- | ----------------------- | -------------------------------------------------------------- | ------------------------------ |
 | `#2ec4b6`   | `interactive/secondary` | tenant "Active lease" badge fill, trust-section check glyphs, M1 hero verified dot | `brand-600` `#0e96ac` |
-| `#edf2f4`   | `surface/tertiary`      | role tags, progress track                                      | `neutral-100` `#f0f4f6` (Δ 3/255) |
+| `#b91c1c`   | *(unnamed)*             | Destructive button hover + pressed                             | arbitrary `bg-[#b91c1c]` — see §13 |
 
 `#2ec4b6` is a real Figma variable with no counterpart in `globals.css` — the palette jumps from
 `brand-600` `#0e96ac` to `brand-400` `#0f7b54` (a green, despite the name). If a mint/teal
 accent is meant to be part of the system, it needs a token; that is a foundation change and so
 out of scope here.
+
+**Superseded:** an earlier revision of this table claimed `#edf2f4` (`surface/tertiary`, used by
+role tags and the progress track) had no token and was being approximated by `neutral-100`
+`#f0f4f6`. That was wrong. `#edf2f4` **is** the documented value of both `neutral-100` and
+`brand-50`; `globals.css` simply held the wrong hex. Corrected in §13 — there is no delta here
+any more.
 
 **Related inconsistency inside the design:** the verified dot on M1's hero card is `#2EC4B6`,
 while the visually identical dot on M2's listing badges is `#0F7B54`. Same element, two colours,
@@ -206,15 +212,22 @@ precedent set in §5. The **404→headline gap differs per width**: 12px at 390 
 Structurally the mobile frame nests the body copy *inside* the numeral group (gap 12), while 768
 and 1440 make it a sibling (gap 40). One DOM serves all three via `-mt-5 md:mt-0` on the body.
 
+The headline is a **two-line block at 768 and 1440 and a single line at 390** — its text box is
+237px / 278px wide at the two larger widths but the full 342px content width at 390, so
+"This page doesn't exist" breaks after "page". That is deliberate, not overflow: the box is
+`HEIGHT`-auto-resizing and reports exactly 2 × 40px. Reproduced with
+`md:max-w-[237px] lg:max-w-[278px]`. Because `ErrorScreen` is shared, the 500's
+"Something went wrong" wraps on the same rule, which keeps the two screens visually identical.
+
 The screen carries **no header and no footer** at any width — the 768 frame has explicit
 `header-dummy-spacer` / `footer-dummy-spacer` placeholders (`108:3971`, `108:3985`), confirming
 the omission is deliberate. So `not-found.tsx` sits at the app root, outside `(marketing)`, and
 renders only inside the root layout. The 390 frame's iOS status bar and home indicator are device
 chrome, not app UI, and are dropped — matching the Phase 4 precedent.
 
-`LogoMark` gained a `standalone` size (`h-8 md:h-10` mark, 28px/36px bold wordmark at every
-width) because the screen wants the wordmark at 28px even at 390, which none of `responsive`,
-`fixed` or `hero` provide. This is additive: no existing call site changes.
+The logo is the ordinary `logo-mark` component at this screen as at every other — 28px symbol,
+18px SemiBold wordmark. An earlier revision of this build added a `standalone` size that scaled
+the wordmark to 28px; that was a misreading and has been removed. See §13.
 
 ### The 500 reuses the M7 design
 
@@ -240,3 +253,185 @@ If a 500 is ever designed, the numeral scale and the copy are the only things to
 `global-error.tsx` was **not** built. It replaces the root layout, so it cannot use the app's
 fonts or global styles without duplicating them, and it only fires for a throw inside the root
 layout itself. Errors in every page and nested layout are already covered by `app/error.tsx`.
+
+## 13. Design update — re-check against the current Figma file
+
+The design was updated after Phases 1–3 shipped. New nodes are identifiable by their higher IDs
+(`264:*` and above), so the diff was taken structurally rather than by re-reading all 79 frames.
+Three things changed that affect built code. Everything else in the component library is still
+`68:*` and unmodified.
+
+### 13.1 Button gained a full interaction matrix
+
+`68:12` grew from 4 variants to 24: the four styles now each carry Default / Hover / Pressed /
+Loading / Disabled / Focus (`332:5483`–`332:5511`, `339:5669`–`339:5675`). Every variant is
+**44px tall, padding 12/24, radius 8, label 14px Semi Bold** — which is exactly the existing
+`md` size, so the size scale needed no change.
+
+| Style | Default | Hover | Pressed | Loading | Disabled | Focus |
+| ----- | ------- | ----- | ------- | ------- | -------- | ----- |
+| Primary | `#0b7a8e` | `#085f70` | `#03323d` | fill @ **0.72** | `#dde6e9` bg / `#4c5e65` text | 2px `#0b7a8e` outside |
+| Secondary | `#fff` + `#dde6e9` border | `#f7f9fa` | `#edf2f4` | **0.72** | **0.45** | 2px `#0b7a8e` outside |
+| Ghost | none | `#f7f9fa` | `#edf2f4` + `#14232a` text | **0.72** | **0.45** | 2px `#0b7a8e` outside |
+| Destructive | `#c13832` | `#b91c1c` | `#b91c1c` | **0.72** | **0.45** | 2px `#0b7a8e` outside |
+
+Every value above maps onto an existing token except `#b91c1c`. What the previous implementation
+did instead — `active:brightness-95` for all four, `hover:bg-brand-50` on ghost,
+`hover:bg-error-600/90` on destructive, and one shared `disabled:bg-neutral-200` treatment for
+every style — was approximation, and is now replaced by the table.
+
+`button.tsx` splits the old single map into `VARIANT_CLASSES` (static), `INTERACTIVE_CLASSES`
+(`hover:` + `active:`) and `DISABLED_CLASSES`. Loading omits the latter two and applies
+`opacity-72`, so the loading fade never has to out-specify a hover rule. Disabled pins its own
+`disabled:hover:` / `disabled:active:` pairs: those stack to specificity (0,3,0) and therefore
+beat the single-variant (0,2,0) hover rules regardless of source order. Verified in the built
+CSS — `hover:` emits at byte 30311, `active:` at 31798, `disabled:` at 32137, so the intended
+cascade holds on order as well as specificity.
+
+**Four things are reported rather than absorbed:**
+
+1. **`#b91c1c` has no token.** It is the only colour in the new matrix that is not in the DS
+   Color System frame. Tokens are locked, so it ships as an arbitrary value in the two
+   destructive rules — the only arbitrary colour in the component library. It wants
+   `--color-error-700`; the palette currently stops at `error-600` `#c13832` and `error-50`.
+2. **Destructive Hover and Pressed are the same colour.** Both are `#b91c1c`. Pressing a
+   destructive button therefore produces no visual change from hovering it. Implemented as
+   drawn; if a darker pressed value is intended it needs to be added to the design.
+3. **Primary Focus draws a `#0b7a8e` ring on a `#0b7a8e` fill**, flush (stroke align OUTSIDE,
+   no offset). Against the button itself the ring is invisible; it only reads against the page
+   behind it, where it looks like the button grew 2px. Implemented as drawn —
+   `focus-visible:outline-2 focus-visible:outline-brand-700`, with the previous
+   `outline-offset-2` removed — so focus stays visible against the page, but an offset ring or a
+   contrasting ring colour would be clearer.
+4. **Figma's Loading variant has no spinner** — it is the label alone at 72% opacity (the
+   Loading and Default variants are identical in width, and the node has one TEXT child). The
+   `Spinner` is **kept**, because 72% opacity is otherwise hard to tell from the 45% disabled
+   fade, and Phase 2 explicitly required a loading state. This is the one place the
+   implementation deliberately shows more than the frame.
+
+Also: the Figma set has exactly four styles, so the **`outline` variant was removed**. It had no
+Figma counterpart and existed only on the design-system showcase page, which now demonstrates
+the four real ones.
+
+Secondary's focus variant replaces its `#dde6e9` border with the teal ring rather than keeping
+both — a Figma node can only hold one stroke. The implementation keeps the 1px neutral border
+and adds the ring as a CSS `outline` (which sits outside the border box), because dropping the
+border on focus would lose the resting shape for no visual gain.
+
+### 13.2 Three Design System token values were wrong
+
+The DS Color System frame `18:2` names every swatch in a sibling TEXT layer. Pairing each swatch
+rect with its label proved three hexes in `globals.css` did not match the documented palette:
+
+| Token | Was | Now | DS label |
+| ----- | --- | --- | -------- |
+| `--color-brand-50` | `#f0f4f6` | `#edf2f4` | "Tint background" |
+| `--color-neutral-100` | `#f0f4f6` | `#edf2f4` | "Dividers" |
+| `--color-success-50` | `#e8f5ee` | `#edf8f5` | — |
+
+This is a correction to the foundation, not a change to it: the tokens now hold the values the
+design documents. It also retires the §4 delta, since `#edf2f4` was the value being approximated.
+
+Two oddities in the frame itself, reported and left alone:
+
+- **`brand-50` and `neutral-100` are the same colour** (`#edf2f4`). Two names, one value. Worth
+  collapsing to one token, or giving them distinct values, before more screens pick a side.
+- **The swatch labelled "white / Card surface" is filled `#f7f9fa`**, i.e. `neutral-50`, which is
+  also the "Page background" swatch. Cards throughout the design are really `#ffffff`, so this
+  reads as a mis-filled swatch rather than an intended value. No code change made.
+
+### 13.3 The logo was componentized, and has one size everywhere
+
+`logo-mark` is now a real component (`135:4326`) with 207 instances across the file. **Every
+instance is identical**: a 28×28 symbol container at radius 8, `gap: 8`, and a wordmark at
+**18px Semi Bold / 28px line-height**. There is no responsive type step anywhere in the file.
+
+`LogoMark` had four sizes — `responsive` (18→22px bold at md), `hero` (18→28px bold at lg),
+`standalone` (28px bold at all widths) and `fixed` (18px). Only `fixed` matched the design; the
+other three scaled a wordmark that never scales. The `size` prop is **removed** and all nine call
+sites updated. `AuthLayout`'s `logoSize` is now `"default" | "none"`, since its only remaining
+job is to suppress the logo on screens that supply their own header. The wordmark also moves off
+an arbitrary `text-[18px]` onto the `heading-sm` token, which is exactly 18px.
+
+`priority` on `next/image` is deprecated as of Next 16.0 in favour of `preload`; swapped while
+this file was open.
+
+Two findings here are reported, not implemented:
+
+- **The design draws a `#f7f9fa` rounded-8 chip behind the symbol**, with the artwork scaled to
+  32×43 and clipped to the 28×28 frame. `public/logo.png` is a differently-proportioned asset
+  (275×240) rendered at `h-7 w-auto`, so reproducing the chip would mean re-cropping the mark
+  against an asset that does not match the Figma placement. On the near-white surfaces where the
+  logo sits the chip is invisible; on the dark login aside it would be a visible change to every
+  built screen. Left as-is pending the real asset.
+- **A third tone exists**: `logo-mark-inverse` (`332:5517`) specifies a **white** wordmark, used
+  on the dark-sidebar dashboard shells (tenant, landlord, property-admin) and the email
+  templates — none of which are built yet. The existing `onDark` variant is **correct as it
+  stands**: it renders `#8ca2ac`, which is what `login-tablet` (`135:4415`) and `login-desktop`
+  (`135:4435`) actually draw, while `login-mobile` (`135:4371`) uses the default `#14232a`. The
+  white variant should be added when the dashboard shells are, not before.
+
+### 13.4 Not in scope for this pass
+
+The update also added flows that have no implementation yet and were not touched: super-admin
+invite / detail / assignment-confirmation (`264:*`), suspend-admin (`268:*`), property-admin
+no-assignments / assignment-changes / restricted-access (`269:*`), landlord rent-price approval
+(`282:*`), and tenant deposit-decision-review / approved-rent-change (`287:*`).
+
+Gates after this pass: `tsc --noEmit` clean, `eslint src` clean, `next build` green (22 routes,
+all prerendered).
+
+## 14. Workflow change: "Agent" replaced by Vemra-assigned Property Admin
+
+A later Figma revision replaced the self-registering third-party **Agent** with a Vemra-employed
+**Property Admin**. The highest node IDs in the file (`291:5031`–`291:5054`) belong to this change,
+which makes it the most recent edit. Three structural consequences:
+
+1. **`agent` is no longer a signup role.** `signup-role` (`15:8`, `108:3993`, `101:4075`) shows two
+   cards, not three. Property Admins are invited by Vemra, never self-registered.
+2. **A staff sign-in entry point was added to all three login breakpoints.** Desktop
+   (`291:5032`) renders it as a sibling card below the auth card inside a new `auth-stack` wrapper
+   (gap 20, both children 460 wide); tablet (`291:5041`) and mobile (`291:5054`) render it inside
+   the auth card's footer.
+3. **Landlord–tenant direct contact is now prohibited.** All communication routes through an
+   Assigned Property Admin or Vemra Support, which rewrites four legal clauses and the copy on the
+   hero, roles, trust, browse, login aside, and welcome frames.
+
+### 14.1 Applied
+
+| Area | Change |
+| --- | --- |
+| `constants/marketing.ts` | Hero subheading/trust note rewritten at all three widths; roles row 2 retitled to "Property Admins"; trust checks now reference the assigned admin; browse subheading de-agented; all six listing prices `/mo` → `/yr`; listing contact `AGENT` → `PROPERTY_ADMIN` ("Priya Nandan · Vemra Property Admin"); footer gains Terms/Privacy at tablet |
+| `constants/auth.ts` | `AuthRole` drops `"agent"`; `SIGNUP_ROLE_OPTIONS` down to two cards with new descriptions; `LOGIN_ASIDE` headline/description replaced and the tablet variants collapsed (Figma now draws identical copy at both widths); `ONBOARDING_COMPLETE.agent` deleted; tenant and landlord step copy updated (landlord step 3 is now "Meet your Assigned Property Admin"); new `STAFF_SIGN_IN` block; `AUTH_ROUTES.twoFactor` → `/staff/two-factor` plus `staffLogin` |
+| `constants/legal.ts` | Terms §1, §3 bullet 3, §5 and Privacy §3 rewritten verbatim from `57:719` |
+| `features/auth/staff-sign-in.tsx` | New component, one per placement: `card` (desktop, `hidden lg:flex`) and `inline` (mobile + tablet shapes, each self-gated) |
+| `app/(auth)/login/page.tsx` | Wrapper `div` carries the `auth-stack` 20px gap at `lg` only, so `AuthLayout` stays untouched |
+| `app/(auth)/two-factor` | Moved to `app/(auth)/staff/two-factor`. Figma has no public 2FA frame — every 2FA frame now lives in Property Admin Flow (`50:6`) as `property-admin-two-factor-setup-*`. The screen keeps the `(auth)` layout because that group is a layout concern, not a role boundary |
+| `features/auth/role-icons.tsx`, `login-aside.tsx`, `marketing/hero-section.tsx`, `browse/page.tsx` | Call sites updated to match the constants above |
+
+`/staff/login` is referenced but **not built** — Figma supplies the entry point only, no screen.
+This matches the existing precedent for `/for-landlords`, `/for-tenants`, `/verification`,
+`/list-your-property`, `/about` and `/help`, which all resolve to `not-found`.
+
+### 14.2 Figma inconsistencies — reported, not absorbed
+
+1. **`signup-details` (`15:63`) and `signup-verification` (`15:118`) both still read "Step 1 of 3".**
+   They are steps 2 and 3. `SignupStepHeader` keeps rendering 1/2/3; Figma's stepper text was not
+   updated when the frames were revised.
+2. **The roles-section middle card's subtitle was only updated at desktop.** Desktop reads "The
+   Property Admin", tablet still reads "On-Site Manager" and mobile "The On-Site Manager", even
+   though the *title* was renamed to "Property Admins" at all three widths. Implemented with the
+   desktop value at every width.
+3. **The tablet "Invited" pill uses `#5f7782`, which is not a design-system token.** Rendered with
+   the nearest token, `neutral-700` (`#4c5e65`), rather than introducing an arbitrary hex.
+4. **The desktop staff button instance is 46px tall**, while the authoritative Button component set
+   is 44px. Used the standard 44px secondary Button (`size="md"`).
+5. **Terms §1 has a lowercase "landlords" mid-sentence** in Figma. Implemented as "Landlords".
+6. **The mobile staff button is a plain frame, not a Button instance** (135×28, 12px semibold
+   `brand-700` on `neutral-50`). Implemented as a locally styled `Link` — the Button primitive has
+   no 28px size and forcing one would need five `!` overrides.
+7. **The hero says "₦1,450 / year" while the browse cards say "₦1,450 /yr"** for the same unit.
+   Followed each frame literally.
+
+Gates after this pass: `tsc --noEmit` clean, `eslint src` clean, `next build` green — 21 routes
+(one fewer: `welcome/agent` is gone, `/two-factor` became `/staff/two-factor`), all prerendered.

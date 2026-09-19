@@ -1,4 +1,4 @@
-export type AuthRole = "tenant" | "landlord" | "agent";
+export type AuthRole = "tenant" | "landlord";
 
 export interface AuthRoleOption {
   value: AuthRole;
@@ -8,7 +8,6 @@ export interface AuthRoleOption {
 export const AUTH_ROLES: readonly AuthRoleOption[] = [
   { value: "tenant", label: "Tenant" },
   { value: "landlord", label: "Landlord" },
-  { value: "agent", label: "Agent" },
 ];
 
 export const AUTH_ROUTES = {
@@ -19,7 +18,8 @@ export const AUTH_ROUTES = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   verifyEmail: "/verify-email",
-  twoFactor: "/two-factor",
+  staffLogin: "/staff/login",
+  twoFactor: "/staff/two-factor",
   verificationPending: "/verification/pending",
   verificationRejected: "/verification/rejected",
   terms: "/terms",
@@ -51,35 +51,25 @@ export const SIGNUP_ROLE_OPTIONS: readonly SignupRoleOption[] = [
     value: "landlord",
     title: "Landlord",
     description:
-      "List properties, assign agents, and withdraw rent as it clears.",
+      "List properties, receive an Assigned Property Admin from Vemra when needed, and withdraw rent as it clears.",
     tag: "Requires property ownership check",
   },
   {
     value: "tenant",
     title: "Tenant",
-    description:
-      "Browse verified homes, message landlords and agents, and manage your rent.",
+    description: "Browse verified homes, contact Vemra, and manage your rent.",
     tag: "Requires ID for applications",
-  },
-  {
-    value: "agent",
-    title: "Agent",
-    description:
-      "Manage properties assigned to you by a landlord, and handle tenant contact.",
-    tag: "Requires landlord invitation",
   },
 ];
 
 export const SIGNUP_ROLE_CTA: Record<AuthRole, string> = {
   landlord: "Continue as a landlord",
   tenant: "Continue as a tenant",
-  agent: "Continue as an agent",
 };
 
 export const SIGNUP_ROLE_PILL: Record<AuthRole, string> = {
   landlord: "Signing up as a Landlord",
   tenant: "Signing up as a Tenant",
-  agent: "Signing up as an Agent",
 };
 
 export const SIGNUP_TERMS = {
@@ -154,6 +144,16 @@ export const SIGNUP_VERIFICATION_STEPS: readonly VerificationStep[] = [
   },
 ];
 
+export const STAFF_SIGN_IN = {
+  title: "Vemra staff sign-in",
+  description:
+    "Invited Property Admin accounts should sign in here instead of the public login form.",
+  descriptionCompact: "For invited Property Admin accounts.",
+  prompt: "Invited Property Admin?",
+  pillLabel: "Invited",
+  actionLabel: "Vemra staff sign-in",
+} as const;
+
 export const TWO_FACTOR_SCREEN = {
   title: "Set up two-factor authentication",
   description:
@@ -218,12 +218,9 @@ export interface AuthStat {
 }
 
 export const LOGIN_ASIDE = {
-  headline: "One record, shared by everyone the lease affects.",
-  headlineTablet: "One record, shared by everyone.",
+  headline: "Low fees. Verified rentals. One transparent record.",
   description:
-    "Landlords, agents, and tenants see the same facts about rent, occupancy, and who's responsible for what.",
-  descriptionTablet:
-    "Landlords, agents, and tenants see the same facts about rent, occupancy, and responsibility.",
+    "Vemra keeps every property, payment, and responsibility clear for landlords, tenants, and Assigned Property Admins.",
   stats: [
     { value: "2,400+", label: "Verified landlords" },
     { value: "18,900+", label: "Homes listed" },
@@ -341,16 +338,17 @@ export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
     metaTitle: "Tenant account ready · Vemra",
     title: "You're all set, Aisha",
     description:
-      "Your tenant account is ready. You can browse verified homes and message landlords or agents directly.",
+      "Your tenant account is ready. You can browse verified homes and contact your assigned Property Admin or Vemra Support.",
     stepsLabel: "What to do next",
     steps: [
       {
         title: "Browse verified homes",
-        detail: "Every listing shows a verified landlord or agent",
+        detail:
+          "Every listing shows a verified landlord and its Vemra-assigned Property Admin",
       },
       {
         title: "Apply when you find one you like",
-        detail: "Usually reviewed within 2-3 days",
+        detail: "Usually reviewed within 1–2 days",
       },
       {
         title: "Manage rent from your dashboard",
@@ -376,34 +374,11 @@ export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
         detail: "So you can withdraw rent once it clears",
       },
       {
-        title: "Invite an agent (optional)",
-        detail: "Assign someone to oversee day-to-day",
+        title: "Meet your Assigned Property Admin",
+        detail: "Vemra assigns a Property Admin when needed",
       },
     ],
     ctaLabel: "List your first property",
     ctaHref: "/list-your-property",
-  },
-  agent: {
-    metaTitle: "Agent account ready · Vemra",
-    title: "You're verified, Priya",
-    description:
-      "Your agent account is ready. Once a landlord assigns you to a property, it'll show up right here.",
-    stepsLabel: "What to do next",
-    steps: [
-      {
-        title: "Wait for a property invitation",
-        detail: "Landlords assign agents from their dashboard",
-      },
-      {
-        title: "Manage tenant contact",
-        detail: "Messages, viewings, and maintenance in one inbox",
-      },
-      {
-        title: "Track rent status per unit",
-        detail: "See what's due and what's cleared",
-      },
-    ],
-    ctaLabel: "Go to your dashboard",
-    ctaHref: "/",
   },
 };

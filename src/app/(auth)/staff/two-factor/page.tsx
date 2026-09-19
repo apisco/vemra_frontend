@@ -10,10 +10,10 @@ export const metadata: Metadata = {
   description: TWO_FACTOR_SCREEN.description,
 };
 
-export default function TwoFactorPage() {
+export default function StaffTwoFactorPage() {
   return (
     <AuthLayout width="otp" gap="xs" justify="desktop" logoSize="none">
-      <LogoMark size="fixed" className="self-center" />
+      <LogoMark className="self-center" />
       <TwoFactorForm />
     </AuthLayout>
   );

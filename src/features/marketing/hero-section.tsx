@@ -28,7 +28,11 @@ export function HeroSection() {
         </h1>
 
         <p className="order-4 text-body-md leading-[22px] text-neutral-800 md:order-3 md:font-display md:text-heading-sm md:leading-[28px] md:font-semibold lg:col-start-1 lg:row-start-3">
-          {HERO.subheading}
+          <span className="md:hidden">{HERO.subheadingMobile}</span>
+          <span className="hidden md:inline lg:hidden">
+            {HERO.subheadingTablet}
+          </span>
+          <span className="hidden lg:inline">{HERO.subheading}</span>
         </p>
 
         <div className="order-5 flex flex-col gap-3 md:order-4 md:flex-row md:gap-4 lg:col-start-1 lg:row-start-4">
@@ -52,7 +56,7 @@ export function HeroSection() {
 
         <p className="order-6 flex items-start gap-2 text-body-sm text-neutral-700 lg:col-start-1 lg:row-start-5">
           <ShieldIcon className="mt-0.5 size-4 shrink-0 text-brand-700" />
-          <span className="md:hidden">{HERO.trustNote}</span>
+          <span className="md:hidden">{HERO.trustNoteMobile}</span>
           <span className="hidden md:inline lg:hidden">
             {HERO.trustNoteTablet}
           </span>
@@ -100,17 +104,17 @@ function HeroListingCard({ className }: { className?: string }) {
         <hr className="border-neutral-200 md:hidden lg:block" />
         <div className="flex items-center gap-3 md:hidden lg:flex">
           <Avatar
-            name={HERO_LISTING.agent.name}
-            initials={HERO_LISTING.agent.initials}
+            name={HERO_LISTING.propertyAdmin.name}
+            initials={HERO_LISTING.propertyAdmin.initials}
             size="sm"
             className="size-7! rounded-xl text-label-sm lg:size-9!"
           />
           <div className="flex flex-col">
             <p className="text-label-sm text-neutral-900 lg:text-label-md lg:leading-[20px]">
-              {HERO_LISTING.agent.name}
+              {HERO_LISTING.propertyAdmin.name}
             </p>
             <p className="hidden text-caption text-neutral-700 lg:block">
-              {HERO_LISTING.agent.note}
+              {HERO_LISTING.propertyAdmin.note}
             </p>
           </div>
         </div>

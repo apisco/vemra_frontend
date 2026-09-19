@@ -17,7 +17,7 @@ export function SignupStepHeader({
 }: SignupStepHeaderProps) {
   return (
     <div className="flex flex-col items-center gap-5 md:gap-6">
-      <LogoMark size="fixed" />
+      <LogoMark />
       <AuthProgress current={step} total={totalSteps} />
       <AuthHeader
         variant="display"

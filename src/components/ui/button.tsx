@@ -3,12 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { Spinner } from "@/components/feedback/spinner";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "outline"
-  | "ghost"
-  | "destructive";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 
 export type ButtonSize = "sm" | "md" | "lg";
 
@@ -21,14 +16,32 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
 }
 
+const BASE_CLASSES =
+  "inline-flex items-center justify-center gap-2 rounded-md text-label-md font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-brand-700 disabled:cursor-not-allowed";
+
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-brand-700 text-white hover:bg-brand-800",
+  primary: "bg-brand-700 text-white",
+  secondary: "border border-neutral-200 bg-white text-neutral-900",
+  ghost: "bg-transparent text-brand-700",
+  destructive: "bg-error-600 text-white",
+};
+
+const INTERACTIVE_CLASSES: Record<ButtonVariant, string> = {
+  primary: "hover:bg-brand-800 active:bg-brand-950",
+  secondary: "hover:bg-neutral-50 active:bg-neutral-100",
+  ghost: "hover:bg-neutral-50 active:bg-neutral-100 active:text-neutral-900",
+  destructive: "hover:bg-[#b91c1c] active:bg-[#b91c1c]",
+};
+
+const DISABLED_CLASSES: Record<ButtonVariant, string> = {
+  primary:
+    "disabled:bg-neutral-200 disabled:text-neutral-700 disabled:hover:bg-neutral-200 disabled:active:bg-neutral-200",
   secondary:
-    "border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50",
-  outline:
-    "border border-brand-700 bg-transparent text-brand-700 hover:bg-brand-50",
-  ghost: "bg-transparent text-brand-700 hover:bg-brand-50",
-  destructive: "bg-error-600 text-white hover:bg-error-600/90",
+    "disabled:opacity-45 disabled:hover:bg-white disabled:active:bg-white",
+  ghost:
+    "disabled:opacity-45 disabled:hover:bg-transparent disabled:active:bg-transparent disabled:active:text-brand-700",
+  destructive:
+    "disabled:opacity-45 disabled:hover:bg-error-600 disabled:active:bg-error-600",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -47,6 +60,7 @@ export interface ButtonClassesOptions {
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -54,14 +68,15 @@ export function buttonClasses({
   variant = "primary",
   size = "md",
   fullWidth = false,
+  isLoading = false,
   className,
 }: ButtonClassesOptions = {}): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-md text-label-md font-semibold whitespace-nowrap transition-colors",
-    "active:brightness-95",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700",
-    "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-200 disabled:text-neutral-700 disabled:brightness-100 disabled:hover:bg-neutral-200",
+    BASE_CLASSES,
     VARIANT_CLASSES[variant],
+    isLoading
+      ? "opacity-72"
+      : cn(INTERACTIVE_CLASSES[variant], DISABLED_CLASSES[variant]),
     SIZE_CLASSES[size],
     fullWidth && "w-full",
     className,
@@ -81,14 +96,18 @@ export function Button({
   type = "button",
   ...props
 }: ButtonProps) {
-  const isInactive = disabled || isLoading;
-
   return (
     <button
       type={type}
-      disabled={isInactive}
+      disabled={disabled || isLoading}
       aria-busy={isLoading || undefined}
-      className={buttonClasses({ variant, size, fullWidth, className })}
+      className={buttonClasses({
+        variant,
+        size,
+        fullWidth,
+        isLoading,
+        className,
+      })}
       {...props}
     >
       {isLoading ? (

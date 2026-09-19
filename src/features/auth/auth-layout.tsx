@@ -19,7 +19,7 @@ export type AuthLayoutGap = "xs" | "sm" | "md" | "lg" | "flat";
 
 export type AuthLayoutJustify = "top" | "center" | "desktop";
 
-export type AuthLayoutLogo = "fixed" | "hero" | "none";
+export type AuthLayoutLogo = "default" | "none";
 
 const WIDTH_CLASSES: Record<AuthLayoutWidth, string> = {
   xs: "md:max-w-[440px] lg:max-w-[400px]",
@@ -57,14 +57,13 @@ export function AuthLayout({
   width = "xs",
   gap = "md",
   justify = "top",
-  logoSize = "fixed",
+  logoSize = "default",
   aside,
   children,
 }: AuthLayoutProps) {
   const logo =
     logoSize === "none" ? null : (
       <LogoMark
-        size={logoSize}
         className={cn("self-start", aside ? "md:hidden" : undefined)}
       />
     );

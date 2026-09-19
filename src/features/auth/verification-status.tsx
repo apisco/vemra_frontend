@@ -37,7 +37,7 @@ export function VerificationStatus({
 }: VerificationStatusProps) {
   return (
     <AuthLayout width="xl" gap="xs" justify="desktop" logoSize="none">
-      <LogoMark size="fixed" className="self-center" />
+      <LogoMark className="self-center" />
       <div className="flex flex-col items-center gap-5 md:gap-6">
         <StatusIcon size="md" tone={tone}>
           {icon}

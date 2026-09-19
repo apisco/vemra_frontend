@@ -50,7 +50,7 @@ export const TERMS_DOCUMENT: LegalDocumentContent = {
   sections: [
     {
       heading: "1. Accounts and verification",
-      body: "To use certain features of the Vemra platform, you must create an account and complete our background checks. Landlords, agents, and tenants must provide accurate, current, and complete information during registration and keep account details up to date at all times.",
+      body: "To use certain features of the Vemra platform, you must create an account and complete our background checks. Landlords, tenants, and authorized Vemra admins must provide accurate, current, and complete information during registration and keep account details up to date at all times.",
     },
     {
       heading: "2. Rent payments",
@@ -62,7 +62,7 @@ export const TERMS_DOCUMENT: LegalDocumentContent = {
       bullets: [
         "Listing fraudulent properties or misrepresenting occupancy details.",
         "Violating local zoning laws, lease regulations, or discrimination policies.",
-        "Sharing external contact details to bypass standard Vemra fees.",
+        "Direct landlord–tenant contact and sharing external contact details are prohibited. Communication must use an Assigned Property Admin or Vemra Support.",
       ],
     },
     {
@@ -71,7 +71,7 @@ export const TERMS_DOCUMENT: LegalDocumentContent = {
     },
     {
       heading: "5. Limitation of liability",
-      body: "Vemra Technologies is not liable for structural damage, uncollected rent, tenant conduct, or any unexpected utility interruptions. Our service acts as a matchmaker and administrative manager only.",
+      body: "Vemra operates the rental application, verification, communication, and administrative workflow between landlords and tenants.",
     },
   ],
 };
@@ -96,7 +96,7 @@ export const PRIVACY_DOCUMENT: LegalDocumentContent = {
     },
     {
       heading: "3. Data sharing and security",
-      body: "We never sell your personal information. Relevant rental history is shared with prospective landlords only after you initiate an application. All payment details are securely processed via industry-standard payment providers.",
+      body: "Vemra reviews rental history internally when processing an application. Landlords receive only the approved tenancy outcome and necessary operational summaries; applicant profiles are not shared for direct review.",
     },
   ],
 };

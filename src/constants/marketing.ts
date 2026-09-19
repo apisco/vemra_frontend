@@ -30,7 +30,6 @@ export interface FooterLink {
 export const FOOTER_LINKS: readonly FooterLink[] = [
   { href: "/for-landlords", label: "For landlords", showOnTablet: true },
   { href: "/for-tenants", label: "For tenants", showOnTablet: true },
-  { href: "/for-agents", label: "For agents", showOnTablet: true },
   { href: "/about", label: "About", showOnTablet: false },
   { href: "/terms", label: "Terms of Service", showOnTablet: true },
   { href: "/privacy", label: "Privacy Policy", showOnTablet: true },
@@ -45,12 +44,18 @@ export const HERO = {
   overline: "Rent management, out in the open",
   heading: "Know who holds your keys before you hand over rent.",
   subheading:
-    "Vemra connects landlords, the agents they assign, and the tenants who live there — with one shared record of who's paid, who's due, and who's responsible.",
+    "Vemra serves as your digital caretaker connecting landlords and tenants.",
+  subheadingTablet:
+    "Vemra connects landlords and tenants who live there — with one shared record of who's paid, who's due, and who's responsible.",
+  subheadingMobile:
+    "Vemra keeps landlord and tenant communication separate while giving both sides the same verified record.",
   primaryCta: { href: "/browse", label: "Find a home to rent" },
   secondaryCta: { href: "/list-your-property", label: "List your property" },
-  trustNote: "Verified identity before any payment.",
+  trustNote:
+    "Every listed landlord is identity-verified before a tenant ever pays.",
   trustNoteTablet:
-    "Every listed landlord and agent is identity-verified before a tenant ever pays.",
+    "Every listed landlord is identity-verified, and every Property Admin is created and assigned by Vemra.",
+  trustNoteMobile: "Verified identity before any payment.",
 } as const;
 
 export interface RoleRow {
@@ -68,33 +73,33 @@ export const ROLE_ROWS: readonly RoleRow[] = [
     title: "Landlords",
     subtitle: "The Property Owner",
     description:
-      "List a property, assign an agent to oversee it day-to-day, and see which units are occupied, which are vacant, and how much is ready to withdraw as each rent comes due.",
+      "List a property, have Vemra assign a Property Admin when needed, and track occupancy, vacancy, and cleared rent.",
     descriptionTablet:
-      "List a property, assign an agent to oversee it day-to-day, and see which units are occupied, which are vacant, and how much is ready to withdraw.",
+      "List a property, have a Vemra admin assigned to manage it, and see which units are occupied, which are vacant, and how much is ready to withdraw.",
     descriptionMobile:
-      "List a property, assign an agent, and track occupants, vacancy, and withdrawals.",
-    tags: ["Occupancy overview", "Withdrawals", "Agent assignment"],
+      "List a property, receive an assigned Vemra admin, and track occupants, vacancy, and withdrawals.",
+    tags: ["Occupancy overview", "Withdrawals", "Admin assignment"],
     tagsMobile: ["Occupancy", "Withdrawals"],
   },
   {
-    title: "Agents",
-    subtitle: "The On-Site Manager",
+    title: "Property Admins",
+    subtitle: "The Property Admin",
     description:
       "Manage the properties assigned to you, handle tenant questions, and keep the landlord's dashboard current without needing to be copied on every message.",
     descriptionTablet:
       "Manage properties assigned to you, handle tenant questions, and keep the landlord's dashboard current.",
     descriptionMobile:
       "Manage assigned listings and keep the landlord's dashboard current.",
-    tags: ["Assigned listings", "Tenant contact"],
+    tags: ["Assigned properties", "Tenant contact"],
     tagsMobile: ["Assigned listings"],
   },
   {
     title: "Tenants",
     subtitle: "The Resident",
     description:
-      "See exactly who your landlord and agent are before you pay a deposit. Track when rent is due, and set up a payment plan if you need to split the next one.",
+      "See exactly who your landlord is before you pay a deposit. Track when rent is due, and set up a payment plan if you need to split the next one.",
     descriptionTablet:
-      "See exactly who your landlord and agent are before you pay. Track when rent is due and set up payment plans.",
+      "See exactly who your landlord and property admin are before you pay. Track when rent is due and set up payment plans.",
     descriptionMobile:
       "Confirm landlord identity before you pay a deposit. Set up payment plans.",
     tags: ["Rent due date", "Payment plans", "Landlord lookup"],
@@ -103,9 +108,9 @@ export const ROLE_ROWS: readonly RoleRow[] = [
 ];
 
 export const ROLES_SECTION = {
-  heading: "Three people, one record",
+  heading: "Two sides, one record",
   subheading:
-    "A rental usually breaks down in the gaps between landlord, agent, and tenant. Vemra gives each of them the same facts.",
+    "Vemra keeps landlord and tenant communication separate while giving both sides the same verified record.",
   subheadingMobile:
     "A rental usually breaks down in the gaps. Vemra gives everyone the same facts.",
 } as const;
@@ -158,10 +163,10 @@ export const DASHBOARD_SECTION = {
 
 export const TRUST_SECTION = {
   heading: "See who you're paying, before you pay them",
-  body: "With Vemra, you're never sending money into a black box. Landlords and their agents are fully vetted using verified public deeds and government registries. Tenants enjoy historical transparency that prevents fraud and double-listing.",
+  body: "With Vemra, you're never sending money into a black box. Landlords are fully vetted using verified public deeds and government registries. Tenants enjoy historical transparency that prevents fraud and double-listing.",
   checks: [
     "Landlord identity confirmed with government ID and property title",
-    "Assigned agent linked publicly to the property they manage",
+    "Assigned admin linked to the property they manage",
     "Rent history visible to the tenant before any payment is made",
   ],
 } as const;
@@ -172,25 +177,24 @@ export const CTA_BAND = {
 } as const;
 
 export const HERO_LISTING = {
-  price: "₦1,450 / month",
+  price: "₦1,450 / year",
   meta: "2-bed apartment · Maple & 9th, Unit 4B",
   badge: "Landlord Verified",
   imageSrc: "/marketing/hero-maple-9th.png",
   imageAlt:
     "Living room of a two-bedroom apartment with teal sofas and a city view",
-  agent: {
+  propertyAdmin: {
     name: "Priya Nandan",
     initials: "PN",
-    note: "Managing agent · responds in ~2 hrs",
+    note: "Property Admin · responds in ~2 hrs",
   },
 } as const;
 
 export const BROWSE_PAGE = {
   heading: "Find a home, and know who owns it.",
   subheading:
-    "Every listing below comes from a verified landlord or agent — check who they are before you reach out.",
-  subheadingMobile:
-    "Every listing below comes from a verified landlord or agent.",
+    "Every listing comes from a verified landlord. Review the verified owner before applying through Vemra.",
+  subheadingMobile: "Every listing below comes from a verified landlord.",
   resultCount: "24 homes available",
   loadMore: "Load more homes",
 } as const;
@@ -215,12 +219,15 @@ export const BROWSE_FILTERS: readonly BrowseFilter[] = [
   },
 ];
 
-const AGENT = { name: "Priya Nandan", role: "Agent" } as const;
+const PROPERTY_ADMIN = {
+  name: "Priya Nandan",
+  role: "Vemra Property Admin",
+} as const;
 
 export const PROPERTIES: readonly Property[] = [
   {
     id: "maple-9th-4b",
-    price: "₦1,450 /mo",
+    price: "₦1,450 /yr",
     location: "Maple & 9th, Unit 4B",
     propertyType: "2-bed apartment",
     highlight: "Verified Landlord",
@@ -228,22 +235,22 @@ export const PROPERTIES: readonly Property[] = [
     imageAlt: "Bright living room with teal sofas, plants and a city skyline view",
     isVerified: true,
     isAvailableNow: true,
-    contact: AGENT,
+    contact: PROPERTY_ADMIN,
   },
   {
     id: "oak-boulevard-214",
-    price: "₦1,890 /mo",
+    price: "₦1,890 /yr",
     location: "Oak Boulevard 214",
     propertyType: "3-bed family townhouse",
     imageSrc: "/marketing/listing-oak-boulevard.png",
     imageAlt: "Townhouse frontage with a paved path and low planting",
     isVerified: true,
     isAvailableNow: true,
-    contact: AGENT,
+    contact: PROPERTY_ADMIN,
   },
   {
     id: "pinecrest-s-1a",
-    price: "₦1,200 /mo",
+    price: "₦1,200 /yr",
     location: "Pinecrest S, Unit 1A",
     propertyType: "1-bed cozy loft",
     highlight: "Close to transit",
@@ -251,11 +258,11 @@ export const PROPERTIES: readonly Property[] = [
     imageAlt: "Loft interior with exposed beams and a large window",
     isVerified: true,
     isAvailableNow: false,
-    contact: AGENT,
+    contact: PROPERTY_ADMIN,
   },
   {
     id: "cedar-heights-12",
-    price: "₦2,100 /mo",
+    price: "₦2,100 /yr",
     location: "Cedar Heights Road 12",
     propertyType: "4-bed duplex",
     highlight: "Large backyard",
@@ -263,11 +270,11 @@ export const PROPERTIES: readonly Property[] = [
     imageAlt: "Duplex exterior seen from the garden lawn",
     isVerified: true,
     isAvailableNow: true,
-    contact: AGENT,
+    contact: PROPERTY_ADMIN,
   },
   {
     id: "riverview-3g",
-    price: "₦1,650 /mo",
+    price: "₦1,650 /yr",
     location: "Riverview Ave, Apt 3G",
     propertyType: "2-bed luxury high-rise",
     highlight: "Skyline views",
@@ -275,11 +282,11 @@ export const PROPERTIES: readonly Property[] = [
     imageAlt: "High-rise apartment lounge with floor-to-ceiling windows",
     isVerified: true,
     isAvailableNow: false,
-    contact: AGENT,
+    contact: PROPERTY_ADMIN,
   },
   {
     id: "elm-way-10",
-    price: "₦1,100 /mo",
+    price: "₦1,100 /yr",
     location: "Elm Way, Unit 10",
     propertyType: "Studio apartment",
     highlight: "Modern kitchen",
@@ -287,6 +294,6 @@ export const PROPERTIES: readonly Property[] = [
     imageAlt: "Studio apartment with a modern kitchen counter and stools",
     isVerified: true,
     isAvailableNow: true,
-    contact: AGENT,
+    contact: PROPERTY_ADMIN,
   },
 ];

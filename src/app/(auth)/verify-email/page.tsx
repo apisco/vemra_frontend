@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function VerifyEmailPage() {
   return (
-    <AuthLayout width="sm" justify="center" logoSize="hero">
+    <AuthLayout width="sm" justify="center">
       <Suspense fallback={<VerifyEmailCard status="verified" />}>
         <VerifyEmailPanel />
       </Suspense>

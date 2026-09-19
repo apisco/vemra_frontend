@@ -7,6 +7,7 @@ import { AuthHeader } from "@/features/auth/auth-header";
 import { AuthLayout } from "@/features/auth/auth-layout";
 import { LoginAside } from "@/features/auth/login-aside";
 import { LoginForm } from "@/features/auth/login-form";
+import { StaffSignIn } from "@/features/auth/staff-sign-in";
 
 export const metadata: Metadata = {
   title: "Log in · Vemra",
@@ -16,18 +17,22 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthLayout aside={<LoginAside />}>
-      <AuthCard>
-        <AuthHeader
-          title={LOGIN_SCREEN.title}
-          description={LOGIN_SCREEN.description}
-        />
-        <LoginForm />
-        <AuthFooter
-          prompt={LOGIN_SCREEN.footerPrompt}
-          href={AUTH_ROUTES.signup}
-          label={LOGIN_SCREEN.footerLabel}
-        />
-      </AuthCard>
+      <div className="flex w-full flex-col lg:gap-5">
+        <AuthCard>
+          <AuthHeader
+            title={LOGIN_SCREEN.title}
+            description={LOGIN_SCREEN.description}
+          />
+          <LoginForm />
+          <AuthFooter
+            prompt={LOGIN_SCREEN.footerPrompt}
+            href={AUTH_ROUTES.signup}
+            label={LOGIN_SCREEN.footerLabel}
+          />
+          <StaffSignIn placement="inline" />
+        </AuthCard>
+        <StaffSignIn placement="card" />
+      </div>
     </AuthLayout>
   );
 }

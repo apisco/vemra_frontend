@@ -6,7 +6,7 @@ Every product screen is designed at three widths — **1440** (desktop), **768**
 Node IDs below are listed as `width=nodeId`. Where a breakpoint is missing, the design does not
 provide that frame and the layout must be derived from the neighbouring widths.
 
-**Totals:** 79 product screens · 13 email templates · 7 cross-cutting pattern sheets.
+**Totals:** 81 product screens · 13 email templates · 7 cross-cutting pattern sheets.
 
 ---
 
@@ -45,10 +45,14 @@ Section `Onboarding Flow [50:3]`. No app shell; centred card on the page backgro
 | AU10 | Verification rejected | 15:755   | 108:4272 | 101:4384 |
 | AU11 | Terms & privacy       | 135:4225 | 109:3677 | 102:3502 |
 
-## 3. Tenant — 26 screens
+## 3. Tenant — 28 screens
 
 Section `🏠 Tenant Flow [50:4]`. Dashboard shell with the tenant sidebar (`82:162`), **except TN1**,
 which has no shell and is built on `AuthLayout` in phase 4.
+
+TN27 and TN28 were added to Figma by the workflow change (landlord decisions now route through an
+assigned Property Admin) and were absent from the original 26-screen count. The section holds 86
+frames in total; the surplus over 28 × 3 is component instances and annotation frames.
 
 | #    | Screen                      | 1440    | 768      | 390      |
 | ---- | --------------------------- | ------- | -------- | -------- |
@@ -78,6 +82,8 @@ which has no shell and is built on `AuthLayout` in phase 4.
 | TN24 | Account settings            | 56:1256 | 109:5055 | 101:5940 |
 | TN25 | Payment failed              | 59:1119 | 109:5336 | 101:6360 |
 | TN26 | Support                     | 15:500  | 109:4077 | 101:4876 |
+| TN27 | Deposit decision review     | 287:4850 | 287:5033 | 287:5140 |
+| TN28 | Approved rent change        | 287:5255 | 287:5404 | 287:5483 |
 
 ## 4. Landlord — 22 screens
 
@@ -212,7 +218,7 @@ Ordered so that each phase unblocks the next and nothing is built twice.
 | 0     | Design tokens                        | Done. Locked.                                                                                         |
 | 1     | Component library                    | Current phase. Every later phase composes these.                                                      |
 | 2     | `AuthLayout` + AU1–AU11 + TN1/LL1/AG1 | Simplest shell, no sidebar. Establishes forms, validation and the role routing that gates every dashboard. The three onboarding-complete screens share this shell, not `DashboardLayout`. |
-| 3     | `DashboardLayout` + tenant TN1–TN26  | Largest role (26 screens) and the most complete in the design, so it sets the patterns — tables, stat rows, empty states, skeletons — that the other three roles reuse. |
+| 3     | `DashboardLayout` + tenant TN1–TN28  | Largest role (28 screens) and the most complete in the design, so it sets the patterns — tables, stat rows, empty states, skeletons — that the other three roles reuse. |
 | 4     | Landlord LL1–LL22                    | Same shell, swapped sidebar. Adds the listing-creation flow.                                          |
 | 5     | Agent AG1–AG6                        | Same shell. Smallest role.                                                                            |
 | 6     | Admin & super admin AD1–AD7          | Same shell. Heaviest tables, so it benefits from the table work landing first.                         |

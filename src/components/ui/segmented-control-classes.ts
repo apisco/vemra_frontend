@@ -29,19 +29,23 @@ export function segmentedTrackClasses({
 export function segmentedSegmentClasses({
   size = "md",
   isSelected = false,
+  isDisabled = false,
   className,
 }: {
   size?: SegmentedControlSize;
   isSelected?: boolean;
+  isDisabled?: boolean;
   className?: string;
 } = {}) {
   return cn(
-    "min-w-0 flex-1 cursor-pointer rounded-md text-center font-semibold transition-colors",
+    "min-w-0 flex-1 rounded-md text-center font-semibold transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700",
     SEGMENT_SIZE_CLASSES[size],
-    isSelected
-      ? "bg-white text-neutral-900"
-      : "text-neutral-700 hover:text-neutral-900",
+    isDisabled
+      ? "cursor-not-allowed text-neutral-400"
+      : isSelected
+        ? "cursor-pointer bg-white text-neutral-900"
+        : "cursor-pointer text-neutral-700 hover:text-neutral-900",
     className,
   );
 }

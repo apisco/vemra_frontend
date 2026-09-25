@@ -5,20 +5,28 @@ import { cn } from "@/lib/cn";
 
 export type TrendDirection = "up" | "down" | "flat";
 
+export type StatCardVariant = "elevated" | "outlined";
+
 export interface StatCardTrend {
   direction: TrendDirection;
   label: string;
 }
 
 export interface StatCardProps {
-  title: string;
+  title: ReactNode;
   value: ReactNode;
   icon?: ReactNode;
-  subtitle?: string;
+  subtitle?: ReactNode;
   trend?: StatCardTrend;
+  variant?: StatCardVariant;
   isLoading?: boolean;
   className?: string;
 }
+
+const VARIANT_CLASSES: Record<StatCardVariant, string> = {
+  elevated: "px-6 py-5 shadow-elevation-1",
+  outlined: "border border-neutral-200 px-4 py-4 md:px-5 md:py-5",
+};
 
 const TREND_CLASSES: Record<TrendDirection, string> = {
   up: "text-success-600",
@@ -38,6 +46,7 @@ export function StatCard({
   icon,
   subtitle,
   trend,
+  variant = "elevated",
   isLoading = false,
   className,
 }: StatCardProps) {
@@ -45,7 +54,8 @@ export function StatCard({
     <article
       aria-busy={isLoading || undefined}
       className={cn(
-        "flex w-full flex-col gap-2 rounded-lg bg-white px-6 py-5 shadow-elevation-1",
+        "flex w-full flex-col gap-2 rounded-lg bg-white",
+        VARIANT_CLASSES[variant],
         className,
       )}
     >

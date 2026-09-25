@@ -1,0 +1,73 @@
+import { TENANT_ROUTES } from "@/constants/tenant";
+import type { ResponsiveCopy } from "@/components/ui/responsive-text";
+
+export interface CheckoutMetaRow {
+  label: string;
+  value: string;
+}
+
+export interface CheckoutSummary {
+  label: string;
+  amount: string;
+  badge?: string;
+  rows: readonly CheckoutMetaRow[];
+  note: string;
+}
+
+export const CHECKOUT_SUMMARY: CheckoutSummary = {
+  label: "Final installment due",
+  amount: "₦550.00",
+  badge: "Installment 3/3",
+  rows: [
+    { label: "Unit", value: "4B, Maple & 9th" },
+    { label: "Landlord", value: "Daniel Osei" },
+    { label: "Due date", value: "Sep 5, 2026" },
+    { label: "Plan progress", value: "3 of 3 installments" },
+  ],
+  note: "Payments are held until the due date, then released to your landlord's balance.",
+};
+
+export type PaymentMethod = "card" | "bank";
+
+export const PAY_RENT = {
+  title: {
+    base: "Complete payment",
+    md: "Complete payment method",
+    lg: "Complete payment",
+  } satisfies ResponsiveCopy,
+  description: {
+    base: "Paying the final installment on your September plan.",
+    md: "Secure rent processing held in Escrow.",
+    lg: "Paying the final installment on your September plan.",
+  } satisfies ResponsiveCopy,
+  methodLabel: "Payment method",
+  methods: [
+    { value: "card", label: "Card" },
+    { value: "bank", label: "Bank transfer" },
+  ] as const,
+  fields: {
+    cardNumber: { label: "Card number", placeholder: "4242 4242 4242 4242" },
+    expiry: { label: "Expiry (MM/YY)", placeholder: "09/28" },
+    cvc: { label: "CVC", placeholder: "123" },
+    cardName: { label: "Name on card", placeholder: "Aisha Bello" },
+  },
+  submitLabel: "Pay ₦550.00",
+  footnote: {
+    base: "Secure encrypted checkout.",
+    md: "Payments are encrypted and processed securely.",
+  } satisfies ResponsiveCopy,
+  failedHref: `${TENANT_ROUTES.paymentPlan}/failed`,
+} as const;
+
+export const PAYMENT_FAILED = {
+  title: "Payment Failed",
+  description: {
+    base: "Your card was declined. Please check details or use a different method.",
+    md: "Your card was declined. Please check your card details or try a different payment method.",
+  } satisfies ResponsiveCopy,
+  diagnosisLabel: "System diagnosis",
+  diagnosisCode: "Error code: CARD_DECLINED",
+  retryLabel: "Try Again",
+  changeCardLabel: "Use Different Card",
+  retryHref: TENANT_ROUTES.paymentPlan,
+} as const;

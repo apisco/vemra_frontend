@@ -3,21 +3,24 @@ import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 
-export type LogoMarkVariant = "default" | "onDark";
+export type LogoMarkVariant = "default" | "onDark" | "inverse";
 
 const MARK_SOURCES: Record<LogoMarkVariant, string> = {
   default: "/logo.png",
   onDark: "/logo-light.png",
+  inverse: "/logo-light.png",
 };
 
 const WORD_TONE_CLASSES: Record<LogoMarkVariant, string> = {
   default: "text-neutral-900",
   onDark: "text-neutral-400",
+  inverse: "text-white",
 };
 
 const OUTLINE_CLASSES: Record<LogoMarkVariant, string> = {
   default: "focus-visible:outline-brand-700",
   onDark: "focus-visible:outline-neutral-50",
+  inverse: "focus-visible:outline-white",
 };
 
 export interface LogoMarkProps {

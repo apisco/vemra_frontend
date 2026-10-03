@@ -1,4 +1,4 @@
-# Vemra — Phase 5 Figma deltas
+# Vemra — Phase 5 Figma deltas-
 
 Everything the Tenant implementation could not take literally from the design, and what it does
 instead. Nothing here was resolved by inventing a value silently.

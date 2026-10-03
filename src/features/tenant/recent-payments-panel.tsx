@@ -1,14 +1,21 @@
 import Link from "next/link";
 
 import { ResponsiveText } from "@/components/ui/responsive-text";
-import { TENANT_RECENT_PAYMENTS } from "@/constants/tenant";
+import { TENANT_ROUTES } from "@/constants/tenant";
 import { cn } from "@/lib/cn";
-
-const { title, viewAllLabel, href, rows } = TENANT_RECENT_PAYMENTS;
+import { formatDate, formatMoney } from "@/lib/format";
+import type { PaymentStatus, TenantPayment } from "@/types/api/tenant";
 
 const TABLET_ROW_COUNT = 2;
 
-export function RecentPaymentsPanel() {
+const STATUS_CLASSES: Record<PaymentStatus, string> = {
+  cleared: "text-success-600",
+  pending: "text-warning-600",
+  held: "text-warning-600",
+  failed: "text-error-600",
+};
+
+export function RecentPaymentsPanel({ payments }: { payments: readonly TenantPayment[] }) {
   return (
     <section
       aria-labelledby="recent-payments-title"
@@ -19,20 +26,20 @@ export function RecentPaymentsPanel() {
           id="recent-payments-title"
           className="font-display text-heading-sm font-semibold text-neutral-900"
         >
-          <ResponsiveText copy={title} />
+          <ResponsiveText copy={{ base: "Payments", lg: "Recent payments" }} />
         </h2>
         <Link
-          href={href}
+          href={TENANT_ROUTES.paymentHistory}
           className="shrink-0 rounded-sm text-label-sm font-semibold text-brand-700 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
         >
-          {viewAllLabel}
+          View all
         </Link>
       </div>
 
       <ul className="flex flex-col">
-        {rows.map(({ label, date, status }, index) => (
+        {payments.map((payment, index) => (
           <li
-            key={label}
+            key={payment.id}
             className={cn(
               "items-center justify-between gap-4 border-b border-neutral-200 py-3",
               index < TABLET_ROW_COUNT ? "flex" : "hidden lg:flex",
@@ -40,13 +47,23 @@ export function RecentPaymentsPanel() {
           >
             <div className="min-w-0">
               <p className="text-label-md font-semibold text-neutral-900">
-                {label}
+                {payment.label}
               </p>
-              <p className="text-label-sm text-neutral-700">{date}</p>
+              <p className="text-label-sm text-neutral-700">{formatDate(payment.date, "short")}</p>
             </div>
-            <span className="shrink-0 text-label-md font-semibold text-success-600">
-              {status}
-            </span>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <span className="text-label-md font-semibold text-neutral-900">
+                {formatMoney(payment.amount)}
+              </span>
+              <span
+                className={cn(
+                  "text-caption font-semibold capitalize",
+                  STATUS_CLASSES[payment.status],
+                )}
+              >
+                {payment.status}
+              </span>
+            </div>
           </li>
         ))}
       </ul>

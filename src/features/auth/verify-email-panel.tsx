@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { AlertTriangleIcon } from "@/components/icons/alert-triangle-icon";
@@ -19,7 +19,9 @@ import { AuthCard } from "@/features/auth/auth-card";
 import { AuthFooter } from "@/features/auth/auth-footer";
 import { AuthHeader } from "@/features/auth/auth-header";
 import { StatusIcon } from "@/features/auth/status-icon";
-import { SUBMIT_DELAY } from "@/features/auth/use-auth-form";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { clientPost } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 
 const STATE_ICONS: Record<VerifyEmailStatus, ReactNode> = {
   verified: <CheckCircleIcon />,
@@ -40,18 +42,20 @@ export function VerifyEmailCard({ status }: VerifyEmailCardProps) {
 
   const [isResending, setIsResending] = useState(false);
   const [hasResent, setHasResent] = useState(false);
-  const timeout = useRef<number | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => () => window.clearTimeout(timeout.current), []);
-
-  const handleResend = () => {
-    window.clearTimeout(timeout.current);
+  const handleResend = async () => {
     setHasResent(false);
+    setError(null);
     setIsResending(true);
-    timeout.current = window.setTimeout(() => {
+    try {
+      await clientPost(ENDPOINTS.auth.resendEmailVerification);
       setIsResending(false);
       setHasResent(true);
-    }, SUBMIT_DELAY);
+    } catch (requestError) {
+      setError(apiErrorMessage(requestError));
+      setIsResending(false);
+    }
   };
 
   return (
@@ -90,6 +94,11 @@ export function VerifyEmailCard({ status }: VerifyEmailCardProps) {
           >
             {hasResent ? VERIFY_EMAIL_SCREEN.resentNotice : ""}
           </p>
+          {error ? (
+            <p role="alert" className="text-center text-label-sm text-error-600">
+              {error}
+            </p>
+          ) : null}
           <AuthFooter
             href={AUTH_ROUTES.login}
             label={VERIFY_EMAIL_SCREEN.backLabel}

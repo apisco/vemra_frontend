@@ -3,16 +3,17 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { buttonClasses } from "@/components/ui/button";
 import { LANDLORD_MANAGE_LISTING } from "@/constants/landlord";
-import type { PropertyListing } from "@/constants/landlord";
+import { formatDate } from "@/lib/format";
+import type { LandlordProperty } from "@/types/api/landlord";
 
 const { admin } = LANDLORD_MANAGE_LISTING;
 
 export interface ListingAdminPanelProps {
-  property: PropertyListing;
+  property: LandlordProperty;
 }
 
 export function ListingAdminPanel({ property }: ListingAdminPanelProps) {
-  if (!property.admin.isAssigned) return null;
+  if (property.admin === null) return null;
 
   return (
     <section
@@ -34,7 +35,7 @@ export function ListingAdminPanel({ property }: ListingAdminPanelProps) {
             {property.admin.name}
           </p>
           <p className="text-label-sm text-neutral-700">
-            {admin.metaPrefix} {property.adminSince}
+            {admin.metaPrefix} {formatDate(property.admin.assignedAt, "monthYear")}
           </p>
         </div>
 

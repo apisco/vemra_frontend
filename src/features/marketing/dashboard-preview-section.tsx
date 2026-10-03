@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 
-import { DASHBOARD_SECTION, LANDLORD_PANEL, TENANT_PANEL } from "@/constants/marketing";
+import { DASHBOARD_SECTION } from "@/constants/marketing";
+import { getDashboardPreview } from "@/lib/api/resources/public";
 import type { PanelRow } from "@/constants/marketing";
 import { cn } from "@/lib/cn";
 import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
 
 import { SectionHeading } from "./section-heading";
 
-export function DashboardPreviewSection() {
+export async function DashboardPreviewSection() {
+  const preview = await getDashboardPreview();
   return (
     <section className="bg-neutral-50">
       <div
@@ -29,41 +31,41 @@ export function DashboardPreviewSection() {
           <span className="hidden md:inline">{DASHBOARD_SECTION.heading}</span>
         </SectionHeading>
 
-        <div className="flex flex-col gap-4 md:gap-6 lg:flex-row lg:gap-8">
+        {preview ? <div className="flex flex-col gap-4 md:gap-6 lg:flex-row lg:gap-8">
           <Panel
-            title={TENANT_PANEL.title}
+            title={preview.tenant.title}
             badge={
               <span className="rounded-sm bg-brand-600 px-2 py-1 text-label-sm font-semibold text-brand-950">
-                {TENANT_PANEL.badge}
+                {preview.tenant.badge}
               </span>
             }
-            rows={TENANT_PANEL.rows}
+            rows={preview.tenant.rows.map((row) => ({ ...row, showOnMobile: true, showOnTablet: true }))}
             footer={
               <div className="flex flex-col gap-2 lg:gap-3">
                 <div className="flex flex-wrap gap-x-1 text-body-sm lg:justify-between lg:gap-x-2">
                   <p className="text-neutral-700">
                     <span className="lg:hidden">
-                      {TENANT_PANEL.progress.labelMobile}
+                      {preview.tenant.progress?.label ?? "Payment plan"}
                     </span>
                     <span className="hidden lg:inline">
-                      {TENANT_PANEL.progress.label}
+                      {preview.tenant.progress?.label ?? "Progress"}
                     </span>
                   </p>
                   <p className="text-neutral-700 lg:text-neutral-900">
-                    {TENANT_PANEL.progress.value}
+                    {preview.tenant.progress?.value ?? "—"}
                   </p>
                 </div>
                 <div
                   role="progressbar"
-                  aria-label={TENANT_PANEL.progress.label}
-                  aria-valuenow={TENANT_PANEL.progress.percent}
+                  aria-label={preview.tenant.progress?.label ?? "Progress"}
+                  aria-valuenow={preview.tenant.progress?.percent ?? 0}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   className="h-1.5 w-full overflow-clip rounded-sm bg-neutral-100 lg:h-2"
                 >
                   <div
                     className="h-full rounded-sm bg-brand-700"
-                    style={{ width: `${TENANT_PANEL.progress.percent}%` }}
+                    style={{ width: `${preview.tenant.progress?.percent ?? 0}%` }}
                   />
                 </div>
               </div>
@@ -72,15 +74,15 @@ export function DashboardPreviewSection() {
           />
 
           <Panel
-            title={LANDLORD_PANEL.title}
+            title={preview.landlord.title}
             badge={
               <span className="rounded-sm bg-brand-700/10 px-2 py-1 text-label-sm font-semibold text-brand-700">
-                {LANDLORD_PANEL.badge}
+                {preview.landlord.badge}
               </span>
             }
-            rows={LANDLORD_PANEL.rows}
+            rows={preview.landlord.rows.map((row) => ({ ...row, showOnMobile: true, showOnTablet: true }))}
           />
-        </div>
+        </div> : <p className="rounded-lg border border-neutral-200 bg-white p-6 text-center text-body-md text-neutral-700">Dashboard previews are being updated.</p>}
       </div>
     </section>
   );

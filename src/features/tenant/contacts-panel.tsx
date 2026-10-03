@@ -1,11 +1,8 @@
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ResponsiveText } from "@/components/ui/responsive-text";
-import { TENANT_CONTACTS } from "@/constants/tenant";
+import type { TenantContact } from "@/types/api/tenant";
 
-const { title, people, verifiedLabel } = TENANT_CONTACTS;
-
-export function ContactsPanel() {
+export function ContactsPanel({ contacts }: { contacts: readonly TenantContact[] }) {
   return (
     <section
       aria-labelledby="contacts-title"
@@ -15,15 +12,15 @@ export function ContactsPanel() {
         id="contacts-title"
         className="font-display text-label-md font-semibold text-neutral-900 md:text-heading-sm"
       >
-        {title}
+        Contacts
       </h2>
 
       <ul className="flex flex-col gap-3 md:gap-4">
-        {people.map(({ name, initials, detail, isVerified }) => (
-          <li key={name} className="flex items-center gap-3">
+        {contacts.map((person) => (
+          <li key={person.id} className="flex items-center gap-3">
             <Avatar
-              name={name}
-              initials={initials}
+              name={person.name}
+              initials={person.initials}
               size="sm"
               tone="subtle"
               className="lg:size-10 lg:text-label-md"
@@ -31,16 +28,16 @@ export function ContactsPanel() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1">
                 <p className="text-label-sm font-semibold text-neutral-900 md:text-label-md">
-                  {name}
+                  {person.name}
                 </p>
-                {isVerified && (
+                {person.isVerified && (
                   <Badge variant="success" size="sm">
-                    {verifiedLabel}
+                    VERIFIED
                   </Badge>
                 )}
               </div>
               <p className="text-caption text-neutral-700 md:text-label-sm">
-                <ResponsiveText copy={detail} />
+                {person.role}{person.note ? ` · ${person.note}` : ""}{person.responseTime ? ` · ${person.responseTime}` : ""}
               </p>
             </div>
           </li>

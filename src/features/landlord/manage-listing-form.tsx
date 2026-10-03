@@ -9,16 +9,12 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LANDLORD_MANAGE_LISTING, LANDLORD_ROUTES } from "@/constants/landlord";
-import type { PropertyListing } from "@/constants/landlord";
+import type { LandlordProperty } from "@/types/api/landlord";
 
 const { details, danger, footer } = LANDLORD_MANAGE_LISTING;
 
-async function submitDemoChanges(): Promise<void> {
-  return Promise.resolve();
-}
-
 export interface ManageListingFormProps {
-  property: PropertyListing;
+  property: LandlordProperty;
   adminPanel?: ReactNode;
 }
 
@@ -38,7 +34,6 @@ export function ManageListingForm({
         event.preventDefault();
         setIsSaving(true);
 
-        await submitDemoChanges();
         router.push(LANDLORD_ROUTES.properties);
       }}
       className="flex flex-col gap-4 md:gap-8"
@@ -58,7 +53,7 @@ export function ManageListingForm({
           <Input
             label={details.addressLabel}
             name="address"
-            defaultValue={property.name}
+            defaultValue={property.address}
             autoComplete="street-address"
           />
 
@@ -66,13 +61,13 @@ export function ManageListingForm({
             <Input
               label={details.rentLabel}
               name="rent"
-              defaultValue={property.rentValue}
+              defaultValue={String(property.rent.amount / 100)}
               inputMode="decimal"
             />
             <Input
               label={details.bedroomsLabel}
               name="bedrooms"
-              defaultValue={property.bedrooms}
+              defaultValue={property.bedrooms ?? ""}
             />
           </div>
 
@@ -110,7 +105,6 @@ export function ManageListingForm({
           onClick={async () => {
             setIsUnlisting(true);
 
-            await submitDemoChanges();
             router.push(LANDLORD_ROUTES.properties);
           }}
         >

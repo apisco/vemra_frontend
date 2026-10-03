@@ -9,27 +9,77 @@ import { ResponsiveText } from "@/components/ui/responsive-text";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PAY_RENT } from "@/constants/tenant-payments";
 import type { PaymentMethod } from "@/constants/tenant-payments";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { clientPost } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
+import type { CardPaymentPayload, PaymentResult } from "@/types/api/tenant";
 
 const UNAVAILABLE_METHODS: readonly PaymentMethod[] = ["bank"];
 
-async function attemptDemoPayment(): Promise<{ status: "declined" }> {
-  return { status: "declined" };
+const REDIRECT_ERROR =
+  "We could not start the bank verification step. Please try again.";
+
+/**
+ * Only follows a 3-D Secure/bank continuation on our own origin or over HTTPS,
+ * so a malformed or unexpected backend value cannot navigate the browser to an
+ * arbitrary (or `javascript:`) destination.
+ */
+function safeRedirectUrl(value: string | null): string | null {
+  if (value === null) {
+    return null;
+  }
+  try {
+    const url = new URL(value, window.location.origin);
+    const isSameOrigin = url.origin === window.location.origin;
+    return isSameOrigin || url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 export function PayRentForm() {
   const router = useRouter();
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <form
       onSubmit={async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
+        setError(null);
 
-        const result = await attemptDemoPayment();
-        if (result.status === "declined") {
-          router.push(PAY_RENT.failedHref);
+        const formData = new FormData(event.currentTarget);
+        const payload: CardPaymentPayload = {
+          method,
+          cardNumber: String(formData.get("cardNumber") ?? ""),
+          expiry: String(formData.get("expiry") ?? ""),
+          cvc: String(formData.get("cvc") ?? ""),
+          cardName: String(formData.get("cardName") ?? ""),
+        };
+
+        try {
+          const result = await clientPost<PaymentResult>(
+            ENDPOINTS.tenant.checkout,
+            payload,
+          );
+          if (result.outcome === "declined") {
+            router.push(PAY_RENT.failedHref);
+          } else if (result.outcome === "requires_action") {
+            const redirect = safeRedirectUrl(result.redirectUrl);
+            if (redirect === null) {
+              setError(REDIRECT_ERROR);
+            } else {
+              window.location.assign(redirect);
+            }
+          } else {
+            router.push("/tenant/payment-history");
+          }
+        } catch (requestError) {
+          setError(apiErrorMessage(requestError));
+        } finally {
+          setIsSubmitting(false);
         }
       }}
       className="flex flex-1 flex-col gap-5 lg:justify-between"
@@ -95,6 +145,11 @@ export function PayRentForm() {
         <Button type="submit" fullWidth isLoading={isSubmitting}>
           {PAY_RENT.submitLabel}
         </Button>
+        {error ? (
+          <p role="alert" className="text-center text-label-sm text-error-600">
+            {error}
+          </p>
+        ) : null}
         <p className="text-center text-label-sm text-neutral-700">
           <ResponsiveText copy={PAY_RENT.footnote} />
         </p>

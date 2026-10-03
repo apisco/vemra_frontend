@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
-import { BROWSE_PAGE, PROPERTIES } from "@/constants/marketing";
+import { BROWSE_PAGE } from "@/constants/marketing";
 import { BrowseFilterBar } from "@/features/marketing/browse-filter-bar";
 import { PropertyCard } from "@/features/marketing/property-card";
 import { cn } from "@/lib/cn";
 import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
+import { getListings } from "@/lib/api/resources/public";
 
 export const metadata: Metadata = {
   title: "Browse rentals · Vemra",
   description: BROWSE_PAGE.subheading,
 };
 
-export default function BrowsePage() {
+export default async function BrowsePage() {
+  const result = await getListings();
   return (
     <div
       className={cn(
@@ -34,16 +36,20 @@ export default function BrowsePage() {
       <BrowseFilterBar />
 
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 lg:gap-6">
-        {PROPERTIES.map((property) => (
+        {result.items.map((property) => (
           <li key={property.id} className="flex">
             <PropertyCard property={property} className="w-full" />
           </li>
         ))}
       </ul>
 
-      <Button size="md" className="mx-auto lg:mt-4">
-        {BROWSE_PAGE.loadMore}
-      </Button>
+      {result.items.length === 0 ? (
+        <p className="rounded-lg border border-neutral-200 p-8 text-center text-body-md text-neutral-700">
+          No verified homes are available right now. Try again soon.
+        </p>
+      ) : result.hasMore ? (
+        <Button size="md" className="mx-auto lg:mt-4">{BROWSE_PAGE.loadMore}</Button>
+      ) : null}
     </div>
   );
 }

@@ -5,30 +5,22 @@ import { notFound } from "next/navigation";
 import { DotIcon } from "@/components/icons/dot-icon";
 import {
   LANDLORD_MANAGE_LISTING,
-  LANDLORD_PROPERTY_LISTINGS,
   LANDLORD_ROUTES,
 } from "@/constants/landlord";
-import type { PropertyListing } from "@/constants/landlord";
 import { ListingAdminPanel } from "@/features/landlord/listing-admin-panel";
 import { ListingGallery } from "@/features/landlord/listing-gallery";
 import { ManageListingForm } from "@/features/landlord/manage-listing-form";
 import { cn } from "@/lib/cn";
+import { formatDate } from "@/lib/format";
+import { getLandlordProperty } from "@/lib/api/resources/landlord";
 
 const { breadcrumbLabel, listedSincePrefix } = LANDLORD_MANAGE_LISTING;
-
-function findProperty(id: string): PropertyListing | undefined {
-  return LANDLORD_PROPERTY_LISTINGS.find((property) => property.id === id);
-}
-
-export function generateStaticParams() {
-  return LANDLORD_PROPERTY_LISTINGS.map(({ id }) => ({ propertyId: id }));
-}
 
 export async function generateMetadata({
   params,
 }: PageProps<"/landlord/properties/[propertyId]">): Promise<Metadata> {
   const { propertyId } = await params;
-  const property = findProperty(propertyId);
+  const property = await getLandlordProperty(propertyId);
 
   if (!property) return { title: "Manage listing · Vemra" };
 
@@ -42,11 +34,11 @@ export default async function ManageListingPage({
   params,
 }: PageProps<"/landlord/properties/[propertyId]">) {
   const { propertyId } = await params;
-  const property = findProperty(propertyId);
+  const property = await getLandlordProperty(propertyId);
 
   if (!property) notFound();
 
-  const isOccupied = property.statusTone === "occupied";
+  const isOccupied = property.status === "occupied";
 
   return (
     <div className="flex flex-col gap-4 md:gap-8">
@@ -79,7 +71,7 @@ export default async function ManageListingPage({
               {property.name}
             </h1>
             <p className="text-body-sm text-neutral-700">
-              {listedSincePrefix} {property.listedSince}
+              {listedSincePrefix} {formatDate(property.listedSince, "monthYear")}
             </p>
           </div>
 

@@ -5,12 +5,12 @@ import { buttonClasses } from "@/components/ui/button";
 import { ResponsiveText } from "@/components/ui/responsive-text";
 import type { TabItem } from "@/components/ui/tabs";
 import { Tabs } from "@/components/ui/tabs";
-import type { PropertyListing } from "@/constants/landlord";
 import {
   LANDLORD_PROPERTIES_SCREEN,
-  LANDLORD_PROPERTY_LISTINGS,
 } from "@/constants/landlord";
 import { PropertiesPanel } from "@/features/landlord/properties-panel";
+import { getLandlordProperties } from "@/lib/api/resources/landlord";
+import type { LandlordPropertySummary } from "@/types/api/landlord";
 
 export const metadata: Metadata = {
   title: "Properties · Vemra",
@@ -20,21 +20,25 @@ export const metadata: Metadata = {
 
 const { title, summary, addAction, filters } = LANDLORD_PROPERTIES_SCREEN;
 
-function filterProperties(id: string): readonly PropertyListing[] {
-  if (id === "all") return LANDLORD_PROPERTY_LISTINGS;
-  return LANDLORD_PROPERTY_LISTINGS.filter(
-    (property) => property.statusTone === id,
+function filterProperties(
+  id: string,
+  properties: readonly LandlordPropertySummary[],
+): readonly LandlordPropertySummary[] {
+  if (id === "all") return properties;
+  return properties.filter(
+    (property) => property.status === id,
   );
 }
 
-export default function LandlordPropertiesPage() {
+export default async function LandlordPropertiesPage() {
+  const properties = await getLandlordProperties();
   const items: TabItem[] = filters.map((filter) => {
-    const properties = filterProperties(filter.id);
+    const filteredProperties = filterProperties(filter.id, properties);
 
     return {
       id: filter.id,
-      label: `${filter.label} (${properties.length})`,
-      content: <PropertiesPanel properties={properties} />,
+      label: `${filter.label} (${filteredProperties.length})`,
+      content: <PropertiesPanel properties={filteredProperties} />,
     };
   });
 

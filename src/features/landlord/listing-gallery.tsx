@@ -1,12 +1,12 @@
 import Image from "next/image";
 
 import { LANDLORD_MANAGE_LISTING } from "@/constants/landlord";
-import type { PropertyListing } from "@/constants/landlord";
+import type { LandlordProperty } from "@/types/api/landlord";
 
 const { gallery } = LANDLORD_MANAGE_LISTING;
 
 export interface ListingGalleryProps {
-  property: PropertyListing;
+  property: LandlordProperty;
 }
 
 export function ListingGallery({ property }: ListingGalleryProps) {
@@ -15,8 +15,8 @@ export function ListingGallery({ property }: ListingGalleryProps) {
   return (
     <section aria-label={gallery.label} className="flex flex-col gap-2 md:hidden">
       <Image
-        src={cover}
-        alt={property.imageAlt}
+        src={cover?.url ?? "/marketing/listing-maple-9th.png"}
+        alt={cover?.alt ?? ""}
         width={358}
         height={160}
         sizes="100vw"
@@ -25,11 +25,11 @@ export function ListingGallery({ property }: ListingGalleryProps) {
       />
 
       <ul className="grid grid-cols-3 gap-2">
-        {thumbnails.map((src, index) => (
-          <li key={src}>
+        {thumbnails.map((image, index) => (
+          <li key={image.url}>
             <Image
-              src={src}
-              alt={`${property.name} — photo ${index + 2}`}
+              src={image.url}
+              alt={image.alt || `${property.name} — photo ${index + 2}`}
               width={114}
               height={48}
               sizes="120px"

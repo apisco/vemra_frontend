@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { FormEvent } from "react";
 
 export type AuthFormValues = Record<string, string | boolean>;
@@ -14,7 +14,7 @@ export type AuthFormStatus = "idle" | "submitting" | "submitted";
 export interface UseAuthFormOptions<TValues extends AuthFormValues> {
   initialValues: TValues;
   validate?: (values: TValues) => AuthFormErrors<TValues>;
-  onSubmit?: (values: TValues) => void;
+  onSubmit?: (values: TValues) => void | Promise<void>;
 }
 
 export interface AuthForm<TValues extends AuthFormValues> {
@@ -31,8 +31,6 @@ export interface AuthForm<TValues extends AuthFormValues> {
   reset: () => void;
 }
 
-export const SUBMIT_DELAY = 700;
-
 export function useAuthForm<TValues extends AuthFormValues>({
   initialValues,
   validate,
@@ -42,10 +40,6 @@ export function useAuthForm<TValues extends AuthFormValues>({
   const [errors, setErrors] = useState<AuthFormErrors<TValues>>({});
   const [hasAttempted, setHasAttempted] = useState(false);
   const [status, setStatus] = useState<AuthFormStatus>("idle");
-  const timeout = useRef<number | undefined>(undefined);
-
-  useEffect(() => () => window.clearTimeout(timeout.current), []);
-
   const setValue = useCallback(
     <TKey extends keyof TValues>(field: TKey, value: TValues[TKey]) => {
       setValues((current) => ({ ...current, [field]: value }));
@@ -62,7 +56,7 @@ export function useAuthForm<TValues extends AuthFormValues>({
   );
 
   const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       setHasAttempted(true);
 
@@ -75,10 +69,12 @@ export function useAuthForm<TValues extends AuthFormValues>({
       }
 
       setStatus("submitting");
-      timeout.current = window.setTimeout(() => {
+      try {
+        await onSubmit?.(values);
         setStatus("submitted");
-        onSubmit?.(values);
-      }, SUBMIT_DELAY);
+      } catch {
+        setStatus("idle");
+      }
     },
     [onSubmit, validate, values],
   );
@@ -89,7 +85,6 @@ export function useAuthForm<TValues extends AuthFormValues>({
   );
 
   const reset = useCallback(() => {
-    window.clearTimeout(timeout.current);
     setValues(initialValues);
     setErrors({});
     setHasAttempted(false);

@@ -1,12 +1,21 @@
 import { LogoMark } from "@/components/layout/logo-mark";
 import { Badge } from "@/components/ui/badge";
-import type { CheckoutSummary } from "@/constants/tenant-payments";
+import { formatDate, formatMoney, formatRatio } from "@/lib/format";
+import type { CheckoutSummary } from "@/types/api/tenant";
 
 export interface CheckoutSummaryPanelProps {
   summary: CheckoutSummary;
 }
 
 export function CheckoutSummaryPanel({ summary }: CheckoutSummaryPanelProps) {
+  const rows = [
+    ["Unit", summary.unit?.name ?? "—"],
+    ["Landlord", summary.landlordName ?? "—"],
+    ["Due date", formatDate(summary.dueDate, "medium")],
+    ...(summary.installmentSequence !== null && summary.installmentTotal !== null
+      ? [["Plan progress", formatRatio(summary.installmentSequence, summary.installmentTotal)]]
+      : []),
+  ];
   return (
     <section
       aria-labelledby="checkout-summary-heading"
@@ -14,9 +23,9 @@ export function CheckoutSummaryPanel({ summary }: CheckoutSummaryPanelProps) {
     >
       <div className="hidden items-center justify-between gap-4 md:flex">
         <LogoMark variant="inverse" />
-        {summary.badge ? (
+        {summary.installmentSequence !== null && summary.installmentTotal !== null ? (
           <Badge variant="warning" className="lg:hidden">
-            {summary.badge}
+            Installment {summary.installmentSequence}/{summary.installmentTotal}
           </Badge>
         ) : null}
       </div>
@@ -30,23 +39,23 @@ export function CheckoutSummaryPanel({ summary }: CheckoutSummaryPanelProps) {
             {summary.label}
           </p>
           <p className="font-display text-heading-xl font-extrabold tracking-tight text-white md:text-display-lg lg:text-display-xl">
-            {summary.amount}
+            {formatMoney(summary.amount, { showDecimals: true })}
           </p>
         </div>
 
         <div aria-hidden="true" className="h-px bg-white/15" />
 
         <dl className="flex flex-col gap-2 md:gap-3 lg:gap-4">
-          {summary.rows.map((row) => (
+          {rows.map(([label, value]) => (
             <div
-              key={row.label}
+              key={label}
               className="flex items-baseline justify-between gap-4"
             >
               <dt className="shrink-0 text-body-sm text-neutral-400 md:text-body-md">
-                {row.label}
+                {label}
               </dt>
               <dd className="min-w-0 text-right text-body-sm font-semibold text-white md:text-body-md">
-                {row.value}
+                {value}
               </dd>
             </div>
           ))}
@@ -54,7 +63,7 @@ export function CheckoutSummaryPanel({ summary }: CheckoutSummaryPanelProps) {
       </div>
 
       <p className="hidden text-label-sm leading-4.5 text-neutral-400 lg:block">
-        {summary.note}
+        Payments are held until the due date, then released to your landlord&apos;s balance.
       </p>
     </section>
   );

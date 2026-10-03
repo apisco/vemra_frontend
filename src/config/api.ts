@@ -36,23 +36,21 @@ function readNumber(value: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-function readBoolean(value: string | undefined, fallback: boolean): boolean {
-  const normalized = value?.trim().toLowerCase();
-  if (normalized === "true" || normalized === "1") {
-    return true;
-  }
-  if (normalized === "false" || normalized === "0") {
-    return false;
-  }
-  return fallback;
-}
-
 function stripTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
 }
 
 function ensureLeadingSlash(value: string): string {
   return value.startsWith("/") ? value : `/${value}`;
+}
+
+if (
+  process.env.NODE_ENV === "production" &&
+  (process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? "") === ""
+) {
+  throw new Error(
+    "NEXT_PUBLIC_API_BASE_URL must be set in production; refusing to fall back to localhost.",
+  );
 }
 
 const baseUrl = stripTrailingSlash(
@@ -64,13 +62,6 @@ const prefix = stripTrailingSlash(
     readString(process.env.NEXT_PUBLIC_API_PREFIX, DEFAULT_PREFIX),
   ),
 );
-
-/**
- * While the screens are still mocked this defaults to `true` so nothing tries
- * to reach a backend that is not running yet. Set
- * `NEXT_PUBLIC_USE_MOCK_DATA=false` once an endpoint group is live.
- */
-const useMockData = readBoolean(process.env.NEXT_PUBLIC_USE_MOCK_DATA, true);
 
 export const API_CONFIG = {
   /** Origin only, no trailing slash — e.g. `https://api.vemra.com`. */
@@ -99,11 +90,9 @@ export const API_CONFIG = {
     DEFAULT_RETRY_DELAY_MS,
   ),
   /** Send cookies cross-origin. Required if auth uses an httpOnly cookie. */
-  withCredentials: readBoolean(
-    process.env.NEXT_PUBLIC_API_WITH_CREDENTIALS,
-    true,
-  ),
-  useMockData,
+  withCredentials:
+    process.env.NEXT_PUBLIC_API_WITH_CREDENTIALS?.trim().toLowerCase() !==
+    "false",
 } as const;
 
 /** Spread into every JSON request. */

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,6 +21,10 @@ import {
   validateMatch,
   validatePassword,
 } from "@/lib/validation";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { clientPost } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
+import type { AuthResult, SignupPayload, UserRole } from "@/types/api/auth";
 
 const TERMS_LINK_CLASSES =
   "rounded-sm font-semibold text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700";
@@ -33,12 +37,17 @@ type SignupDetailsValues = {
 };
 
 export interface SignupDetailsFormProps {
+  role?: UserRole;
   className?: string;
 }
 
-export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
+export function SignupDetailsForm({
+  role = "tenant",
+  className,
+}: SignupDetailsFormProps) {
   const termsErrorId = useId();
   const router = useRouter();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useAuthForm<SignupDetailsValues>({
     initialValues: {
@@ -57,7 +66,22 @@ export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
       ),
       terms: values.terms ? undefined : SIGNUP_TERMS.error,
     }),
-    onSubmit: () => router.push(AUTH_ROUTES.signupVerification),
+    onSubmit: async (values) => {
+      setSubmitError(null);
+      try {
+        const payload: SignupPayload = {
+          email: values.email,
+          password: values.password,
+          role,
+          acceptedTerms: values.terms,
+        };
+        await clientPost<AuthResult>(ENDPOINTS.auth.signup, payload);
+        router.push(AUTH_ROUTES.signupVerification);
+      } catch (error) {
+        setSubmitError(apiErrorMessage(error));
+        throw error;
+      }
+    },
   });
 
   const termsError = form.errorFor("terms");
@@ -130,6 +154,11 @@ export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
         <Button type="submit" fullWidth isLoading={form.isSubmitting}>
           {SIGNUP_DETAILS_SCREEN.submitLabel}
         </Button>
+        {submitError ? (
+          <p role="alert" className="text-center text-label-sm text-error-600">
+            {submitError}
+          </p>
+        ) : null}
 
         <AuthDivider label={SIGNUP_DETAILS_SCREEN.dividerLabel} className="md:gap-4" />
 

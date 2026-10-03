@@ -1,25 +1,34 @@
 /**
- * Figma-derived data contracts, one per screen.
+/**
+ * Figma is the source of truth for the product screen inventory.
  *
- * Figma is the source of truth for what each screen needs. This file keys that
- * off the screen IDs and node IDs in `docs/screen-inventory.md` (Figma file
- * `TOQCNmbIIi0C3IZSoZfkPf`, page `3:2`) so every field can be traced back to
- * the frame it was read from.
+ * This file mirrors the live Figma file, its four in-scope sections, and the
+ * desktop/tablet/mobile frame IDs. Agent and Admin screens are intentionally
+ * excluded from this application contract.
  *
- * Scope is the four sections that have routes in `src/app` today — Marketing,
- * Auth, Tenant and Landlord, 68 screens. Agent (AG1–AG6) and Admin (AD1–AD7)
- * are deliberately absent until their screens are built.
+ * `fields: null` means that a detailed field schema has not been captured for
+ * the frame. It is not implementation guidance and must not be filled from
+ * mock data or inference. Design ambiguities belong in the relevant
+ * `docs/*-figma-deltas.md` file.
  *
- * `fields: null` means the frame has not been read yet. Do not fill these in
- * from the existing `src/constants/*` mock data or by inference — read the
- * frame. Per the convention in `docs/*-figma-deltas.md`, anything the design
- * cannot answer gets recorded as a delta rather than resolved silently.
- *
- * Transport configuration (base URL, timeouts, headers) is NOT Figma-derived
- * and lives in `src/config/api.ts`.
+ * Transport configuration is not Figma-derived and lives in `src/config/api.ts`.
  */
 
 export type ScreenSection = "marketing" | "auth" | "tenant" | "landlord";
+
+export const FIGMA_SOURCE = {
+  fileKey: "TOQCNmbIIi0C3IZSoZfkPf",
+  fileName: "Vemra Design",
+  pageNode: "3:2",
+  widths: [1440, 768, 390],
+} as const;
+
+export const FIGMA_SECTIONS = {
+  marketing: { node: "50:2", name: "🌐 Public / Marketing" },
+  auth: { node: "50:3", name: "Onboarding Flow" },
+  tenant: { node: "50:4", name: "🏠 Tenant Flow" },
+  landlord: { node: "50:5", name: "🏢 Landlord Flow" },
+} as const satisfies Record<ScreenSection, { node: string; name: string }>;
 
 /** Node IDs at the three designed widths: 1440, 768, 390. */
 export type FigmaNodes = readonly [
@@ -49,8 +58,14 @@ export interface ScreenContract {
   readonly fields: readonly ContractField[] | null;
 }
 
-export const SCREEN_CONTRACTS = {
-  // Marketing — section 50:2. Public, unauthenticated.
+export interface ScreenSectionDefinition {
+  readonly title: string;
+  readonly source: typeof FIGMA_SOURCE;
+  readonly figmaSection: (typeof FIGMA_SECTIONS)[ScreenSection];
+  readonly screenIds: readonly ScreenId[];
+}
+
+const marketingScreens = {
   M1: {
     section: "marketing",
     title: "Landing page",
@@ -96,12 +111,13 @@ export const SCREEN_CONTRACTS = {
   M7: {
     section: "marketing",
     title: "404",
-    route: null, // app/not-found.tsx, no path of its own
+    route: null,
     nodes: ["6:13", "108:3970", "101:4043"],
     fields: null,
   },
+} as const satisfies Record<string, ScreenContract>;
 
-  // Auth — section 50:3. No app shell.
+const authScreens = {
   AU1: {
     section: "auth",
     title: "Sign up — role picker",
@@ -175,12 +191,13 @@ export const SCREEN_CONTRACTS = {
   AU11: {
     section: "auth",
     title: "Terms & privacy",
-    route: "/terms", // also serves /privacy
+    route: "/terms",
     nodes: ["135:4225", "109:3677", "102:3502"],
     fields: null,
   },
+} as const satisfies Record<string, ScreenContract>;
 
-  // Tenant — section 50:4. Dashboard shell with sidebar 82:162, except TN1.
+const tenantScreens = {
   TN1: {
     section: "tenant",
     title: "Welcome / onboarding",
@@ -296,7 +313,7 @@ export const SCREEN_CONTRACTS = {
   TN17: {
     section: "tenant",
     title: "Condition record",
-    route: null, // not built yet
+    route: null,
     nodes: ["56:966", "109:4796", "101:5649"],
     fields: null,
   },
@@ -359,7 +376,7 @@ export const SCREEN_CONTRACTS = {
   TN26: {
     section: "tenant",
     title: "Support",
-    route: null, // not built yet
+    route: null,
     nodes: ["15:500", "109:4077", "101:4876"],
     fields: null,
   },
@@ -377,8 +394,9 @@ export const SCREEN_CONTRACTS = {
     nodes: ["287:5255", "287:5404", "287:5483"],
     fields: null,
   },
+} as const satisfies Record<string, ScreenContract>;
 
-  // Landlord — section 50:5. Dashboard shell with sidebar 82:236, except LL1.
+const landlordScreens = {
   LL1: {
     section: "landlord",
     title: "Welcome / onboarding",
@@ -535,7 +553,47 @@ export const SCREEN_CONTRACTS = {
   },
 } as const satisfies Record<string, ScreenContract>;
 
+export const SCREEN_CONTRACTS = {
+  ...marketingScreens,
+  ...authScreens,
+  ...tenantScreens,
+  ...landlordScreens,
+} as const satisfies Record<string, ScreenContract>;
+
+export const SCREEN_SECTIONS = {
+  marketing: {
+    title: FIGMA_SECTIONS.marketing.name,
+    source: FIGMA_SOURCE,
+    figmaSection: FIGMA_SECTIONS.marketing,
+    screenIds: Object.keys(marketingScreens) as readonly ScreenId[],
+  },
+  auth: {
+    title: FIGMA_SECTIONS.auth.name,
+    source: FIGMA_SOURCE,
+    figmaSection: FIGMA_SECTIONS.auth,
+    screenIds: Object.keys(authScreens) as readonly ScreenId[],
+  },
+  tenant: {
+    title: FIGMA_SECTIONS.tenant.name,
+    source: FIGMA_SOURCE,
+    figmaSection: FIGMA_SECTIONS.tenant,
+    screenIds: Object.keys(tenantScreens) as readonly ScreenId[],
+  },
+  landlord: {
+    title: FIGMA_SECTIONS.landlord.name,
+    source: FIGMA_SOURCE,
+    figmaSection: FIGMA_SECTIONS.landlord,
+    screenIds: Object.keys(landlordScreens) as readonly ScreenId[],
+  },
+} as const satisfies Record<ScreenSection, ScreenSectionDefinition>;
+
 export type ScreenId = keyof typeof SCREEN_CONTRACTS;
+
+export function screenContractsForSection(
+  section: ScreenSection,
+): readonly ScreenContract[] {
+  return SCREEN_SECTIONS[section].screenIds.map((id) => SCREEN_CONTRACTS[id]);
+}
 
 /** Screens whose frame has not been read from Figma yet. */
 export function pendingFigmaRead(): readonly ScreenId[] {

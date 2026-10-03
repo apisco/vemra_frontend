@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ type LoginValues = {
 };
 
 export function LoginForm() {
+  const router = useRouter();
   const [role, setRole] = useState<AuthRole>("tenant");
 
   const form = useAuthForm<LoginValues>({
@@ -28,6 +30,7 @@ export function LoginForm() {
       email: validateEmail(values.email),
       password: validateRequired(values.password, "Password"),
     }),
+    onSubmit: () => router.push(role === "landlord" ? "/landlord" : "/tenant"),
   });
 
   return (

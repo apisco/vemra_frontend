@@ -14,6 +14,7 @@ export default function TenantLayout({ children }: LayoutProps<"/tenant">) {
       compactNavItems={TENANT_NAV_TABLET}
       mobileNavItems={TENANT_NAV_MOBILE}
       user={TENANT_USER}
+      userProfileHref="/tenant/profile"
     >
       {children}
     </DashboardShell>

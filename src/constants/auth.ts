@@ -379,6 +379,6 @@ export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
       },
     ],
     ctaLabel: "List your first property",
-    ctaHref: "/list-your-property",
+    ctaHref: "/landlord/properties/new",
   },
 };

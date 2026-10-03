@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import type { AuthRole } from "@/constants/auth";
 import {
   AUTH_ROUTES,
@@ -20,8 +21,10 @@ type SignupRoleValues = {
 };
 
 export function SignupRolePicker() {
+  const router = useRouter();
   const form = useAuthForm<SignupRoleValues>({
     initialValues: { role: SIGNUP_DEFAULT_ROLE },
+    onSubmit: () => router.push("/signup/details"),
   });
 
   return (

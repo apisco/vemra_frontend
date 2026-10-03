@@ -1,13 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import type { DashboardNavLink } from "@/components/layout/dashboard-shell";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { NavItem, navItemClasses } from "@/components/navigation/nav-item";
 import { Avatar } from "@/components/ui/avatar";
-import type { DashboardUser } from "@/constants/tenant";
+import type { DashboardUser } from "@/types/dashboard";
 import { cn } from "@/lib/cn";
 
 export interface DashboardMobileNavProps {
@@ -15,6 +16,7 @@ export interface DashboardMobileNavProps {
   links: readonly DashboardNavLink[];
   tabs: readonly DashboardNavLink[];
   user: DashboardUser;
+  userProfileHref?: string;
 }
 
 export function DashboardMobileNav({
@@ -22,6 +24,7 @@ export function DashboardMobileNav({
   links,
   tabs,
   user,
+  userProfileHref,
 }: DashboardMobileNavProps) {
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -161,7 +164,12 @@ export function DashboardMobileNav({
             ))}
           </div>
 
-          <div className="flex items-center gap-3 border-t border-neutral-200 px-3 pt-4">
+          <Link
+            href={userProfileHref ?? "#"}
+            onClick={() => setIsDrawerOpen(false)}
+            aria-label={`Open ${user.name} profile`}
+            className="flex items-center gap-3 rounded-md border-t border-neutral-200 px-3 pt-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+          >
             <Avatar name={user.name} initials={user.initials} size="sm" />
             <div className="min-w-0">
               <p className="truncate text-label-md font-semibold text-neutral-900">
@@ -171,7 +179,7 @@ export function DashboardMobileNav({
                 {user.role}
               </p>
             </div>
-          </div>
+            </Link>
         </div>
       </dialog>
     </>

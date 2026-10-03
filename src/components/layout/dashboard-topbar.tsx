@@ -1,23 +1,26 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 import type { DashboardNavLink } from "@/components/layout/dashboard-shell";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { NavItem } from "@/components/navigation/nav-item";
 import { Avatar } from "@/components/ui/avatar";
-import type { DashboardUser } from "@/constants/tenant";
+import type { DashboardUser } from "@/types/dashboard";
 
 export interface DashboardTopbarProps {
   navLabel: string;
   links: readonly DashboardNavLink[];
   user: DashboardUser;
+  userProfileHref?: string;
 }
 
 export function DashboardTopbar({
   navLabel,
   links,
   user,
+  userProfileHref,
 }: DashboardTopbarProps) {
   const pathname = usePathname();
 
@@ -39,7 +42,13 @@ export function DashboardTopbar({
         ))}
       </nav>
 
-      <Avatar name={user.name} initials={user.initials} size="sm" />
+      <Link
+        href={userProfileHref ?? "#"}
+        aria-label={`Open ${user.name} profile`}
+        className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        <Avatar name={user.name} initials={user.initials} size="sm" />
+      </Link>
     </div>
   );
 }

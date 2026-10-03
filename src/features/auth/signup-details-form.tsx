@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useId } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,16 +20,13 @@ import {
   validateEmail,
   validateMatch,
   validatePassword,
-  validateRequired,
 } from "@/lib/validation";
 
 const TERMS_LINK_CLASSES =
   "rounded-sm font-semibold text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700";
 
 type SignupDetailsValues = {
-  name: string;
   email: string;
-  phone: string;
   password: string;
   confirm: string;
   terms: boolean;
@@ -40,20 +38,17 @@ export interface SignupDetailsFormProps {
 
 export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
   const termsErrorId = useId();
+  const router = useRouter();
 
   const form = useAuthForm<SignupDetailsValues>({
     initialValues: {
-      name: "",
       email: "",
-      phone: "",
       password: "",
       confirm: "",
       terms: false,
     },
     validate: (values) => ({
-      name: validateRequired(values.name, SIGNUP_DETAILS_SCREEN.nameLabel),
       email: validateEmail(values.email),
-      phone: validateRequired(values.phone, SIGNUP_DETAILS_SCREEN.phoneLabel),
       password: validatePassword(values.password),
       confirm: validateMatch(
         values.confirm,
@@ -62,6 +57,7 @@ export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
       ),
       terms: values.terms ? undefined : SIGNUP_TERMS.error,
     }),
+    onSubmit: () => router.push(AUTH_ROUTES.signupVerification),
   });
 
   const termsError = form.errorFor("terms");
@@ -70,14 +66,6 @@ export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
     <form noValidate onSubmit={form.handleSubmit} className={className}>
       <AuthCard variant="details">
         <Input
-          label={SIGNUP_DETAILS_SCREEN.nameLabel}
-          name="name"
-          autoComplete="name"
-          value={form.values.name}
-          onChange={(event) => form.setValue("name", event.target.value)}
-          error={form.errorFor("name")}
-        />
-        <Input
           label={SIGNUP_DETAILS_SCREEN.emailLabel}
           type="email"
           name="email"
@@ -85,15 +73,6 @@ export function SignupDetailsForm({ className }: SignupDetailsFormProps) {
           value={form.values.email}
           onChange={(event) => form.setValue("email", event.target.value)}
           error={form.errorFor("email")}
-        />
-        <Input
-          label={SIGNUP_DETAILS_SCREEN.phoneLabel}
-          type="tel"
-          name="phone"
-          autoComplete="tel"
-          value={form.values.phone}
-          onChange={(event) => form.setValue("phone", event.target.value)}
-          error={form.errorFor("phone")}
         />
         <PasswordField
           label={SIGNUP_DETAILS_SCREEN.passwordLabel}

@@ -51,7 +51,7 @@ export const PAY_RENT = {
     cvc: { label: "CVC", placeholder: "123" },
     cardName: { label: "Name on card", placeholder: "Aisha Bello" },
   },
-  submitLabel: "Pay ₦550.00",
+  submitLabel: "Simulate declined payment",
   footnote: {
     base: "Secure encrypted checkout.",
     md: "Payments are encrypted and processed securely.",

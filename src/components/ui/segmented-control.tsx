@@ -33,6 +33,7 @@ export function SegmentedControl<TValue extends string>({
   const selectedIndex = options.findIndex((option) => option.value === value);
   const isDisabled = (option: SegmentedControlOption<TValue>) =>
     disabledValues?.includes(option.value) ?? false;
+  const firstEnabledIndex = options.findIndex((option) => !isDisabled(option));
 
   const moveSelection = (offset: number) => {
     let nextIndex = selectedIndex;
@@ -68,7 +69,12 @@ export function SegmentedControl<TValue extends string>({
             role="radio"
             aria-checked={isSelected}
             disabled={isOptionDisabled}
-            tabIndex={isSelected ? 0 : -1}
+            tabIndex={
+              isOptionDisabled ||
+              (selectedIndex !== index && firstEnabledIndex !== index)
+                ? -1
+                : 0
+            }
             onClick={() => onChange(option.value)}
             onKeyDown={(event) => {
               if (event.key === "ArrowRight" || event.key === "ArrowDown") {

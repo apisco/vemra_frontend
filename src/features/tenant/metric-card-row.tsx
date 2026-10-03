@@ -1,13 +1,8 @@
 import { ResponsiveText } from "@/components/ui/responsive-text";
 import { StatCard } from "@/components/ui/stat-card";
-import { TENANT_METRICS, type MetricTone } from "@/constants/tenant";
+import { TENANT_METRICS } from "@/constants/tenant";
 import { cn } from "@/lib/cn";
-
-const VALUE_CLASSES: Record<MetricTone, string> = {
-  default: "text-neutral-900",
-  warning: "text-warning-500",
-  brand: "text-brand-700",
-};
+import { METRIC_VALUE_CLASSES } from "@/lib/metric-tone";
 
 export function MetricCardRow() {
   return (
@@ -20,7 +15,7 @@ export function MetricCardRow() {
             <span
               className={cn(
                 "text-heading-md md:text-heading-lg",
-                VALUE_CLASSES[tone],
+                METRIC_VALUE_CLASSES[tone],
               )}
             >
               {value}

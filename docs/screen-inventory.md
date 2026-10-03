@@ -103,7 +103,7 @@ LL1**, which has no shell and is built on `AuthLayout` in phase 4.
 | LL9  | Applications list           | 6:662   | 109:6033 | 102:4028 |
 | LL10 | Applications — empty        | 61:503  | 109:6916 | 102:5211 |
 | LL11 | Application review          | 6:743   | 109:6115 | 102:4147 |
-| LL12 | Agent invite                | 6:118   | 109:6202 | 102:4243 |
+| LL12 | Property Admin invite       | 6:118   | 109:6202 | 102:4243 |
 | LL13 | Payout account              | 13:217  | 109:5949 | 102:3947 |
 | LL14 | Transaction statement       | 15:572  | 109:6288 | 102:4324 |
 | LL15 | Statement — empty           | 61:698  | 109:7010 | 102:5383 |

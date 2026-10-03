@@ -12,6 +12,10 @@ import type { PaymentMethod } from "@/constants/tenant-payments";
 
 const UNAVAILABLE_METHODS: readonly PaymentMethod[] = ["bank"];
 
+async function attemptDemoPayment(): Promise<{ status: "declined" }> {
+  return { status: "declined" };
+}
+
 export function PayRentForm() {
   const router = useRouter();
   const [method, setMethod] = useState<PaymentMethod>("card");
@@ -19,10 +23,14 @@ export function PayRentForm() {
 
   return (
     <form
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
-        router.push(PAY_RENT.failedHref);
+
+        const result = await attemptDemoPayment();
+        if (result.status === "declined") {
+          router.push(PAY_RENT.failedHref);
+        }
       }}
       className="flex flex-1 flex-col gap-5 lg:justify-between"
     >

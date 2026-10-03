@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ResponsiveText } from "@/components/ui/responsive-text";
-import { TENANT_PAYMENT_PLAN } from "@/constants/tenant";
+import { TENANT_PAYMENT_PLAN, TENANT_ROUTES } from "@/constants/tenant";
 
 const {
   title,
@@ -81,10 +81,21 @@ export function PaymentPlanPanel() {
       </ul>
 
       <div className="hidden flex-wrap gap-3 md:flex">
-        <Button className="lg:h-10 lg:px-4">{primaryAction}</Button>
-        <Button variant="secondary" className="lg:h-10 lg:px-4">
+        <Link
+          href={TENANT_ROUTES.paymentPlan}
+          className={buttonClasses({ className: "lg:h-10 lg:px-4" })}
+        >
+          {primaryAction}
+        </Link>
+        <Link
+          href={TENANT_ROUTES.paymentPlan}
+          className={buttonClasses({
+            variant: "secondary",
+            className: "lg:h-10 lg:px-4",
+          })}
+        >
           {secondaryAction}
-        </Button>
+        </Link>
       </div>
     </section>
   );

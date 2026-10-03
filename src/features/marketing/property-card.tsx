@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { DotIcon } from "@/components/icons/dot-icon";
 import { Avatar } from "@/components/ui/avatar";
@@ -31,7 +32,8 @@ export function PropertyCard({
   } = property;
 
   return (
-    <article
+    <Link
+      href={`/properties/${property.id}`}
       className={cn(
         "flex flex-col overflow-clip rounded-lg border border-neutral-200 bg-white shadow-elevation-3",
         "transition-shadow hover:shadow-elevation-2",
@@ -83,6 +85,6 @@ export function PropertyCard({
           </p>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

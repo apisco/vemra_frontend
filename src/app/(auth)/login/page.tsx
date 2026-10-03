@@ -7,7 +7,6 @@ import { AuthHeader } from "@/features/auth/auth-header";
 import { AuthLayout } from "@/features/auth/auth-layout";
 import { LoginAside } from "@/features/auth/login-aside";
 import { LoginForm } from "@/features/auth/login-form";
-import { StaffSignIn } from "@/features/auth/staff-sign-in";
 
 export const metadata: Metadata = {
   title: "Log in · Vemra",
@@ -29,9 +28,7 @@ export default function LoginPage() {
             href={AUTH_ROUTES.signup}
             label={LOGIN_SCREEN.footerLabel}
           />
-          <StaffSignIn placement="inline" />
         </AuthCard>
-        <StaffSignIn placement="card" />
       </div>
     </AuthLayout>
   );

@@ -1,5 +1,3 @@
-import type { ComponentType } from "react";
-
 import { BellIcon } from "@/components/icons/bell-icon";
 import { CreditCardIcon } from "@/components/icons/credit-card-icon";
 import { EllipsisIcon } from "@/components/icons/ellipsis-icon";
@@ -7,7 +5,6 @@ import { FileTextIcon } from "@/components/icons/file-text-icon";
 import { GiftIcon } from "@/components/icons/gift-icon";
 import { HeartIcon } from "@/components/icons/heart-icon";
 import { HouseIcon } from "@/components/icons/house-icon";
-import type { IconProps } from "@/components/icons/icon-props";
 import { LayoutGridIcon } from "@/components/icons/layout-grid-icon";
 import { MessageCircleIcon } from "@/components/icons/message-circle-icon";
 import { SettingsIcon } from "@/components/icons/settings-icon";
@@ -15,18 +12,13 @@ import { ShieldIcon } from "@/components/icons/shield-icon";
 import { WalletIcon } from "@/components/icons/wallet-icon";
 import { WrenchIcon } from "@/components/icons/wrench-icon";
 import type { ResponsiveCopy } from "@/components/ui/responsive-text";
+import type {
+  DashboardNavItem,
+  DashboardUser,
+  MetricTone,
+} from "@/types/dashboard";
 
-export interface DashboardNavItem {
-  href: string;
-  label: string;
-  icon: ComponentType<IconProps>;
-}
-
-export interface DashboardUser {
-  name: string;
-  role: string;
-  initials: string;
-}
+export type { DashboardNavItem, DashboardUser, MetricTone };
 
 export const TENANT_ROUTES = {
   overview: "/tenant",
@@ -41,6 +33,7 @@ export const TENANT_ROUTES = {
   referrals: "/tenant/referrals",
   notifications: "/tenant/notifications",
   settings: "/tenant/settings",
+  profile: "/tenant/profile",
 } as const;
 
 export const TENANT_NAV: readonly DashboardNavItem[] = [
@@ -107,8 +100,6 @@ export const TENANT_DASHBOARD = {
     href: TENANT_ROUTES.paymentPlan,
   },
 } as const;
-
-export type MetricTone = "default" | "warning" | "brand";
 
 export interface TenantMetric {
   label: ResponsiveCopy;

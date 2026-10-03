@@ -1,30 +1,16 @@
 import { TENANT_ROUTES } from "@/constants/tenant";
 import type { ResponsiveCopy } from "@/components/ui/responsive-text";
+import type { CheckoutSummary } from "@/types/api/tenant";
 
-export interface CheckoutMetaRow {
-  label: string;
-  value: string;
-}
-
-export interface CheckoutSummary {
-  label: string;
-  amount: string;
-  badge?: string;
-  rows: readonly CheckoutMetaRow[];
-  note: string;
-}
-
-export const CHECKOUT_SUMMARY: CheckoutSummary = {
-  label: "Final installment due",
-  amount: "₦550.00",
-  badge: "Installment 3/3",
-  rows: [
-    { label: "Unit", value: "4B, Maple & 9th" },
-    { label: "Landlord", value: "Daniel Osei" },
-    { label: "Due date", value: "Sep 5, 2026" },
-    { label: "Plan progress", value: "3 of 3 installments" },
-  ],
-  note: "Payments are held until the due date, then released to your landlord's balance.",
+/** Shared placeholder when no checkout is ready, so both checkout screens agree. */
+export const EMPTY_CHECKOUT_SUMMARY: CheckoutSummary = {
+  label: "Payment plan unavailable",
+  amount: { amount: 0, currency: "NGN" },
+  unit: null,
+  landlordName: null,
+  dueDate: null,
+  installmentSequence: null,
+  installmentTotal: null,
 };
 
 export type PaymentMethod = "card" | "bank";

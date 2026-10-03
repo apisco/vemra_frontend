@@ -5,11 +5,14 @@ import { DotIcon } from "@/components/icons/dot-icon";
 import { ShieldIcon } from "@/components/icons/shield-icon";
 import { Avatar } from "@/components/ui/avatar";
 import { buttonClasses } from "@/components/ui/button";
-import { HERO, HERO_LISTING } from "@/constants/marketing";
+import { HERO } from "@/constants/marketing";
+import { getFeaturedListing } from "@/lib/api/resources/public";
+import { formatRent } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
 
-export function HeroSection() {
+export async function HeroSection() {
+  const listing = await getFeaturedListing();
   return (
     <section className="bg-neutral-50">
       <div
@@ -63,13 +66,19 @@ export function HeroSection() {
           <span className="hidden lg:inline">{HERO.trustNote}</span>
         </p>
 
-        <HeroListingCard className="order-3 md:order-5 lg:col-start-2 lg:row-span-5 lg:row-start-1 lg:w-full lg:max-w-100 lg:self-center lg:justify-self-end" />
+        {listing ? (
+          <HeroListingCard listing={listing} className="order-3 md:order-5 lg:col-start-2 lg:row-span-5 lg:row-start-1 lg:w-full lg:max-w-100 lg:self-center lg:justify-self-end" />
+        ) : (
+          <div className="order-3 rounded-xl border border-neutral-200 bg-white p-6 text-body-md text-neutral-700 md:order-5 lg:col-start-2 lg:row-span-5 lg:row-start-1">
+            Featured homes are being updated. Browse verified rentals to see what is available.
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-function HeroListingCard({ className }: { className?: string }) {
+function HeroListingCard({ listing, className }: { listing: import("@/types/api/listing").ListingSummary; className?: string }) {
   return (
     <article
       className={cn(
@@ -79,8 +88,8 @@ function HeroListingCard({ className }: { className?: string }) {
     >
       <div className="relative h-40 w-full md:h-60 lg:h-55">
         <Image
-          src={HERO_LISTING.imageSrc}
-          alt={HERO_LISTING.imageAlt}
+          src={listing.coverImage?.url ?? "/marketing/hero-maple-9th.png"}
+          alt={listing.coverImage?.alt ?? ""}
           fill
           sizes="(min-width: 1024px) 400px, (min-width: 768px) 704px, 100vw"
           loading="eager"
@@ -89,32 +98,32 @@ function HeroListingCard({ className }: { className?: string }) {
         />
         <span className="absolute top-4 left-4 hidden items-center gap-1 rounded-full bg-white px-3 py-1.5 text-label-sm font-semibold text-neutral-900 lg:inline-flex">
           <DotIcon className="size-2 text-brand-600" />
-          {HERO_LISTING.badge}
+          {listing.isVerified ? "Landlord Verified" : "Vemra listing"}
         </span>
       </div>
 
       <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-6">
         <p className="font-display text-heading-sm leading-[27px] font-extrabold text-brand-700 md:text-[22px] md:leading-[33px]">
-          {HERO_LISTING.price}
+          {formatRent(listing.rent, listing.rentPeriod)}
         </p>
         <p className="text-body-sm text-neutral-900 md:text-body-md md:leading-[20px]">
-          {HERO_LISTING.meta}
+          {listing.propertyType} · {listing.location}
         </p>
 
         <hr className="border-neutral-200 md:hidden lg:block" />
         <div className="flex items-center gap-3 md:hidden lg:flex">
           <Avatar
-            name={HERO_LISTING.propertyAdmin.name}
-            initials={HERO_LISTING.propertyAdmin.initials}
+            name={listing.contact?.name ?? "Vemra"}
+            initials={listing.contact?.initials ?? "V"}
             size="sm"
             className="size-7! rounded-xl text-label-sm lg:size-9!"
           />
           <div className="flex flex-col">
             <p className="text-label-sm text-neutral-900 lg:text-label-md lg:leading-[20px]">
-              {HERO_LISTING.propertyAdmin.name}
+              {listing.contact?.name ?? "Vemra"}
             </p>
             <p className="hidden text-caption text-neutral-700 lg:block">
-              {HERO_LISTING.propertyAdmin.note}
+              {listing.contact?.role ?? "Verified listing"}
             </p>
           </div>
         </div>

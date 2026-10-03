@@ -7,13 +7,21 @@ import {
   TableHeaderCell,
   TableRow,
 } from "@/components/ui/table";
-import {
-  LANDLORD_PROPERTIES_TABLE,
-  type PropertyStatus,
-} from "@/constants/landlord";
-import { cn } from "@/lib/cn";
+import { formatDate, formatRent } from "@/lib/format";
+import type {
+  LandlordPropertySummary,
+  PropertyStatus,
+} from "@/types/api/landlord";
 
-const { title, caption, headers, rows } = LANDLORD_PROPERTIES_TABLE;
+const TITLE = "Properties overview";
+const CAPTION = "Properties you own, their assigned Property Admin and rent status";
+const HEADERS = {
+  property: "Property",
+  admin: "Property admin",
+  status: "Status",
+  rentDue: "Rent due",
+  rent: "Rent",
+} as const;
 
 const STATUS_VARIANTS: Record<PropertyStatus, "success" | "danger"> = {
   occupied: "success",
@@ -22,7 +30,11 @@ const STATUS_VARIANTS: Record<PropertyStatus, "success" | "danger"> = {
 
 const HEADER_LABEL_CLASSES = "text-caption uppercase";
 
-export function PropertiesOverviewTable() {
+export function PropertiesOverviewTable({
+  properties,
+}: {
+  properties: readonly LandlordPropertySummary[];
+}) {
   return (
     <section
       aria-labelledby="properties-overview-title"
@@ -32,57 +44,48 @@ export function PropertiesOverviewTable() {
         id="properties-overview-title"
         className="px-4 font-display text-heading-sm font-semibold text-neutral-900"
       >
-        {title}
+        {TITLE}
       </h2>
 
-      <Table caption={caption}>
+      <Table caption={CAPTION}>
         <TableHead>
           <TableHeaderCell>
-            <span className={HEADER_LABEL_CLASSES}>{headers.property}</span>
+            <span className={HEADER_LABEL_CLASSES}>{HEADERS.property}</span>
           </TableHeaderCell>
           <TableHeaderCell>
-            <span className={HEADER_LABEL_CLASSES}>{headers.admin}</span>
+            <span className={HEADER_LABEL_CLASSES}>{HEADERS.admin}</span>
           </TableHeaderCell>
           <TableHeaderCell>
-            <span className={HEADER_LABEL_CLASSES}>{headers.status}</span>
+            <span className={HEADER_LABEL_CLASSES}>{HEADERS.status}</span>
           </TableHeaderCell>
           <TableHeaderCell className="max-lg:hidden">
-            <span className={HEADER_LABEL_CLASSES}>{headers.rentDue}</span>
+            <span className={HEADER_LABEL_CLASSES}>{HEADERS.rentDue}</span>
           </TableHeaderCell>
           <TableHeaderCell align="right">
-            <span className={HEADER_LABEL_CLASSES}>{headers.rent}</span>
+            <span className={HEADER_LABEL_CLASSES}>{HEADERS.rent}</span>
           </TableHeaderCell>
         </TableHead>
 
         <TableBody>
-          {rows.map(
-            ({
-              property,
-              admin,
-              status,
-              statusTone,
-              rentDue,
-              rent,
-              isCompactHidden,
-            }) => (
-              <TableRow
-                key={property}
-                className={cn(isCompactHidden && "max-lg:hidden")}
-              >
-                <TableCell isPrimary>{property}</TableCell>
-                <TableCell>{admin}</TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANTS[statusTone]} size="sm">
-                    {status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="max-lg:hidden">{rentDue}</TableCell>
-                <TableCell align="right" isPrimary>
-                  {rent}
-                </TableCell>
-              </TableRow>
-            ),
-          )}
+          {properties.map((property) => (
+            <TableRow key={property.id}>
+              <TableCell isPrimary>{property.name}</TableCell>
+              <TableCell>{property.admin?.name ?? "Not assigned"}</TableCell>
+              <TableCell>
+                <Badge variant={STATUS_VARIANTS[property.status]} size="sm">
+                  {property.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="max-lg:hidden">
+                {property.nextRentDueDate
+                  ? formatDate(property.nextRentDueDate, "short")
+                  : "—"}
+              </TableCell>
+              <TableCell align="right" isPrimary>
+                {formatRent(property.rent, property.rentPeriod)}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </section>

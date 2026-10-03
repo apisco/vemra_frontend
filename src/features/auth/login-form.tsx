@@ -13,6 +13,10 @@ import { AUTH_ROLES, AUTH_ROUTES, LOGIN_SCREEN } from "@/constants/auth";
 import { AuthDivider } from "@/features/auth/auth-divider";
 import { useAuthForm } from "@/features/auth/use-auth-form";
 import { validateEmail, validateRequired } from "@/lib/validation";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { clientPost } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
+import type { AuthResult, LoginPayload } from "@/types/api/auth";
 
 type LoginValues = {
   email: string;
@@ -23,6 +27,7 @@ type LoginValues = {
 export function LoginForm() {
   const router = useRouter();
   const [role, setRole] = useState<AuthRole>("tenant");
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useAuthForm<LoginValues>({
     initialValues: { email: "", password: "", remember: true },
@@ -30,7 +35,17 @@ export function LoginForm() {
       email: validateEmail(values.email),
       password: validateRequired(values.password, "Password"),
     }),
-    onSubmit: () => router.push(role === "landlord" ? "/landlord" : "/tenant"),
+    onSubmit: async (values) => {
+      setSubmitError(null);
+      try {
+        const payload: LoginPayload = { ...values, role };
+        await clientPost<AuthResult>(ENDPOINTS.auth.login, payload);
+        router.push(role === "landlord" ? "/landlord" : "/tenant");
+      } catch (error) {
+        setSubmitError(apiErrorMessage(error));
+        throw error;
+      }
+    },
   });
 
   return (
@@ -89,6 +104,11 @@ export function LoginForm() {
         <Button type="submit" fullWidth isLoading={form.isSubmitting}>
           {LOGIN_SCREEN.submitLabel}
         </Button>
+        {submitError ? (
+          <p role="alert" className="text-center text-label-sm text-error-600">
+            {submitError}
+          </p>
+        ) : null}
 
         <AuthDivider label={LOGIN_SCREEN.dividerLabel} />
 

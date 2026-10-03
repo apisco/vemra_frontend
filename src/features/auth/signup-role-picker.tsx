@@ -24,7 +24,8 @@ export function SignupRolePicker() {
   const router = useRouter();
   const form = useAuthForm<SignupRoleValues>({
     initialValues: { role: SIGNUP_DEFAULT_ROLE },
-    onSubmit: () => router.push("/signup/details"),
+    onSubmit: (values) =>
+      router.push(`/signup/details?role=${values.role}`),
   });
 
   return (

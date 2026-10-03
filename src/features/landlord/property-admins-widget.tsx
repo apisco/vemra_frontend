@@ -1,9 +1,12 @@
 import { Avatar } from "@/components/ui/avatar";
-import { LANDLORD_PROPERTY_ADMINS } from "@/constants/landlord";
+import { formatCount } from "@/lib/format";
+import type { PropertyAdmin } from "@/types/api/landlord";
 
-const { title, people } = LANDLORD_PROPERTY_ADMINS;
-
-export function PropertyAdminsWidget() {
+export function PropertyAdminsWidget({
+  admins,
+}: {
+  admins: readonly PropertyAdmin[];
+}) {
   return (
     <section
       aria-labelledby="property-admins-title"
@@ -13,11 +16,11 @@ export function PropertyAdminsWidget() {
         id="property-admins-title"
         className="font-display text-heading-sm font-semibold text-neutral-900"
       >
-        {title}
+        Vemra Property Admins
       </h2>
 
       <ul className="flex flex-col gap-3">
-        {people.map(({ name, detail }) => (
+        {admins.map(({ name, unitsManaged, properties }) => (
           <li key={name} className="flex items-center gap-3">
             <Avatar name={name} size="sm" />
             <div className="min-w-0">
@@ -25,7 +28,8 @@ export function PropertyAdminsWidget() {
                 {name}
               </p>
               <p className="truncate text-label-sm text-neutral-700">
-                {detail}
+                {formatCount(unitsManaged)} unit{unitsManaged === 1 ? "" : "s"} ·{" "}
+                {properties[0] ?? "No properties"}
               </p>
             </div>
           </li>

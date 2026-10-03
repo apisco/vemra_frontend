@@ -1,5 +1,3 @@
-import type { Property } from "@/types/property";
-
 export interface NavLink {
   href: string;
   label: string;
@@ -176,20 +174,6 @@ export const CTA_BAND = {
   cta: { href: "/signup", label: "Get started" },
 } as const;
 
-export const HERO_LISTING = {
-  price: "₦1,450 / year",
-  meta: "2-bed apartment · Maple & 9th, Unit 4B",
-  badge: "Landlord Verified",
-  imageSrc: "/marketing/hero-maple-9th.png",
-  imageAlt:
-    "Living room of a two-bedroom apartment with teal sofas and a city view",
-  propertyAdmin: {
-    name: "Priya Nandan",
-    initials: "PN",
-    note: "Property Admin · responds in ~2 hrs",
-  },
-} as const;
-
 export const BROWSE_PAGE = {
   heading: "Find a home, and know who owns it.",
   subheading:
@@ -216,84 +200,5 @@ export const BROWSE_FILTERS: readonly BrowseFilter[] = [
     short: "Verified only",
     hasChevron: true,
     showOnMobile: false,
-  },
-];
-
-const PROPERTY_ADMIN = {
-  name: "Priya Nandan",
-  role: "Vemra Property Admin",
-} as const;
-
-export const PROPERTIES: readonly Property[] = [
-  {
-    id: "maple-9th-4b",
-    price: "₦1,450 /yr",
-    location: "Maple & 9th, Unit 4B",
-    propertyType: "2-bed apartment",
-    highlight: "Verified Landlord",
-    imageSrc: "/marketing/listing-maple-9th.png",
-    imageAlt: "Bright living room with teal sofas, plants and a city skyline view",
-    isVerified: true,
-    isAvailableNow: true,
-    contact: PROPERTY_ADMIN,
-  },
-  {
-    id: "oak-boulevard-214",
-    price: "₦1,890 /yr",
-    location: "Oak Boulevard 214",
-    propertyType: "3-bed family townhouse",
-    imageSrc: "/marketing/listing-oak-boulevard.png",
-    imageAlt: "Townhouse frontage with a paved path and low planting",
-    isVerified: true,
-    isAvailableNow: true,
-    contact: PROPERTY_ADMIN,
-  },
-  {
-    id: "pinecrest-s-1a",
-    price: "₦1,200 /yr",
-    location: "Pinecrest S, Unit 1A",
-    propertyType: "1-bed cozy loft",
-    highlight: "Close to transit",
-    imageSrc: "/marketing/listing-pinecrest.png",
-    imageAlt: "Loft interior with exposed beams and a large window",
-    isVerified: true,
-    isAvailableNow: false,
-    contact: PROPERTY_ADMIN,
-  },
-  {
-    id: "cedar-heights-12",
-    price: "₦2,100 /yr",
-    location: "Cedar Heights Road 12",
-    propertyType: "4-bed duplex",
-    highlight: "Large backyard",
-    imageSrc: "/marketing/listing-cedar-heights.png",
-    imageAlt: "Duplex exterior seen from the garden lawn",
-    isVerified: true,
-    isAvailableNow: true,
-    contact: PROPERTY_ADMIN,
-  },
-  {
-    id: "riverview-3g",
-    price: "₦1,650 /yr",
-    location: "Riverview Ave, Apt 3G",
-    propertyType: "2-bed luxury high-rise",
-    highlight: "Skyline views",
-    imageSrc: "/marketing/listing-riverview.png",
-    imageAlt: "High-rise apartment lounge with floor-to-ceiling windows",
-    isVerified: true,
-    isAvailableNow: false,
-    contact: PROPERTY_ADMIN,
-  },
-  {
-    id: "elm-way-10",
-    price: "₦1,100 /yr",
-    location: "Elm Way, Unit 10",
-    propertyType: "Studio apartment",
-    highlight: "Modern kitchen",
-    imageSrc: "/marketing/listing-elm-way.png",
-    imageAlt: "Studio apartment with a modern kitchen counter and stools",
-    isVerified: true,
-    isAvailableNow: true,
-    contact: PROPERTY_ADMIN,
   },
 ];

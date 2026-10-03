@@ -1,9 +1,28 @@
-import { LANDLORD_REVENUE_ROLL } from "@/constants/landlord";
 import { cn } from "@/lib/cn";
+import { formatMoney } from "@/lib/format";
+import type { LandlordDashboard } from "@/types/api/landlord";
 
-const { title, value, caption, bars } = LANDLORD_REVENUE_ROLL;
+type BarHeightClass = "h-7.5" | "h-10" | "h-8.75" | "h-12.5" | "h-13.75";
+const TITLE = "Monthly revenue roll";
+const CAPTION = "Expected total";
 
-export function RevenueRollCard() {
+function barHeightClass(ratio: number): BarHeightClass {
+  if (ratio >= 0.9) return "h-13.75";
+  if (ratio >= 0.75) return "h-12.5";
+  if (ratio >= 0.6) return "h-10";
+  if (ratio >= 0.45) return "h-8.75";
+  return "h-7.5";
+}
+
+export function RevenueRollCard({ dashboard }: { dashboard: LandlordDashboard }) {
+  const maxValue = Math.max(
+    ...dashboard.revenueSeries.map((point) => point.amount.amount),
+    1,
+  );
+  const bars = dashboard.revenueSeries.map((point) => ({
+    heightClass: barHeightClass(point.amount.amount / maxValue),
+    isHighlighted: point.amount.amount === dashboard.monthlyRentRoll.amount,
+  }));
   return (
     <section
       aria-labelledby="revenue-roll-title"
@@ -13,7 +32,7 @@ export function RevenueRollCard() {
         id="revenue-roll-title"
         className="font-display text-label-md font-semibold text-neutral-900"
       >
-        {title}
+        {TITLE}
       </h2>
 
       <div className="flex items-center justify-between gap-4">
@@ -32,9 +51,9 @@ export function RevenueRollCard() {
 
         <div className="text-right">
           <p className="font-display text-heading-md font-bold text-neutral-900">
-            {value}
+            {formatMoney(dashboard.monthlyRentRoll)}
           </p>
-          <p className="text-caption text-neutral-700">{caption}</p>
+          <p className="text-caption text-neutral-700">{CAPTION}</p>
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ArrowLeftIcon } from "@/components/icons/arrow-left-icon";
 import { CheckCircleIcon } from "@/components/icons/check-circle-icon";
@@ -13,6 +13,9 @@ import { AuthHeader } from "@/features/auth/auth-header";
 import { StatusIcon } from "@/features/auth/status-icon";
 import { useAuthForm } from "@/features/auth/use-auth-form";
 import { validateEmail } from "@/lib/validation";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { clientPost } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 
 type ForgotPasswordValues = {
   email: string;
@@ -20,10 +23,22 @@ type ForgotPasswordValues = {
 
 export function ForgotPasswordForm() {
   const confirmation = useRef<HTMLDivElement>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useAuthForm<ForgotPasswordValues>({
     initialValues: { email: "" },
     validate: (values) => ({ email: validateEmail(values.email) }),
+    onSubmit: async (values) => {
+      setSubmitError(null);
+      try {
+        await clientPost(ENDPOINTS.auth.forgotPassword, {
+          email: values.email,
+        });
+      } catch (error) {
+        setSubmitError(apiErrorMessage(error));
+        throw error;
+      }
+    },
   });
 
   useEffect(() => {
@@ -91,6 +106,11 @@ export function ForgotPasswordForm() {
         <Button type="submit" fullWidth isLoading={form.isSubmitting}>
           {FORGOT_PASSWORD_SCREEN.submitLabel}
         </Button>
+        {submitError ? (
+          <p role="alert" className="text-center text-label-sm text-error-600">
+            {submitError}
+          </p>
+        ) : null}
         {backLink}
       </AuthCard>
     </form>

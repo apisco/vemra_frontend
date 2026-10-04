@@ -3,7 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { CACHE_TAGS, ENDPOINTS, REVALIDATE } from "@/lib/api/endpoints";
-import { isApiError } from "@/lib/api/errors";
+import { isApiError, isNotFound } from "@/lib/api/errors";
 import { apiGetOptionalPublic, apiGetPublic } from "@/lib/api/server";
 import type { Paginated } from "@/types/api/common";
 import type {
@@ -44,22 +44,24 @@ const EMPTY_BROWSE_RESULT: BrowseResult = {
 
 /**
  * Public marketing content is non-critical and every screen already has a
- * designed empty/fallback state, so an unreachable backend (offline dev, a
- * transient outage, or a build-time prerender) degrades to that fallback
- * instead of throwing. HTTP errors still surface — only `network`/`timeout`
- * failures are treated as "no data".
+ * designed empty/fallback state, so a missing or unreachable endpoint degrades
+ * to that fallback instead of failing the render (or the build's prerender).
+ * `404`s are treated as "no data" because the public endpoint set is still
+ * settling; network/timeout failures are equally transient. Other HTTP errors
+ * (auth, server faults) still surface.
  */
 async function publicRead<T>(run: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await run();
   } catch (error) {
-    const transient =
-      isApiError(error) &&
-      (error.kind === "network" || error.kind === "timeout");
+    const recoverable =
+      isNotFound(error) ||
+      (isApiError(error) &&
+        (error.kind === "network" || error.kind === "timeout"));
 
-    if (transient) {
+    if (recoverable) {
       console.warn(
-        `[api] public read unavailable; serving fallback: ${error.message}`,
+        `[api] public read unavailable; serving fallback: ${error instanceof Error ? error.message : String(error)}`,
       );
       return fallback;
     }

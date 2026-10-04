@@ -1,53 +1,34 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { cache } from "react";
 
-const DEFAULT_SESSION_COOKIE = "vemra_session";
+import { SUPABASE_CONFIG } from "@/config/supabase";
+import { createClient } from "@/lib/supabase/server";
 
-export const SESSION_COOKIE =
-  process.env.SESSION_COOKIE_NAME?.trim() || DEFAULT_SESSION_COOKIE;
+/**
+ * The Supabase access token to forward to the Vemra backend as
+ * `Authorization: Bearer <token>`.
+ *
+ * The backend trusts Supabase-issued tokens (`bearerAuth` in the OpenAPI spec);
+ * it does not have its own login. A missing token is an ordinary state, not an
+ * error — callers fall back to an unauthenticated request and the backend
+ * answers `401`.
+ *
+ * Wrapped in React `cache()` so the many backend calls a single render or
+ * server action makes share one Supabase client and one session lookup instead
+ * of re-reading the session per request.
+ */
+export const getAccessToken = cache(async (): Promise<string | null> => {
+  if (!SUPABASE_CONFIG.isConfigured) {
+    return null;
+  }
 
-export async function readSessionToken(): Promise<string | null> {
-  const store = await cookies();
-  return store.get(SESSION_COOKIE)?.value ?? null;
-}
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getSession();
 
-export async function hasSessionCookie(): Promise<boolean> {
-  const store = await cookies();
-  return store.has(SESSION_COOKIE);
-}
+  if (error !== null || data.session === null) {
+    return null;
+  }
 
-export async function sessionCookieHeader(): Promise<string | null> {
-  const token = await readSessionToken();
-  return token === null ? null : `${SESSION_COOKIE}=${token}`;
-}
-
-export interface SetSessionOptions {
-  expiresAt?: string | null;
-}
-
-export async function setSessionCookie(
-  token: string,
-  { expiresAt }: SetSessionOptions = {},
-): Promise<void> {
-  const store = await cookies();
-  const expires =
-    expiresAt === undefined || expiresAt === null
-      ? undefined
-      : new Date(expiresAt);
-
-  store.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    ...(expires !== undefined && !Number.isNaN(expires.getTime())
-      ? { expires }
-      : {}),
-  });
-}
-
-export async function clearSessionCookie(): Promise<void> {
-  const store = await cookies();
-  store.delete(SESSION_COOKIE);
-}
+  return data.session.access_token;
+});

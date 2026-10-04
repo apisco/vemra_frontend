@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CheckCircleIcon } from "@/components/icons/check-circle-icon";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { AuthHeader } from "@/features/auth/auth-header";
 import { PasswordField } from "@/features/auth/password-field";
 import { StatusIcon } from "@/features/auth/status-icon";
 import { useAuthForm } from "@/features/auth/use-auth-form";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseErrorMessage } from "@/lib/supabase/errors";
 import { validateMatch, validatePassword } from "@/lib/validation";
 
 type ResetPasswordValues = {
@@ -20,6 +22,7 @@ type ResetPasswordValues = {
 
 export function ResetPasswordForm() {
   const confirmation = useRef<HTMLDivElement>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useAuthForm<ResetPasswordValues>({
     initialValues: { password: "", confirm: "" },
@@ -31,6 +34,21 @@ export function ResetPasswordForm() {
         RESET_PASSWORD_SCREEN.confirmLabel,
       ),
     }),
+    onSubmit: async (values) => {
+      setSubmitError(null);
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.auth.updateUser({
+          password: values.password,
+        });
+        if (error) {
+          throw error;
+        }
+      } catch (error) {
+        setSubmitError(supabaseErrorMessage(error));
+        throw error;
+      }
+    },
   });
 
   useEffect(() => {
@@ -109,6 +127,11 @@ export function ResetPasswordForm() {
         <Button type="submit" fullWidth isLoading={form.isSubmitting}>
           {RESET_PASSWORD_SCREEN.submitLabel}
         </Button>
+        {submitError ? (
+          <p role="alert" className="text-center text-label-sm text-error-600">
+            {submitError}
+          </p>
+        ) : null}
       </AuthCard>
     </form>
   );

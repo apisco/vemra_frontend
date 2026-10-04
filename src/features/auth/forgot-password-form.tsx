@@ -12,10 +12,10 @@ import { AuthFooter } from "@/features/auth/auth-footer";
 import { AuthHeader } from "@/features/auth/auth-header";
 import { StatusIcon } from "@/features/auth/status-icon";
 import { useAuthForm } from "@/features/auth/use-auth-form";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseErrorMessage } from "@/lib/supabase/errors";
+import { authCallbackUrl } from "@/lib/supabase/urls";
 import { validateEmail } from "@/lib/validation";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { clientPost } from "@/lib/api/client";
-import { ENDPOINTS } from "@/lib/api/endpoints";
 
 type ForgotPasswordValues = {
   email: string;
@@ -31,11 +31,16 @@ export function ForgotPasswordForm() {
     onSubmit: async (values) => {
       setSubmitError(null);
       try {
-        await clientPost(ENDPOINTS.auth.forgotPassword, {
-          email: values.email,
-        });
+        const supabase = createClient();
+        const { error } = await supabase.auth.resetPasswordForEmail(
+          values.email,
+          { redirectTo: authCallbackUrl(AUTH_ROUTES.resetPassword) },
+        );
+        if (error) {
+          throw error;
+        }
       } catch (error) {
-        setSubmitError(apiErrorMessage(error));
+        setSubmitError(supabaseErrorMessage(error));
         throw error;
       }
     },

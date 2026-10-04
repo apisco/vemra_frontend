@@ -1,16 +1,23 @@
 export const ENDPOINTS = {
-  auth: {
-    signup: "/auth/signup",
-    login: "/auth/login",
-    logout: "/auth/logout",
-    session: "/auth/session",
-    forgotPassword: "/auth/password/forgot",
-    resetPassword: "/auth/password/reset",
-    verifyEmail: "/auth/email/verify",
-    resendEmailVerification: "/auth/email/resend",
-    verification: "/auth/verification",
-    twoFactorSetup: "/auth/two-factor/setup",
-    twoFactorVerify: "/auth/two-factor/verify",
+  /**
+   * The caller's own account. Auth itself is handled by Supabase (see
+   * `src/lib/supabase`); the backend authenticates with the Supabase access
+   * token and exposes the resulting profile and onboarding state here.
+   */
+  identity: {
+    me: "/me",
+    updateProfile: "/me/profile",
+  },
+
+  /**
+   * KYC submission workflow, in two steps:
+   *   1. `documentGrants` — get a signed Cloudinary upload policy.
+   *   2. Upload the file straight to Cloudinary (never through this backend).
+   *   3. `submissions` — hand the resulting storage paths to the backend.
+   */
+  kyc: {
+    documentGrants: "/kyc/documents/grants",
+    submissions: "/kyc/submissions",
   },
 
   public: {
@@ -20,10 +27,6 @@ export const ENDPOINTS = {
     profile: (profileId: string) => `/profiles/${profileId}`,
     platformStats: "/platform/stats",
     dashboardPreview: "/platform/dashboard-preview",
-  },
-
-  onboarding: {
-    welcome: (role: string) => `/onboarding/${role}`,
   },
 
   tenant: {

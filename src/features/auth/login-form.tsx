@@ -8,15 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { DEFAULT_SIGNED_IN_PATH } from "@/config/supabase";
 import type { AuthRole } from "@/constants/auth";
 import { AUTH_ROLES, AUTH_ROUTES, LOGIN_SCREEN } from "@/constants/auth";
 import { AuthDivider } from "@/features/auth/auth-divider";
 import { useAuthForm } from "@/features/auth/use-auth-form";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseErrorMessage } from "@/lib/supabase/errors";
+import { resolveNextPath } from "@/lib/supabase/paths";
+import { authCallbackUrl } from "@/lib/supabase/urls";
 import { validateEmail, validateRequired } from "@/lib/validation";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { clientPost } from "@/lib/api/client";
-import { ENDPOINTS } from "@/lib/api/endpoints";
-import type { AuthResult, LoginPayload } from "@/types/api/auth";
 
 type LoginValues = {
   email: string;
@@ -24,7 +25,19 @@ type LoginValues = {
   remember: boolean;
 };
 
-export function LoginForm() {
+export interface LoginFormProps {
+  next?: string | null;
+}
+
+function signedInPath(role: AuthRole): string {
+  return role === "landlord" ? "/landlord" : DEFAULT_SIGNED_IN_PATH;
+}
+
+function roleFromMetadata(metadata: Record<string, unknown>): AuthRole | null {
+  return metadata.role === "landlord" ? "landlord" : null;
+}
+
+export function LoginForm({ next = null }: LoginFormProps) {
   const router = useRouter();
   const [role, setRole] = useState<AuthRole>("tenant");
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -38,15 +51,41 @@ export function LoginForm() {
     onSubmit: async (values) => {
       setSubmitError(null);
       try {
-        const payload: LoginPayload = { ...values, role };
-        await clientPost<AuthResult>(ENDPOINTS.auth.login, payload);
-        router.push(role === "landlord" ? "/landlord" : "/tenant");
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+        if (error) {
+          throw error;
+        }
+        const metadata: Record<string, unknown> = data.user?.user_metadata ?? {};
+        const fallback = signedInPath(roleFromMetadata(metadata) ?? role);
+        router.push(resolveNextPath(next, fallback));
       } catch (error) {
-        setSubmitError(apiErrorMessage(error));
+        setSubmitError(supabaseErrorMessage(error));
         throw error;
       }
     },
   });
+
+  const handleGoogle = async () => {
+    setSubmitError(null);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: authCallbackUrl(resolveNextPath(next, signedInPath(role))),
+        },
+      });
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      setSubmitError(supabaseErrorMessage(error));
+    }
+  };
 
   return (
     <form
@@ -112,7 +151,7 @@ export function LoginForm() {
 
         <AuthDivider label={LOGIN_SCREEN.dividerLabel} />
 
-        <Button variant="secondary" fullWidth>
+        <Button variant="secondary" fullWidth onClick={handleGoogle}>
           {LOGIN_SCREEN.googleLabel}
         </Button>
       </div>

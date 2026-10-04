@@ -1,5 +1,14 @@
 export type Iso8601 = string;
 
+/**
+ * Every successful Vemra response is wrapped in this envelope. `requestId`
+ * correlates the response with the server logs (quote it in a support report).
+ */
+export interface ApiEnvelope<T> {
+  data: T;
+  requestId: string;
+}
+
 export interface Money {
   amount: number;
   currency: string;

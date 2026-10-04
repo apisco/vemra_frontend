@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import type { DashboardNavLink } from "@/components/layout/dashboard-shell";
 import { LogoMark } from "@/components/layout/logo-mark";
+import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavItem } from "@/components/navigation/nav-item";
 import { Avatar } from "@/components/ui/avatar";
 import type { DashboardUser } from "@/types/dashboard";
@@ -50,19 +51,22 @@ export function DashboardSidebar({
         </nav>
       </div>
 
-      <Link
-        href={userProfileHref ?? "#"}
-        aria-label={`Open ${user.name} profile`}
-        className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-      >
-        <Avatar name={user.name} initials={user.initials} size="sm" />
-        <div className="min-w-0">
-          <p className="truncate text-label-md font-semibold text-white">
-            {user.name}
-          </p>
-          <p className="truncate text-caption text-neutral-400">{user.role}</p>
-        </div>
-      </Link>
+      <div className="flex flex-col gap-1">
+        <Link
+          href={userProfileHref ?? "#"}
+          aria-label={`Open ${user.name} profile`}
+          className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <Avatar name={user.name} initials={user.initials} size="sm" />
+          <div className="min-w-0">
+            <p className="truncate text-label-md font-semibold text-white">
+              {user.name}
+            </p>
+            <p className="truncate text-caption text-neutral-400">{user.role}</p>
+          </div>
+        </Link>
+        <SignOutButton tone="dark" />
+      </div>
     </div>
   );
 }

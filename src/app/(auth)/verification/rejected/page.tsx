@@ -1,26 +1,36 @@
 import type { Metadata } from "next";
 
 import { AlertTriangleIcon } from "@/components/icons/alert-triangle-icon";
-import {
-  VERIFICATION_REJECTED_ROWS,
-  VERIFICATION_REJECTED_SCREEN,
-} from "@/constants/auth";
+import { VERIFICATION_REJECTED_SCREEN } from "@/constants/auth";
 import { VerificationStatus } from "@/features/auth/verification-status";
+import {
+  kycReviewRows,
+  reviewRowsFor,
+} from "@/features/auth/verification-steps";
+import { getAccount } from "@/lib/api/resources/auth";
 
 export const metadata: Metadata = {
   title: "One document needs a fix · Vemra",
   description: VERIFICATION_REJECTED_SCREEN.description,
 };
 
-export default function VerificationRejectedPage() {
+export const dynamic = "force-dynamic";
+
+export default async function VerificationRejectedPage() {
+  const account = await getAccount();
+  const rows = account ? reviewRowsFor(account) : kycReviewRows("REJECTED");
+
   return (
     <VerificationStatus
       tone="error"
       icon={<AlertTriangleIcon />}
       title={VERIFICATION_REJECTED_SCREEN.title}
-      description={VERIFICATION_REJECTED_SCREEN.description}
+      description={
+        account?.onboarding.applicantMessage ??
+        VERIFICATION_REJECTED_SCREEN.description
+      }
       cardLabel={VERIFICATION_REJECTED_SCREEN.cardLabel}
-      rows={VERIFICATION_REJECTED_ROWS}
+      rows={rows}
       ctaLabel={VERIFICATION_REJECTED_SCREEN.ctaLabel}
       ctaHref={VERIFICATION_REJECTED_SCREEN.ctaHref}
     />

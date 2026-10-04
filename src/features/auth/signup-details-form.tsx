@@ -16,18 +16,21 @@ import { AuthCard } from "@/features/auth/auth-card";
 import { AuthDivider } from "@/features/auth/auth-divider";
 import { PasswordField } from "@/features/auth/password-field";
 import { useAuthForm } from "@/features/auth/use-auth-form";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseErrorMessage } from "@/lib/supabase/errors";
+import { authCallbackUrl, rememberPendingEmail } from "@/lib/supabase/urls";
 import {
   validateEmail,
   validateMatch,
   validatePassword,
 } from "@/lib/validation";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { clientPost } from "@/lib/api/client";
-import { ENDPOINTS } from "@/lib/api/endpoints";
-import type { AuthResult, SignupPayload, UserRole } from "@/types/api/auth";
+import type { UserRole } from "@/types/api/auth";
 
 const TERMS_LINK_CLASSES =
   "rounded-sm font-semibold text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700";
+
+const VERIFIED_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=verified`;
+const PENDING_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=pending`;
 
 type SignupDetailsValues = {
   email: string;
@@ -69,20 +72,46 @@ export function SignupDetailsForm({
     onSubmit: async (values) => {
       setSubmitError(null);
       try {
-        const payload: SignupPayload = {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
-          role,
-          acceptedTerms: values.terms,
-        };
-        await clientPost<AuthResult>(ENDPOINTS.auth.signup, payload);
+          options: {
+            data: { role },
+            emailRedirectTo: authCallbackUrl(VERIFIED_EMAIL_PATH),
+          },
+        });
+        if (error) {
+          throw error;
+        }
+        if (data.session === null) {
+          rememberPendingEmail(values.email);
+          router.push(PENDING_EMAIL_PATH);
+          return;
+        }
         router.push(AUTH_ROUTES.signupVerification);
       } catch (error) {
-        setSubmitError(apiErrorMessage(error));
+        setSubmitError(supabaseErrorMessage(error));
         throw error;
       }
     },
   });
+
+  const handleGoogle = async () => {
+    setSubmitError(null);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: authCallbackUrl(AUTH_ROUTES.signupVerification) },
+      });
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      setSubmitError(supabaseErrorMessage(error));
+    }
+  };
 
   const termsError = form.errorFor("terms");
 
@@ -162,7 +191,7 @@ export function SignupDetailsForm({
 
         <AuthDivider label={SIGNUP_DETAILS_SCREEN.dividerLabel} className="md:gap-4" />
 
-        <Button variant="secondary" fullWidth>
+        <Button variant="secondary" fullWidth onClick={handleGoogle}>
           {SIGNUP_DETAILS_SCREEN.googleLabel}
         </Button>
       </AuthCard>

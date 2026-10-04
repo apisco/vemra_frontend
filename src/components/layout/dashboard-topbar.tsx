@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import type { DashboardNavLink } from "@/components/layout/dashboard-shell";
 import { LogoMark } from "@/components/layout/logo-mark";
+import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavItem } from "@/components/navigation/nav-item";
 import { Avatar } from "@/components/ui/avatar";
 import type { DashboardUser } from "@/types/dashboard";
@@ -42,13 +43,16 @@ export function DashboardTopbar({
         ))}
       </nav>
 
-      <Link
-        href={userProfileHref ?? "#"}
-        aria-label={`Open ${user.name} profile`}
-        className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-      >
-        <Avatar name={user.name} initials={user.initials} size="sm" />
-      </Link>
+      <div className="flex items-center gap-1">
+        <Link
+          href={userProfileHref ?? "#"}
+          aria-label={`Open ${user.name} profile`}
+          className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <Avatar name={user.name} initials={user.initials} size="sm" />
+        </Link>
+        <SignOutButton tone="dark" compact />
+      </div>
     </div>
   );
 }

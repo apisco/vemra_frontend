@@ -13,7 +13,10 @@ export const metadata: Metadata = {
   description: "Log in to your Vemra account.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: PageProps<"/login">) {
+  const { next } = await searchParams;
+  const nextPath = typeof next === "string" ? next : null;
+
   return (
     <AuthLayout aside={<LoginAside />}>
       <div className="flex w-full flex-col lg:gap-5">
@@ -22,7 +25,7 @@ export default function LoginPage() {
             title={LOGIN_SCREEN.title}
             description={LOGIN_SCREEN.description}
           />
-          <LoginForm />
+          <LoginForm next={nextPath} />
           <AuthFooter
             prompt={LOGIN_SCREEN.footerPrompt}
             href={AUTH_ROUTES.signup}

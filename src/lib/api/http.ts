@@ -120,6 +120,26 @@ function readErrorEnvelope(payload: unknown): ErrorEnvelope {
     }
   }
 
+  // Vemra's `details` is an array of `{ field, reason }` where `field` is
+  // namespaced with its location (`body.email`); fold it into the same map so
+  // callers have one source of per-field messages.
+  if (fieldErrors === null && Array.isArray(nested.details)) {
+    const entries = (nested.details as unknown[]).flatMap((detail) => {
+      if (detail === null || typeof detail !== "object") {
+        return [];
+      }
+      const { field, reason } = detail as { field?: unknown; reason?: unknown };
+      if (typeof field !== "string" || typeof reason !== "string") {
+        return [];
+      }
+      const key = field.includes(".") ? (field.split(".").pop() ?? field) : field;
+      return [[key, reason] as const];
+    });
+    if (entries.length > 0) {
+      fieldErrors = Object.fromEntries(entries);
+    }
+  }
+
   return { message: message ?? null, code: code ?? null, fieldErrors };
 }
 

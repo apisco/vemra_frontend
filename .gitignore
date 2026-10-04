@@ -45,5 +45,5 @@ CLAUDE.md
 .figma-refs
 .kilo
 .claude
-.env.example
 .env
+.env.example

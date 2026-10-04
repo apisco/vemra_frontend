@@ -39,6 +39,31 @@ function imageRemotePatterns(): RemotePattern[] {
   return patterns;
 }
 
+/**
+ * Auth is Supabase-only, and `src/proxy.ts` returns 503 for every auth and
+ * guarded route when it is unconfigured. Fail the production build instead of
+ * shipping an app that cannot sign anyone in; `next dev` is unaffected.
+ */
+function assertProductionAuthConfig(): void {
+  if (process.env.NODE_ENV !== "production") {
+    return;
+  }
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+    "";
+
+  if (url === "" || key === "") {
+    throw new Error(
+      "Supabase auth is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) before a production build; without them every auth and guarded route returns 503.",
+    );
+  }
+}
+
+assertProductionAuthConfig();
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: imageRemotePatterns(),

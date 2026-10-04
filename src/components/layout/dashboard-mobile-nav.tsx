@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { DashboardNavLink } from "@/components/layout/dashboard-shell";
 import { LogoMark } from "@/components/layout/logo-mark";
+import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavItem, navItemClasses } from "@/components/navigation/nav-item";
 import { Avatar } from "@/components/ui/avatar";
 import type { DashboardUser } from "@/types/dashboard";
@@ -164,22 +165,25 @@ export function DashboardMobileNav({
             ))}
           </div>
 
-          <Link
-            href={userProfileHref ?? "#"}
-            onClick={() => setIsDrawerOpen(false)}
-            aria-label={`Open ${user.name} profile`}
-            className="flex items-center gap-3 rounded-md border-t border-neutral-200 px-3 pt-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-          >
-            <Avatar name={user.name} initials={user.initials} size="sm" />
-            <div className="min-w-0">
-              <p className="truncate text-label-md font-semibold text-neutral-900">
-                {user.name}
-              </p>
-              <p className="truncate text-caption text-neutral-700">
-                {user.role}
-              </p>
-            </div>
+          <div className="flex flex-col gap-1 border-t border-neutral-200 pt-4">
+            <Link
+              href={userProfileHref ?? "#"}
+              onClick={() => setIsDrawerOpen(false)}
+              aria-label={`Open ${user.name} profile`}
+              className="flex items-center gap-3 rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+            >
+              <Avatar name={user.name} initials={user.initials} size="sm" />
+              <div className="min-w-0">
+                <p className="truncate text-label-md font-semibold text-neutral-900">
+                  {user.name}
+                </p>
+                <p className="truncate text-caption text-neutral-700">
+                  {user.role}
+                </p>
+              </div>
             </Link>
+            <SignOutButton />
+          </div>
         </div>
       </dialog>
     </>

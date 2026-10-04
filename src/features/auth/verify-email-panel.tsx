@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
 import { AlertTriangleIcon } from "@/components/icons/alert-triangle-icon";
@@ -19,9 +19,9 @@ import { AuthCard } from "@/features/auth/auth-card";
 import { AuthFooter } from "@/features/auth/auth-footer";
 import { AuthHeader } from "@/features/auth/auth-header";
 import { StatusIcon } from "@/features/auth/status-icon";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { clientPost } from "@/lib/api/client";
-import { ENDPOINTS } from "@/lib/api/endpoints";
+import { createClient } from "@/lib/supabase/client";
+import { supabaseErrorMessage } from "@/lib/supabase/errors";
+import { readPendingEmail } from "@/lib/supabase/urls";
 
 const STATE_ICONS: Record<VerifyEmailStatus, ReactNode> = {
   verified: <CheckCircleIcon />,
@@ -31,6 +31,19 @@ const STATE_ICONS: Record<VerifyEmailStatus, ReactNode> = {
 
 function resolveStatus(value: string | null): VerifyEmailStatus {
   return value === "pending" || value === "expired" ? value : "verified";
+}
+
+function subscribeToPendingEmail(onStoreChange: () => void): () => void {
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+}
+
+function pendingEmailSnapshot(): string {
+  return readPendingEmail() ?? VERIFY_EMAIL_SCREEN.email;
+}
+
+function pendingEmailServerSnapshot(): string {
+  return VERIFY_EMAIL_SCREEN.email;
 }
 
 export interface VerifyEmailCardProps {
@@ -43,17 +56,29 @@ export function VerifyEmailCard({ status }: VerifyEmailCardProps) {
   const [isResending, setIsResending] = useState(false);
   const [hasResent, setHasResent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const email = useSyncExternalStore(
+    subscribeToPendingEmail,
+    pendingEmailSnapshot,
+    pendingEmailServerSnapshot,
+  );
 
   const handleResend = async () => {
     setHasResent(false);
     setError(null);
     setIsResending(true);
     try {
-      await clientPost(ENDPOINTS.auth.resendEmailVerification);
-      setIsResending(false);
+      const supabase = createClient();
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+      if (resendError) {
+        throw resendError;
+      }
       setHasResent(true);
     } catch (requestError) {
-      setError(apiErrorMessage(requestError));
+      setError(supabaseErrorMessage(requestError));
+    } finally {
       setIsResending(false);
     }
   };
@@ -68,9 +93,7 @@ export function VerifyEmailCard({ status }: VerifyEmailCardProps) {
         description={
           <>
             {state.descriptionBefore}
-            <span className="font-semibold text-neutral-900">
-              {VERIFY_EMAIL_SCREEN.email}
-            </span>
+            <span className="font-semibold text-neutral-900">{email}</span>
             {state.descriptionAfter}
           </>
         }

@@ -211,6 +211,20 @@ function buildInit(
   return init;
 }
 
+/**
+ * Next signals framework control flow (dynamic rendering, redirect, notFound)
+ * by throwing errors with a `digest`. `fetch` can throw one of these when a
+ * server component is being prerendered; it must be rethrown untouched so the
+ * framework marks the route dynamic instead of treating it as a network error
+ * and failing the build.
+ */
+function isDynamicServerUsage(cause: unknown): boolean {
+  return (
+    cause instanceof Error &&
+    (cause as { digest?: unknown }).digest === "DYNAMIC_SERVER_USAGE"
+  );
+}
+
 export async function request<T>(
   path: string,
   options: RequestOptions = {},
@@ -235,6 +249,10 @@ export async function request<T>(
     try {
       response = await fetch(url, buildInit(options, method, requestId));
     } catch (cause) {
+      if (isDynamicServerUsage(cause)) {
+        throw cause;
+      }
+
       const isTimeout =
         cause instanceof DOMException && cause.name === "TimeoutError";
       const isAbort =

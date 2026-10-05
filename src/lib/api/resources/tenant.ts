@@ -25,7 +25,6 @@ import type {
   PaymentPlan,
   ReferralProgram,
   RentChange,
-  RentSavings,
   SavedProperty,
   TenantApplication,
   TenantContact,
@@ -99,11 +98,6 @@ export const getTenantRentals = cache(
 export const getSavedProperties = cache(
   async (): Promise<readonly SavedProperty[]> =>
     apiGet<readonly SavedProperty[]>(ENDPOINTS.tenant.savedProperties),
-);
-
-export const getRentSavings = cache(
-  async (): Promise<RentSavings | null> =>
-    apiGetOptional<RentSavings>(ENDPOINTS.tenant.rentSavings),
 );
 
 export const getCautionDeposit = cache(

@@ -13,11 +13,9 @@ import type {
   LandlordProperty,
   LandlordPropertySummary,
   LandlordSettings,
-  LandlordTenant,
   MaintenanceOverview,
   PaymentBreakdown,
   PayoutAccount,
-  PropertyAdmin,
   RentApprovalRequest,
   Statement,
 } from "@/types/api/landlord";
@@ -106,16 +104,6 @@ export const getStatement = cache(
 export const getPaymentBreakdown = cache(
   async (): Promise<PaymentBreakdown | null> =>
     apiGetOptional<PaymentBreakdown>(ENDPOINTS.landlord.paymentBreakdown),
-);
-
-export const getPropertyAdmins = cache(
-  async (): Promise<readonly PropertyAdmin[]> =>
-    apiGet<readonly PropertyAdmin[]>(ENDPOINTS.landlord.propertyAdmins),
-);
-
-export const getLandlordTenants = cache(
-  async (): Promise<readonly LandlordTenant[]> =>
-    apiGet<readonly LandlordTenant[]>(ENDPOINTS.landlord.tenants),
 );
 
 export const getLandlordSettings = cache(

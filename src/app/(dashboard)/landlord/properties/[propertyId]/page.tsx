@@ -7,7 +7,6 @@ import {
   LANDLORD_MANAGE_LISTING,
   LANDLORD_ROUTES,
 } from "@/constants/landlord";
-import { ListingAdminPanel } from "@/features/landlord/listing-admin-panel";
 import { ListingGallery } from "@/features/landlord/listing-gallery";
 import { ManageListingForm } from "@/features/landlord/manage-listing-form";
 import { cn } from "@/lib/cn";
@@ -91,10 +90,7 @@ export default async function ManageListingPage({
 
       <ListingGallery property={property} />
 
-      <ManageListingForm
-        property={property}
-        adminPanel={<ListingAdminPanel property={property} />}
-      />
+      <ManageListingForm property={property} />
     </div>
   );
 }

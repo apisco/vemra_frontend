@@ -14,10 +14,9 @@ import type {
 } from "@/types/api/landlord";
 
 const TITLE = "Properties overview";
-const CAPTION = "Properties you own, their assigned Property Admin and rent status";
+const CAPTION = "Properties you own, their rent and status";
 const HEADERS = {
   property: "Property",
-  admin: "Property admin",
   status: "Status",
   rentDue: "Rent due",
   rent: "Rent",
@@ -53,9 +52,6 @@ export function PropertiesOverviewTable({
             <span className={HEADER_LABEL_CLASSES}>{HEADERS.property}</span>
           </TableHeaderCell>
           <TableHeaderCell>
-            <span className={HEADER_LABEL_CLASSES}>{HEADERS.admin}</span>
-          </TableHeaderCell>
-          <TableHeaderCell>
             <span className={HEADER_LABEL_CLASSES}>{HEADERS.status}</span>
           </TableHeaderCell>
           <TableHeaderCell className="max-lg:hidden">
@@ -70,7 +66,6 @@ export function PropertiesOverviewTable({
           {properties.map((property) => (
             <TableRow key={property.id}>
               <TableCell isPrimary>{property.name}</TableCell>
-              <TableCell>{property.admin?.name ?? "Not assigned"}</TableCell>
               <TableCell>
                 <Badge variant={STATUS_VARIANTS[property.status]} size="sm">
                   {property.status}

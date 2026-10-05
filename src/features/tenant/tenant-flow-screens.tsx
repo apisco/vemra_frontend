@@ -1,13 +1,11 @@
 import Link from "next/link";
 
 import { buttonClasses } from "@/components/ui/button";
-import { TENANT_ROUTES } from "@/constants/tenant";
 import {
   getCautionDeposit,
   getConversations,
   getNotifications,
   getReferralProgram,
-  getRentSavings,
   getSavedProperties,
   getTenantMaintenance,
   getTenantPayments,
@@ -21,7 +19,6 @@ export type TenantScreenKey =
   | "messages"
   | "payment-history"
   | "maintenance"
-  | "rent-savings"
   | "caution-deposit"
   | "saved-properties"
   | "my-rentals"
@@ -42,10 +39,6 @@ const COPY: Record<TenantScreenKey, { title: string; description: string }> = {
   maintenance: {
     title: "Maintenance",
     description: "Report and track maintenance requests for your rental.",
-  },
-  "rent-savings": {
-    title: "Rent savings plan",
-    description: "Save incrementally toward your next rent target.",
   },
   "caution-deposit": {
     title: "Caution Deposit Tracking",
@@ -121,26 +114,6 @@ async function renderScreen(screen: TenantScreenKey) {
               `${item.title} · ${item.status} · ${formatDate(item.submittedAt)}`,
           )}
           empty="No maintenance requests yet."
-        />
-      );
-    }
-    case "rent-savings": {
-      const data = await getRentSavings();
-      return data ? (
-        <DataList
-          items={[
-            `Saved ${formatMoney(data.savedAmount)}`,
-            `Remaining ${formatMoney(data.remainingAmount)}`,
-            ...data.contributions.map(
-              (item) =>
-                `${formatMoney(item.amount)} · ${formatDate(item.date)} · ${item.method}`,
-            ),
-          ]}
-        />
-      ) : (
-        <EmptyState
-          action="Set up rent savings"
-          href={TENANT_ROUTES.rentSavings}
         />
       );
     }

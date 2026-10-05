@@ -19,10 +19,8 @@ export const LANDLORD_ROUTES = {
   applications: "/landlord/applications",
   maintenance: "/landlord/maintenance",
   cautionDeposits: "/landlord/caution-deposits",
-  tenants: "/landlord/tenants",
   payoutAccount: "/landlord/payout-account",
   statement: "/landlord/statement",
-  propertyAdmins: "/landlord/property-admins",
   settings: "/landlord/settings",
   profile: "/landlord/profile",
   rentApproval: "/landlord/properties/unit-4b-maple-9th/rent-approval",
@@ -40,12 +38,6 @@ export const LANDLORD_NAV: readonly DashboardNavItem[] = [
     href: LANDLORD_ROUTES.cautionDeposits,
     label: "Caution deposits",
     icon: ShieldIcon,
-  },
-  { href: LANDLORD_ROUTES.tenants, label: "Tenants", icon: UsersIcon },
-  {
-    href: LANDLORD_ROUTES.propertyAdmins,
-    label: "Property Admins",
-    icon: UsersIcon,
   },
   {
     href: LANDLORD_ROUTES.payoutAccount,
@@ -68,11 +60,6 @@ export const LANDLORD_NAV_TABLET: readonly DashboardNavItem[] = [
     href: LANDLORD_ROUTES.cautionDeposits,
     label: "Caution deposits",
     icon: ShieldIcon,
-  },
-  {
-    href: LANDLORD_ROUTES.propertyAdmins,
-    label: "Property Admins",
-    icon: UsersIcon,
   },
   { href: LANDLORD_ROUTES.settings, label: "Settings", icon: SettingsIcon },
 ];
@@ -196,16 +183,9 @@ export const LANDLORD_PROPERTIES_SCREEN = {
     label: { base: "+ Add", md: "Add property" } satisfies ResponsiveCopy,
     href: LANDLORD_ROUTES.newProperty,
   },
-  caption: "Every property you own, with its tenant, Property Admin and rent",
-  tenantLabel: "Tenant",
-  vacantTenantPlaceholder: "—",
+  caption: "Every property you own, with its rent and status",
   headers: {
     property: "Property",
-    tenant: "Tenant",
-    admin: {
-      base: "Vemra Property Admin",
-      lg: "Property Admin",
-    } satisfies ResponsiveCopy,
     rent: "Rent",
     status: "Status",
     action: "Action",
@@ -229,14 +209,6 @@ export const LANDLORD_MANAGE_LISTING = {
   },
   gallery: {
     label: "Listing photos",
-  },
-  admin: {
-    title: "Assigned Property Admin",
-    metaPrefix: "Assigned by Vemra · Property Admin since",
-    action: {
-      label: "View profile",
-      href: LANDLORD_ROUTES.propertyAdmins,
-    },
   },
   danger: {
     title: "Remove from public listings",

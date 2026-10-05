@@ -9,7 +9,6 @@ import { LayoutGridIcon } from "@/components/icons/layout-grid-icon";
 import { MessageCircleIcon } from "@/components/icons/message-circle-icon";
 import { SettingsIcon } from "@/components/icons/settings-icon";
 import { ShieldIcon } from "@/components/icons/shield-icon";
-import { WalletIcon } from "@/components/icons/wallet-icon";
 import { WrenchIcon } from "@/components/icons/wrench-icon";
 import type {
   DashboardNavItem,
@@ -25,7 +24,6 @@ export const TENANT_ROUTES = {
   paymentPlan: "/tenant/payment-plan",
   paymentHistory: "/tenant/payment-history",
   maintenance: "/tenant/maintenance",
-  rentSavings: "/tenant/rent-savings",
   cautionDeposit: "/tenant/caution-deposit",
   savedProperties: "/tenant/saved-properties",
   myRentals: "/tenant/my-rentals",
@@ -49,7 +47,6 @@ export const TENANT_NAV: readonly DashboardNavItem[] = [
     icon: FileTextIcon,
   },
   { href: TENANT_ROUTES.maintenance, label: "Maintenance", icon: WrenchIcon },
-  { href: TENANT_ROUTES.rentSavings, label: "Rent savings", icon: WalletIcon },
   {
     href: TENANT_ROUTES.cautionDeposit,
     label: "Caution deposit",

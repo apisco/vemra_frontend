@@ -261,20 +261,6 @@ const tenantScreens = {
     nodes: ["59:668", "109:5141", "101:6034"],
     fields: null,
   },
-  TN10: {
-    section: "tenant",
-    title: "Rent savings",
-    route: "/tenant/rent-savings",
-    nodes: ["56:132", "109:4247", "101:5067"],
-    fields: null,
-  },
-  TN11: {
-    section: "tenant",
-    title: "Rent savings — setup",
-    route: null,
-    nodes: ["59:1250", "109:5443", "101:6504"],
-    fields: null,
-  },
   TN12: {
     section: "tenant",
     title: "Caution deposit",
@@ -472,13 +458,6 @@ const landlordScreens = {
     title: "Application review",
     route: "/landlord/applications/[applicationId]",
     nodes: ["6:743", "109:6115", "102:4147"],
-    fields: null,
-  },
-  LL12: {
-    section: "landlord",
-    title: "Property Admin invite",
-    route: "/landlord/property-admins",
-    nodes: ["6:118", "109:6202", "102:4243"],
     fields: null,
   },
   LL13: {

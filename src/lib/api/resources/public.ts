@@ -3,6 +3,14 @@ import "server-only";
 import { cache } from "react";
 
 import { CACHE_TAGS, ENDPOINTS, REVALIDATE } from "@/lib/api/endpoints";
+import {
+  toAppliedFilters,
+  toBackendListingQuery,
+  toListing,
+  toListingSummary,
+  type BackendPropertyEnvelope,
+  type BackendSinglePropertyEnvelope,
+} from "@/lib/api/adapters";
 import { isApiError, isNotFound } from "@/lib/api/errors";
 import { apiGetOptionalPublic, apiGetPublic } from "@/lib/api/server";
 import type { Paginated } from "@/types/api/common";
@@ -71,39 +79,58 @@ async function publicRead<T>(run: () => Promise<T>, fallback: T): Promise<T> {
 
 export const getListings = cache(
   async (filters: ListingFilters = {}): Promise<BrowseResult> =>
-    publicRead(
-      () =>
-        apiGetPublic<BrowseResult>(ENDPOINTS.public.listings, {
-          query: { ...filters },
+    publicRead(async () => {
+      const envelope = await apiGetPublic<BackendPropertyEnvelope>(
+        ENDPOINTS.public.listings,
+        {
+          query: toBackendListingQuery(filters),
           revalidate: REVALIDATE.listings,
           tags: [CACHE_TAGS.listings],
-        }),
-      EMPTY_BROWSE_RESULT,
-    ),
+        },
+      );
+      const { properties, pagination } = envelope.data;
+      const pageSize = pagination.limit;
+      const page =
+        pageSize > 0 ? Math.floor(pagination.offset / pageSize) + 1 : 1;
+      return {
+        items: properties.map(toListingSummary),
+        total: pagination.offset + pagination.count,
+        page,
+        pageSize,
+        hasMore: pagination.count === pageSize,
+        appliedFilters: toAppliedFilters(filters),
+      };
+    }, EMPTY_BROWSE_RESULT),
 );
 
 export const getListing = cache(
   async (listingId: string): Promise<Listing | null> =>
-    publicRead(
-      () =>
-        apiGetOptionalPublic<Listing>(ENDPOINTS.public.listing(listingId), {
+    publicRead(async () => {
+      const envelope = await apiGetOptionalPublic<BackendSinglePropertyEnvelope>(
+        ENDPOINTS.public.listing(listingId),
+        {
           revalidate: REVALIDATE.listing,
           tags: [CACHE_TAGS.listings, CACHE_TAGS.listing(listingId)],
-        }),
-      null,
-    ),
+        },
+      );
+      return envelope === null ? null : toListing(envelope.data);
+    }, null),
 );
 
 export const getFeaturedListing = cache(
   async (): Promise<ListingSummary | null> =>
-    publicRead(
-      () =>
-        apiGetOptionalPublic<ListingSummary>(ENDPOINTS.public.featuredListing, {
+    publicRead(async () => {
+      const envelope = await apiGetPublic<BackendPropertyEnvelope>(
+        ENDPOINTS.public.featuredListing,
+        {
+          query: { status: "published", limit: 1, offset: 0 },
           revalidate: REVALIDATE.listings,
           tags: [CACHE_TAGS.listings],
-        }),
-      null,
-    ),
+        },
+      );
+      const first = envelope.data.properties[0];
+      return first === undefined ? null : toListingSummary(first);
+    }, null),
 );
 
 export const getPublicProfile = cache(

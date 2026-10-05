@@ -21,9 +21,15 @@ export const ENDPOINTS = {
   },
 
   public: {
-    listings: "/listings",
-    listing: (listingId: string) => `/listings/${listingId}`,
-    featuredListing: "/listings/featured",
+    /**
+     * Backend exposes published listings through the resource-oriented
+     * `/properties` routes; the resource layer adapts the DTO to the frontend's
+     * `Listing`/`ListingSummary` view models.
+     */
+    listings: "/properties",
+    listing: (propertyId: string) => `/properties/${propertyId}`,
+    /** No dedicated featured route; the resource derives it from the list. */
+    featuredListing: "/properties",
     profile: (profileId: string) => `/profiles/${profileId}`,
     platformStats: "/platform/stats",
     dashboardPreview: "/platform/dashboard-preview",
@@ -47,7 +53,8 @@ export const ENDPOINTS = {
     acceptDepositDecision: "/tenant/caution-deposit/decision/accept",
     disputeDepositDecision: "/tenant/caution-deposit/decision/dispute",
     rentChange: "/tenant/rent-change",
-    maintenance: "/tenant/maintenance",
+    /** Live backend route: `/api/v1/maintenance` (returns `{status,data}`, not the standard envelope). */
+    maintenance: "/maintenance",
     conversations: "/tenant/conversations",
     conversation: (conversationId: string) =>
       `/tenant/conversations/${conversationId}`,
@@ -56,7 +63,8 @@ export const ENDPOINTS = {
     notifications: "/tenant/notifications",
     readNotifications: "/tenant/notifications/read",
     referrals: "/tenant/referrals",
-    applications: "/tenant/applications",
+    /** Live backend route: `/api/v1/applications`. */
+    applications: "/applications",
     lease: "/tenant/lease",
     signLease: "/tenant/lease/sign",
     profile: "/tenant/profile",

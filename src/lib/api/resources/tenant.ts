@@ -3,8 +3,17 @@ import "server-only";
 import { cache } from "react";
 
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import {
+  toTenantApplication,
+  toTenantMaintenance,
+  toTenantProfile,
+  unwrapData,
+  type BackendApplicationList,
+  type BackendMaintenanceRequest,
+} from "@/lib/api/adapters";
 import { recoverableRead } from "@/lib/api/resilient";
-import { apiGet, apiGetOptional } from "@/lib/api/server";
+import { apiGet, apiGetDataOptional, apiGetOptional } from "@/lib/api/server";
+import type { AccountProfile } from "@/types/api/auth";
 import type {
   CautionDeposit,
   CheckoutOptions,
@@ -114,7 +123,16 @@ export const getRentChange = cache(
 
 export const getTenantMaintenance = cache(
   async (): Promise<TenantMaintenance> =>
-    apiGet<TenantMaintenance>(ENDPOINTS.tenant.maintenance),
+    recoverableRead(
+      "tenant maintenance",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.maintenance);
+        const requests =
+          unwrapData<readonly BackendMaintenanceRequest[]>(body) ?? [];
+        return toTenantMaintenance(requests);
+      },
+      { options: { categories: [], urgencies: [], units: [] }, requests: [] },
+    ),
 );
 
 export const getConversations = cache(
@@ -141,7 +159,15 @@ export const getReferralProgram = cache(
 
 export const getTenantApplications = cache(
   async (): Promise<readonly TenantApplication[]> =>
-    apiGet<readonly TenantApplication[]>(ENDPOINTS.tenant.applications),
+    recoverableRead(
+      "tenant applications",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.applications);
+        const list = unwrapData<BackendApplicationList>(body);
+        return (list?.applications ?? []).map(toTenantApplication);
+      },
+      [],
+    ),
 );
 
 export const getLease = cache(
@@ -151,7 +177,16 @@ export const getLease = cache(
 
 export const getTenantProfile = cache(
   async (): Promise<TenantProfile> =>
-    apiGet<TenantProfile>(ENDPOINTS.tenant.profile),
+    recoverableRead(
+      "tenant profile",
+      async () => {
+        const account = await apiGetDataOptional<AccountProfile>(
+          ENDPOINTS.identity.me,
+        );
+        return toTenantProfile(account);
+      },
+      toTenantProfile(null),
+    ),
 );
 
 export const getTenantSettings = cache(

@@ -19,8 +19,7 @@ import {
 import { cn } from "@/lib/cn";
 import { formatDate, formatRent } from "@/lib/format";
 
-const { caption, headers, tenantLabel, vacantTenantPlaceholder } =
-  LANDLORD_PROPERTIES_SCREEN;
+const { caption, headers } = LANDLORD_PROPERTIES_SCREEN;
 
 const STATUS_VARIANTS: Record<PropertyStatus, "success" | "warning"> = {
   occupied: "success",
@@ -49,14 +48,6 @@ export function PropertiesPanel({ properties }: PropertiesPanelProps) {
             <TableHeaderCell className={HEADER_CELL_CLASSES}>
               <span className="whitespace-normal">{headers.property}</span>
             </TableHeaderCell>
-            <TableHeaderCell className={cn(HEADER_CELL_CLASSES, "lg:w-45")}>
-              <span className="whitespace-normal">{headers.tenant}</span>
-            </TableHeaderCell>
-            <TableHeaderCell className={cn(HEADER_CELL_CLASSES, "lg:w-45")}>
-              <span className="whitespace-normal">
-                <ResponsiveText copy={headers.admin} />
-              </span>
-            </TableHeaderCell>
             <TableHeaderCell className={cn(HEADER_CELL_CLASSES, "lg:w-25")}>
               <span className="whitespace-normal">{headers.rent}</span>
             </TableHeaderCell>
@@ -81,24 +72,6 @@ export function PropertiesPanel({ properties }: PropertiesPanelProps) {
                       Vacant since {formatDate(property.vacantSince, "short")}
                     </span>
                   ) : null}
-                </TableCell>
-
-                <TableCell className={CELL_CLASSES}>
-                  {property.tenant?.name ?? vacantTenantPlaceholder}
-                </TableCell>
-
-                <TableCell className={CELL_CLASSES}>
-                  <span className="block">{property.admin?.name ?? "Not assigned"}</span>
-                  <span
-                    className={cn(
-                      "mt-1 block text-label-sm",
-                      property.admin !== null
-                        ? "text-brand-700 max-lg:hidden"
-                        : "text-neutral-700",
-                    )}
-                  >
-                    {property.admin?.note}
-                  </span>
                 </TableCell>
 
                 <TableCell isPrimary className={CELL_CLASSES}>
@@ -156,14 +129,6 @@ export function PropertiesPanel({ properties }: PropertiesPanelProps) {
                   >
                     {property.status}
                   </Badge>
-                </span>
-
-                <span className="truncate text-caption text-neutral-700">
-                  {property.tenant
-                    ? `${tenantLabel}: ${property.tenant.name}`
-                    : property.vacantSince
-                      ? `Vacant since ${formatDate(property.vacantSince, "short")}`
-                      : vacantTenantPlaceholder}
                 </span>
               </span>
             </Link>

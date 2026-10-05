@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { ReactNode } from "react";
 
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +14,9 @@ const { details, danger, footer } = LANDLORD_MANAGE_LISTING;
 
 export interface ManageListingFormProps {
   property: LandlordProperty;
-  adminPanel?: ReactNode;
 }
 
-export function ManageListingForm({
-  property,
-  adminPanel,
-}: ManageListingFormProps) {
+export function ManageListingForm({ property }: ManageListingFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isUnlisting, setIsUnlisting] = useState(false);
@@ -79,8 +74,6 @@ export function ManageListingForm({
           />
         </div>
       </section>
-
-      {adminPanel}
 
       <section
         aria-labelledby="listing-danger-title"

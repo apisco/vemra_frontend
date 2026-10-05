@@ -21,9 +21,15 @@ export const ENDPOINTS = {
   },
 
   public: {
-    listings: "/listings",
-    listing: (listingId: string) => `/listings/${listingId}`,
-    featuredListing: "/listings/featured",
+    /**
+     * Backend exposes published listings through the resource-oriented
+     * `/properties` routes; the resource layer adapts the DTO to the frontend's
+     * `Listing`/`ListingSummary` view models.
+     */
+    listings: "/properties",
+    listing: (propertyId: string) => `/properties/${propertyId}`,
+    /** No dedicated featured route; the resource derives it from the list. */
+    featuredListing: "/properties",
     profile: (profileId: string) => `/profiles/${profileId}`,
     platformStats: "/platform/stats",
     dashboardPreview: "/platform/dashboard-preview",
@@ -34,20 +40,17 @@ export const ENDPOINTS = {
     paymentPlan: "/tenant/payment-plan",
     payments: "/tenant/payments",
     checkout: "/tenant/payments/checkout",
-    contacts: "/tenant/contacts",
     rentals: "/tenant/rentals",
     savedProperties: "/tenant/saved-properties",
     savedProperty: (listingId: string) =>
       `/tenant/saved-properties/${listingId}`,
-    rentSavings: "/tenant/rent-savings",
-    rentSavingsTopUp: "/tenant/rent-savings/top-up",
-    rentSavingsAutoDeposit: "/tenant/rent-savings/auto-deposit",
     cautionDeposit: "/tenant/caution-deposit",
     depositDecision: "/tenant/caution-deposit/decision",
     acceptDepositDecision: "/tenant/caution-deposit/decision/accept",
     disputeDepositDecision: "/tenant/caution-deposit/decision/dispute",
     rentChange: "/tenant/rent-change",
-    maintenance: "/tenant/maintenance",
+    /** Live backend route: `/api/v1/maintenance` (returns `{status,data}`, not the standard envelope). */
+    maintenance: "/maintenance",
     conversations: "/tenant/conversations",
     conversation: (conversationId: string) =>
       `/tenant/conversations/${conversationId}`,
@@ -56,7 +59,8 @@ export const ENDPOINTS = {
     notifications: "/tenant/notifications",
     readNotifications: "/tenant/notifications/read",
     referrals: "/tenant/referrals",
-    applications: "/tenant/applications",
+    /** Live backend route: `/api/v1/applications`. */
+    applications: "/applications",
     lease: "/tenant/lease",
     signLease: "/tenant/lease/sign",
     profile: "/tenant/profile",
@@ -89,9 +93,6 @@ export const ENDPOINTS = {
     statementExport: "/landlord/statement/export",
     paymentBreakdown: "/landlord/payment-breakdown",
     withdrawals: "/landlord/withdrawals",
-    propertyAdmins: "/landlord/property-admins",
-    invitePropertyAdmin: "/landlord/property-admins/invite",
-    tenants: "/landlord/tenants",
     settings: "/landlord/settings",
     notificationPreferences: "/landlord/settings/notifications",
     profile: "/landlord/profile",

@@ -125,33 +125,9 @@ export interface PaymentResult {
   redirectUrl: string | null;
 }
 
-export interface TenantContact extends PersonRef {
-  role: string;
-  note: string | null;
-  isVerified: boolean;
-  canContact: boolean;
-  responseTime: string | null;
-}
-
 export interface TenantRentals {
   current: Tenancy | null;
   history: readonly Tenancy[];
-}
-
-export interface SavingsContribution {
-  id: string;
-  amount: Money;
-  date: Iso8601;
-  method: string;
-}
-
-export interface RentSavings {
-  targetAmount: Money | null;
-  savedAmount: Money;
-  remainingAmount: Money;
-  nextTargetDate: Iso8601 | null;
-  isAutoDepositEnabled: boolean;
-  contributions: readonly SavingsContribution[];
 }
 
 export type DepositStage =

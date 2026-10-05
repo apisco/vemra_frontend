@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { LogoMark } from "@/components/layout/logo-mark";
+import { Avatar } from "@/components/ui/avatar";
 import { buttonClasses } from "@/components/ui/button";
 import {
   HEADER_CTA,
@@ -13,12 +14,62 @@ import {
 } from "@/constants/marketing";
 import { cn } from "@/lib/cn";
 import { CONTAINER, HEADER_GUTTER } from "@/lib/layout";
+import { createClient } from "@/lib/supabase/client";
+
+interface HeaderUser {
+  name: string;
+  initials: string;
+  profileHref: string;
+}
+
+function initialsFrom(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return "?";
+  }
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+  return `${first}${last}`.toUpperCase();
+}
+
+function profileHrefForRole(role: unknown): string {
+  return typeof role === "string" && role.toUpperCase() === "LANDLORD"
+    ? "/landlord/profile"
+    : "/tenant/profile";
+}
 
 export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [user, setUser] = useState<HeaderUser | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    let active = true;
+    const supabase = createClient();
+    void supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (!active || !data.user) return;
+        const account = data.user;
+        const metadata = account.user_metadata ?? {};
+        const name =
+          (typeof metadata.display_name === "string" && metadata.display_name) ||
+          (typeof metadata.full_name === "string" && metadata.full_name) ||
+          account.email ||
+          "Account";
+        setUser({
+          name,
+          initials: initialsFrom(name),
+          profileHref: profileHrefForRole(metadata.role),
+        });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 0);
@@ -78,15 +129,34 @@ export function SiteHeader() {
               <span className="hidden lg:inline">{label}</span>
             </Link>
           ))}
-          <Link
-            href={LOGIN_LINK.href}
-            className={cn(
-              "hidden rounded-sm text-body-md font-semibold text-neutral-800 transition-colors hover:text-brand-700 lg:inline",
-              "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700",
-            )}
-          >
-            {LOGIN_LINK.label}
-          </Link>
+          {user ? (
+            <Link
+              href={user.profileHref}
+              aria-label={`Your profile, ${user.name}`}
+              className={cn(
+                "hidden items-center gap-2 rounded-sm text-body-md font-semibold text-neutral-800 transition-colors hover:text-brand-700 lg:flex",
+                "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700",
+              )}
+            >
+              <Avatar
+                name={user.name}
+                initials={user.initials}
+                size="sm"
+                className="size-7 text-label-sm"
+              />
+              <span className="max-w-32 truncate">{user.name}</span>
+            </Link>
+          ) : (
+            <Link
+              href={LOGIN_LINK.href}
+              className={cn(
+                "hidden rounded-sm text-body-md font-semibold text-neutral-800 transition-colors hover:text-brand-700 lg:inline",
+                "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700",
+              )}
+            >
+              {LOGIN_LINK.label}
+            </Link>
+          )}
           <Link
             href={HEADER_CTA.href}
             className={buttonClasses({ size: "md", className: "lg:h-10" })}
@@ -113,6 +183,7 @@ export function SiteHeader() {
       <MobileNavDrawer
         ref={dialogRef}
         pathname={pathname}
+        user={user}
         onClose={() => setIsDrawerOpen(false)}
       />
     </header>
@@ -122,10 +193,11 @@ export function SiteHeader() {
 interface MobileNavDrawerProps {
   ref: React.Ref<HTMLDialogElement>;
   pathname: string;
+  user: HeaderUser | null;
   onClose: () => void;
 }
 
-function MobileNavDrawer({ ref, pathname, onClose }: MobileNavDrawerProps) {
+function MobileNavDrawer({ ref, pathname, user, onClose }: MobileNavDrawerProps) {
   return (
     <dialog
       ref={ref}
@@ -195,13 +267,23 @@ function MobileNavDrawer({ ref, pathname, onClose }: MobileNavDrawerProps) {
           >
             {HEADER_CTA.label}
           </Link>
-          <Link
-            href={LOGIN_LINK.href}
-            onClick={onClose}
-            className={buttonClasses({ variant: "secondary", fullWidth: true })}
-          >
-            {LOGIN_LINK.label}
-          </Link>
+          {user ? (
+            <Link
+              href={user.profileHref}
+              onClick={onClose}
+              className={buttonClasses({ variant: "secondary", fullWidth: true })}
+            >
+              {user.name}
+            </Link>
+          ) : (
+            <Link
+              href={LOGIN_LINK.href}
+              onClick={onClose}
+              className={buttonClasses({ variant: "secondary", fullWidth: true })}
+            >
+              {LOGIN_LINK.label}
+            </Link>
+          )}
         </div>
       </div>
     </dialog>

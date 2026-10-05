@@ -16,7 +16,7 @@ import { useAuthForm } from "@/features/auth/use-auth-form";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseErrorMessage } from "@/lib/supabase/errors";
 import { resolveNextPath } from "@/lib/supabase/paths";
-import { authCallbackUrl } from "@/lib/supabase/urls";
+import { authCallbackUrl, rememberPendingEmail } from "@/lib/supabase/urls";
 import { validateEmail, validateRequired } from "@/lib/validation";
 
 type LoginValues = {
@@ -28,6 +28,8 @@ type LoginValues = {
 export interface LoginFormProps {
   next?: string | null;
 }
+
+const VERIFIED_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=verified`;
 
 function signedInPath(role: AuthRole): string {
   return role === "LANDLORD" ? "/landlord" : DEFAULT_SIGNED_IN_PATH;
@@ -57,6 +59,21 @@ export function LoginForm({ next = null }: LoginFormProps) {
           password: values.password,
         });
         if (error) {
+          if (error.code === "email_not_confirmed") {
+            const { error: resendError } = await supabase.auth.resend({
+              type: "signup",
+              email: values.email,
+              options: {
+                emailRedirectTo: authCallbackUrl(VERIFIED_EMAIL_PATH),
+              },
+            });
+            if (resendError) {
+              throw resendError;
+            }
+            rememberPendingEmail(values.email);
+            router.push(`${AUTH_ROUTES.verifyEmail}?status=pending`);
+            return;
+          }
           throw error;
         }
         const metadata: Record<string, unknown> = data.user?.user_metadata ?? {};

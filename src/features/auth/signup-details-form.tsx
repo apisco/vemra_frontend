@@ -45,7 +45,7 @@ export interface SignupDetailsFormProps {
 }
 
 export function SignupDetailsForm({
-  role = "tenant",
+  role = "TENANT",
   className,
 }: SignupDetailsFormProps) {
   const termsErrorId = useId();

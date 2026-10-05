@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import type { Caps } from "@/constants/auth";
+import type { AuthRole } from "@/constants/auth";
 import {
   AUTH_ROUTES,
   SIGNUP_DEFAULT_ROLE,
@@ -17,7 +17,7 @@ import { ROLE_ICONS } from "@/features/auth/role-icons";
 import { useAuthForm } from "@/features/auth/use-auth-form";
 
 type SignupRoleValues = {
-  role: Caps;
+  role: AuthRole;
 };
 
 export function SignupRolePicker() {

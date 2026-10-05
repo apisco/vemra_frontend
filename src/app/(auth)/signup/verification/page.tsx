@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { LockIcon } from "@/components/icons/lock-icon";
 import { buttonClasses } from "@/components/ui/button";
@@ -21,6 +22,8 @@ import { getAccount } from "@/lib/api/resources/auth";
 import type { AccountProfile } from "@/types/api/auth";
 
 const COLUMN_CLASSES = "md:mx-auto md:w-full md:max-w-[520px]";
+
+const PENDING_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=pending`;
 
 export const metadata: Metadata = {
   title: "Verify your identity · Vemra",
@@ -60,30 +63,14 @@ function callToAction(account: AccountProfile): CallToAction {
   }
 }
 
-function StaticPreview() {
-  return (
-    <AuthLayout width="contentLg" gap="flat" justify="desktop" logoSize="none">
-      <SignupStepHeader
-        step={SIGNUP_VERIFICATION_SCREEN.step}
-        totalSteps={SIGNUP_VERIFICATION_SCREEN.totalSteps}
-        title={SIGNUP_VERIFICATION_SCREEN.title}
-        description={SIGNUP_VERIFICATION_SCREEN.description}
-      />
-      <AuthNote
-        icon={<LockIcon />}
-        title={SIGNUP_VERIFICATION_SCREEN.noteTitle}
-        body={SIGNUP_VERIFICATION_SCREEN.noteBody}
-        className={COLUMN_CLASSES}
-      />
-    </AuthLayout>
-  );
-}
-
 export default async function SignupVerificationPage() {
   const account = await getAccount();
 
+  // No session means the email is not confirmed yet (Supabase withholds the
+  // session until then). Send them to the confirmation screen; the `verified`
+  // state there links back here once they confirm.
   if (account === null) {
-    return <StaticPreview />;
+    redirect(PENDING_EMAIL_PATH);
   }
 
   const { nextStep } = account.onboarding;

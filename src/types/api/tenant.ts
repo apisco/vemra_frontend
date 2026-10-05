@@ -125,14 +125,6 @@ export interface PaymentResult {
   redirectUrl: string | null;
 }
 
-export interface TenantContact extends PersonRef {
-  role: string;
-  note: string | null;
-  isVerified: boolean;
-  canContact: boolean;
-  responseTime: string | null;
-}
-
 export interface TenantRentals {
   current: Tenancy | null;
   history: readonly Tenancy[];

@@ -27,7 +27,6 @@ import type {
   RentChange,
   SavedProperty,
   TenantApplication,
-  TenantContact,
   TenantDashboard,
   TenantMaintenance,
   TenantPayment,
@@ -79,15 +78,6 @@ export const getTenantPayments = cache(
 export const getCheckoutOptions = cache(
   async (): Promise<CheckoutOptions | null> =>
     apiGetOptional<CheckoutOptions>(ENDPOINTS.tenant.checkout),
-);
-
-export const getTenantContacts = cache(
-  async (): Promise<readonly TenantContact[]> =>
-    recoverableRead(
-      "tenant contacts",
-      () => apiGet<readonly TenantContact[]>(ENDPOINTS.tenant.contacts),
-      [],
-    ),
 );
 
 export const getTenantRentals = cache(

@@ -6,25 +6,22 @@ import { ResponsiveText } from "@/components/ui/responsive-text";
 import { TENANT_ROUTES } from "@/constants/tenant";
 import {
   getPaymentPlan,
-  getTenantContacts,
   getTenantDashboard,
   getTenantPayments,
 } from "@/lib/api/resources/tenant";
-import { ContactsPanel } from "@/features/tenant/contacts-panel";
 import { MetricCardRow } from "@/features/tenant/metric-card-row";
 import { PaymentPlanPanel } from "@/features/tenant/payment-plan-panel";
 import { RecentPaymentsPanel } from "@/features/tenant/recent-payments-panel";
 
 export const metadata: Metadata = {
   title: "Overview · Vemra",
-  description: "Rent, payment plan and property contacts at a glance.",
+  description: "Rent and payment plan at a glance.",
 };
 
 export default async function TenantOverviewPage() {
-  const [dashboard, plan, contacts, payments] = await Promise.all([
+  const [dashboard, plan, payments] = await Promise.all([
     getTenantDashboard(),
     getPaymentPlan(),
-    getTenantContacts(),
     getTenantPayments(),
   ]);
   const unit = dashboard.unit?.name ?? "No active rental";
@@ -56,7 +53,6 @@ export default async function TenantOverviewPage() {
       <div className="grid gap-5 md:grid-cols-[380fr_300fr] md:gap-6 lg:grid-cols-[608fr_420fr]">
         <PaymentPlanPanel plan={plan} />
         <div className="flex flex-col gap-5 md:gap-6">
-          <ContactsPanel contacts={contacts} />
           <RecentPaymentsPanel payments={payments} />
         </div>
       </div>

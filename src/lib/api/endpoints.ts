@@ -40,7 +40,6 @@ export const ENDPOINTS = {
     paymentPlan: "/tenant/payment-plan",
     payments: "/tenant/payments",
     checkout: "/tenant/payments/checkout",
-    contacts: "/tenant/contacts",
     rentals: "/tenant/rentals",
     savedProperties: "/tenant/saved-properties",
     savedProperty: (listingId: string) =>

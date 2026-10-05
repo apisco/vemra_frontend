@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { recoverableRead } from "@/lib/api/resilient";
 import { apiGet, apiGetOptional } from "@/lib/api/server";
 import type {
   CautionDeposit,
@@ -40,7 +41,17 @@ import type {
 
 export const getTenantDashboard = cache(
   async (): Promise<TenantDashboard> =>
-    apiGet<TenantDashboard>(ENDPOINTS.tenant.dashboard),
+    recoverableRead(
+      "tenant dashboard",
+      () => apiGet<TenantDashboard>(ENDPOINTS.tenant.dashboard),
+      {
+        tenantName: "",
+        unit: null,
+        rentDue: null,
+        nextPayment: null,
+        planProgress: null,
+      },
+    ),
 );
 
 export const getPaymentPlan = cache(
@@ -50,7 +61,11 @@ export const getPaymentPlan = cache(
 
 export const getTenantPayments = cache(
   async (): Promise<readonly TenantPayment[]> =>
-    apiGet<readonly TenantPayment[]>(ENDPOINTS.tenant.payments),
+    recoverableRead(
+      "tenant payments",
+      () => apiGet<readonly TenantPayment[]>(ENDPOINTS.tenant.payments),
+      [],
+    ),
 );
 
 export const getCheckoutOptions = cache(
@@ -60,7 +75,11 @@ export const getCheckoutOptions = cache(
 
 export const getTenantContacts = cache(
   async (): Promise<readonly TenantContact[]> =>
-    apiGet<readonly TenantContact[]>(ENDPOINTS.tenant.contacts),
+    recoverableRead(
+      "tenant contacts",
+      () => apiGet<readonly TenantContact[]>(ENDPOINTS.tenant.contacts),
+      [],
+    ),
 );
 
 export const getTenantRentals = cache(

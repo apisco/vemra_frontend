@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { recoverableRead } from "@/lib/api/resilient";
 import { apiGet, apiGetOptional } from "@/lib/api/server";
 import type {
   ApplicationQueue,
@@ -26,12 +27,37 @@ import type { NotificationPreferenceGroup } from "@/types/api/tenant";
 
 export const getLandlordDashboard = cache(
   async (): Promise<LandlordDashboard> =>
-    apiGet<LandlordDashboard>(ENDPOINTS.landlord.dashboard),
+    recoverableRead(
+      "landlord dashboard",
+      () => apiGet<LandlordDashboard>(ENDPOINTS.landlord.dashboard),
+      {
+        landlordName: "",
+        propertyCount: 0,
+        occupiedCount: 0,
+        vacantCount: 0,
+        vacantSince: null,
+        vacantUnitName: null,
+        readyToWithdraw: { amount: 0, currency: "NGN" },
+        clearedPaymentCount: 0,
+        monthlyRentRoll: { amount: 0, currency: "NGN" },
+        nextRentDue: null,
+        revenueSeries: [],
+        assignedAdmin: null,
+        propertyAdmins: [],
+      },
+    ),
 );
 
 export const getLandlordProperties = cache(
   async (): Promise<readonly LandlordPropertySummary[]> =>
-    apiGet<readonly LandlordPropertySummary[]>(ENDPOINTS.landlord.properties),
+    recoverableRead(
+      "landlord properties",
+      () =>
+        apiGet<readonly LandlordPropertySummary[]>(
+          ENDPOINTS.landlord.properties,
+        ),
+      [],
+    ),
 );
 
 export const getLandlordProperty = cache(

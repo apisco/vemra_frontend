@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import type { AuthRole } from "@/constants/auth";
+import type { Caps } from "@/constants/auth";
 import { AUTH_ROLES, ONBOARDING_COMPLETE } from "@/constants/auth";
 import { OnboardingComplete } from "@/features/auth/onboarding-complete";
 
@@ -11,7 +11,7 @@ export function generateStaticParams() {
   return AUTH_ROLES.map((option) => ({ role: option.value }));
 }
 
-function isAuthRole(value: string): value is AuthRole {
+function isCaps(value: string): value is Caps {
   return AUTH_ROLES.some((option) => option.value === value);
 }
 
@@ -20,7 +20,7 @@ export async function generateMetadata({
 }: PageProps<"/welcome/[role]">): Promise<Metadata> {
   const { role } = await params;
 
-  if (!isAuthRole(role)) {
+  if (!isCaps(role)) {
     return {};
   }
 
@@ -35,7 +35,7 @@ export default async function WelcomePage({
 }: PageProps<"/welcome/[role]">) {
   const { role } = await params;
 
-  if (!isAuthRole(role)) {
+  if (!isCaps(role)) {
     notFound();
   }
 

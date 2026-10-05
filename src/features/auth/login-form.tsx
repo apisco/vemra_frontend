@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { DEFAULT_SIGNED_IN_PATH } from "@/config/supabase";
-import type { AuthRole } from "@/constants/auth";
+import type { Caps } from "@/constants/auth";
 import { AUTH_ROLES, AUTH_ROUTES, LOGIN_SCREEN } from "@/constants/auth";
 import { AuthDivider } from "@/features/auth/auth-divider";
 import { useAuthForm } from "@/features/auth/use-auth-form";
@@ -29,17 +29,17 @@ export interface LoginFormProps {
   next?: string | null;
 }
 
-function signedInPath(role: AuthRole): string {
+function signedInPath(role: Caps): string {
   return role === "landlord" ? "/landlord" : DEFAULT_SIGNED_IN_PATH;
 }
 
-function roleFromMetadata(metadata: Record<string, unknown>): AuthRole | null {
+function roleFromMetadata(metadata: Record<string, unknown>): Caps | null {
   return metadata.role === "landlord" ? "landlord" : null;
 }
 
 export function LoginForm({ next = null }: LoginFormProps) {
   const router = useRouter();
-  const [role, setRole] = useState<AuthRole>("tenant");
+  const [role, setRole] = useState<Caps>("tenant");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useAuthForm<LoginValues>({

@@ -1,11 +1,11 @@
-export type AuthRole = "tenant" | "landlord";
+export type Caps = "tenant" | "landlord";
 
-export interface AuthRoleOption {
-  value: AuthRole;
+export interface CapsOption {
+  value: Caps;
   label: string;
 }
 
-export const AUTH_ROLES: readonly AuthRoleOption[] = [
+export const AUTH_ROLES: readonly CapsOption[] = [
   { value: "tenant", label: "Tenant" },
   { value: "landlord", label: "Landlord" },
 ];
@@ -27,13 +27,13 @@ export const AUTH_ROUTES = {
 } as const;
 
 export interface SignupRoleOption {
-  value: AuthRole;
+  value: Caps;
   title: string;
   description: string;
   tag: string;
 }
 
-export const SIGNUP_DEFAULT_ROLE: AuthRole = "landlord";
+export const SIGNUP_DEFAULT_ROLE: Caps = "landlord";
 
 export const SIGNUP_ROLE_SCREEN = {
   step: 1,
@@ -62,12 +62,12 @@ export const SIGNUP_ROLE_OPTIONS: readonly SignupRoleOption[] = [
   },
 ];
 
-export const SIGNUP_ROLE_CTA: Record<AuthRole, string> = {
+export const SIGNUP_ROLE_CTA: Record<Caps, string> = {
   landlord: "Continue as a landlord",
   tenant: "Continue as a tenant",
 };
 
-export const SIGNUP_ROLE_PILL: Record<AuthRole, string> = {
+export const SIGNUP_ROLE_PILL: Record<Caps, string> = {
   landlord: "Signing up as a Landlord",
   tenant: "Signing up as a Tenant",
 };
@@ -333,7 +333,7 @@ export interface OnboardingCompleteCopy {
   ctaHref: string;
 }
 
-export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
+export const ONBOARDING_COMPLETE: Record<Caps, OnboardingCompleteCopy> = {
   tenant: {
     metaTitle: "Tenant account ready · Vemra",
     title: "You're all set, Aisha",

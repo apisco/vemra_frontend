@@ -1,6 +1,6 @@
 import type { Iso8601 } from "@/types/api/common";
 
-export type UserRole = "tenant" | "landlord" | "property_admin" | "admin";
+export type UserRole = "TENANT" | "LANDLORD";
 
 export interface SessionUser {
   id: string;

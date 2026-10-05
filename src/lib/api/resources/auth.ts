@@ -21,16 +21,13 @@ import type {
  * with React `cache()` so a layout and the page beneath it share one round trip.
  */
 
-const ROLE_MAP: Record<AccountRole, UserRole> = {
-  TENANT: "tenant",
-  LANDLORD: "landlord",
-  PROPERTY_ADMIN: "property_admin",
-  SUPER_ADMIN: "admin",
-  SUPPORT: "admin",
+const ROLE_MAP: Partial<Record<AccountRole, UserRole>> = {
+  TENANT: "TENANT",
+  LANDLORD: "LANDLORD",
 };
 
-export function mapAccountRole(role: AccountRole): UserRole {
-  return ROLE_MAP[role] ?? "tenant";
+export function mapAccountRole(role: AccountRole): UserRole | null {
+  return ROLE_MAP[role] ?? null;
 }
 
 function initialsFrom(name: string): string {
@@ -45,8 +42,14 @@ function initialsFrom(name: string): string {
 
 function toSession(account: AccountProfile): Session {
   const name = account.displayName ?? account.email;
-  const roles = [...new Set(account.roles.map(mapAccountRole))];
-  const activeRole = roles[0] ?? "tenant";
+  const roles = [
+    ...new Set(
+      account.roles
+        .map(mapAccountRole)
+        .filter((role): role is UserRole => role !== null),
+    ),
+  ];
+  const activeRole = roles[0] ?? "TENANT";
 
   const user: SessionUser = {
     id: account.userId,

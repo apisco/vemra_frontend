@@ -1,13 +1,13 @@
-export type Caps = "tenant" | "landlord";
+export type AuthRole = "TENANT" | "LANDLORD";
 
-export interface CapsOption {
-  value: Caps;
+export interface AuthRoleOption {
+  value: AuthRole;
   label: string;
 }
 
-export const AUTH_ROLES: readonly CapsOption[] = [
-  { value: "tenant", label: "Tenant" },
-  { value: "landlord", label: "Landlord" },
+export const AUTH_ROLES: readonly AuthRoleOption[] = [
+  { value: "TENANT", label: "Tenant" },
+  { value: "LANDLORD", label: "Landlord" },
 ];
 
 export const AUTH_ROUTES = {
@@ -27,13 +27,13 @@ export const AUTH_ROUTES = {
 } as const;
 
 export interface SignupRoleOption {
-  value: Caps;
+  value: AuthRole;
   title: string;
   description: string;
   tag: string;
 }
 
-export const SIGNUP_DEFAULT_ROLE: Caps = "landlord";
+export const SIGNUP_DEFAULT_ROLE: AuthRole = "LANDLORD";
 
 export const SIGNUP_ROLE_SCREEN = {
   step: 1,
@@ -48,28 +48,28 @@ export const SIGNUP_ROLE_SCREEN = {
 
 export const SIGNUP_ROLE_OPTIONS: readonly SignupRoleOption[] = [
   {
-    value: "landlord",
+    value: "LANDLORD",
     title: "Landlord",
     description:
       "List properties, receive an Assigned Property Admin from Vemra when needed, and withdraw rent as it clears.",
     tag: "Requires property ownership check",
   },
   {
-    value: "tenant",
+    value: "TENANT",
     title: "Tenant",
     description: "Browse verified homes, contact Vemra, and manage your rent.",
     tag: "Requires ID for applications",
   },
 ];
 
-export const SIGNUP_ROLE_CTA: Record<Caps, string> = {
-  landlord: "Continue as a landlord",
-  tenant: "Continue as a tenant",
+export const SIGNUP_ROLE_CTA: Record<AuthRole, string> = {
+  LANDLORD: "Continue as a landlord",
+  TENANT: "Continue as a tenant",
 };
 
-export const SIGNUP_ROLE_PILL: Record<Caps, string> = {
-  landlord: "Signing up as a Landlord",
-  tenant: "Signing up as a Tenant",
+export const SIGNUP_ROLE_PILL: Record<AuthRole, string> = {
+  LANDLORD: "Signing up as a Landlord",
+  TENANT: "Signing up as a Tenant",
 };
 
 export const SIGNUP_TERMS = {
@@ -333,8 +333,8 @@ export interface OnboardingCompleteCopy {
   ctaHref: string;
 }
 
-export const ONBOARDING_COMPLETE: Record<Caps, OnboardingCompleteCopy> = {
-  tenant: {
+export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
+  TENANT: {
     metaTitle: "Tenant account ready · Vemra",
     title: "You're all set, Aisha",
     description:
@@ -358,7 +358,7 @@ export const ONBOARDING_COMPLETE: Record<Caps, OnboardingCompleteCopy> = {
     ctaLabel: "Browse homes",
     ctaHref: "/browse",
   },
-  landlord: {
+  LANDLORD: {
     metaTitle: "Landlord account ready · Vemra",
     title: "You're verified, Daniel",
     description:

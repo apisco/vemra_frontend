@@ -6,7 +6,7 @@ import {
   SIGNUP_DETAILS_SCREEN,
   SIGNUP_ROLE_PILL,
 } from "@/constants/auth";
-import type { Caps } from "@/constants/auth";
+import type { AuthRole } from "@/constants/auth";
 import { AuthFooter } from "@/features/auth/auth-footer";
 import { AuthLayout } from "@/features/auth/auth-layout";
 import { ROLE_ICONS } from "@/features/auth/role-icons";
@@ -23,7 +23,7 @@ export default async function SignupDetailsPage({
   searchParams,
 }: PageProps<"/signup/details">) {
   const { role } = await searchParams;
-  const selectedRole: Caps = role === "tenant" ? "tenant" : SIGNUP_DEFAULT_ROLE;
+  const selectedRole: AuthRole = role === "TENANT" ? "TENANT" : SIGNUP_DEFAULT_ROLE;
 
   return (
     <AuthLayout width="content" gap="xs" justify="desktop" logoSize="none">

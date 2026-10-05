@@ -35,8 +35,8 @@ interface CallToAction {
   label: string;
 }
 
-function primaryRole(account: AccountProfile): "tenant" | "landlord" {
-  return account.roles.includes("LANDLORD") ? "landlord" : "tenant";
+function primaryRole(account: AccountProfile): "TENANT" | "LANDLORD" {
+  return account.roles.includes("LANDLORD") ? "LANDLORD" : "TENANT";
 }
 
 function callToAction(account: AccountProfile): CallToAction {

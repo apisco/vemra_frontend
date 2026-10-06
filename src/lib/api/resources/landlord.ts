@@ -4,9 +4,11 @@ import { cache } from "react";
 
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import {
+  toApplicationQueue,
   toLandlordDashboard,
   toLandlordProperty,
   toLandlordPropertySummary,
+  toMaintenanceOverview,
   unwrapData,
 } from "@/lib/api/adapters";
 import { recoverableRead } from "@/lib/api/resilient";
@@ -104,7 +106,22 @@ export const getRentApproval = cache(
 
 export const getApplicationQueue = cache(
   async (): Promise<ApplicationQueue> =>
-    apiGet<ApplicationQueue>(ENDPOINTS.landlord.applications),
+    recoverableRead(
+      "landlord applications",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.landlord.applications);
+        const payload = unwrapData<{ applications?: readonly unknown[] }>(body);
+        const rows = Array.isArray(payload?.applications)
+          ? payload.applications
+          : [];
+        return toApplicationQueue(rows);
+      },
+      {
+        listingName: null,
+        items: [],
+        counts: { all: 0, new: 0, reviewed: 0, approved: 0, declined: 0 },
+      },
+    ),
 );
 
 export const getLandlordApplication = cache(
@@ -116,7 +133,23 @@ export const getLandlordApplication = cache(
 
 export const getMaintenanceOverview = cache(
   async (): Promise<MaintenanceOverview> =>
-    apiGet<MaintenanceOverview>(ENDPOINTS.landlord.maintenance),
+    recoverableRead(
+      "landlord maintenance",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.landlord.maintenance);
+        const rows = unwrapData<readonly unknown[]>(body);
+        return toMaintenanceOverview(Array.isArray(rows) ? rows : []);
+      },
+      {
+        openCount: 0,
+        openNote: null,
+        scheduledCount: 0,
+        scheduledNote: null,
+        resolvedThisMonth: 0,
+        resolvedNote: null,
+        reports: [],
+      },
+    ),
 );
 
 export const getCautionDeposits = cache(

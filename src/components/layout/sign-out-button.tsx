@@ -5,19 +5,15 @@ import { cn } from "@/lib/cn";
 export type SignOutTone = "dark" | "light";
 
 export interface SignOutButtonProps {
-  /** `dark` for the brand-950 dashboard chrome, `light` for white surfaces. */
+  
   tone?: SignOutTone;
   label?: string;
-  /** Icon-only; the label stays available to assistive tech. */
+  
   compact?: boolean;
   className?: string;
 }
 
-/**
- * Signs the user out via a plain form POST to the sign-out route handler, which
- * clears the Supabase cookies and redirects to `/login`. A form keeps it
- * working without JavaScript and avoids exposing the session to client code.
- */
+
 export function SignOutButton({
   tone = "light",
   label = "Sign out",

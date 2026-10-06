@@ -5,13 +5,7 @@ import type {
 } from "@/constants/auth";
 import type { AccountProfile, KycStatus, OnboardingNextStep } from "@/types/api/auth";
 
-/**
- * Presentation mapping for the KYC workflow.
- *
- * The backend exposes only an overall `kycStatus` (plus a reviewer message), not
- * per-document state, so every checklist row reflects that overall status. This
- * keeps the designed checklist accurate without inventing per-document detail.
- */
+
 
 export interface KycCheckDefinition {
   checkType: string;
@@ -120,11 +114,7 @@ function reviewTone(status: KycStatus | null): VerificationReviewTone {
   return "warning";
 }
 
-/**
- * Checklist rows for the review-status screens. Both the live account read and
- * the static fallback go through here, so a screen never renders two different
- * checklists depending on whether `/me` succeeded.
- */
+
 export function kycReviewRows(
   status: KycStatus | null,
   message?: string | null,

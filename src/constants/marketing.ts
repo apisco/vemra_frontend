@@ -221,9 +221,9 @@ export const BROWSE_FILTERS: readonly BrowseFilter[] = [
 export interface BrowseFilterOption {
   value: string;
   label: string;
-  /** Inclusive lower bound in naira (major units). */
+  
   min?: number;
-  /** Inclusive upper bound in naira (major units). */
+  
   max?: number;
 }
 

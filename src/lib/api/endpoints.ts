@@ -1,9 +1,5 @@
 export const ENDPOINTS = {
-  /**
-   * The caller's own account. Auth itself is handled by Supabase (see
-   * `src/lib/supabase`); the backend authenticates with the Supabase access
-   * token and exposes the resulting profile and onboarding state here.
-   */
+  
   identity: {
     me: "/me",
     updateProfile: "/me/profile",
@@ -11,26 +7,17 @@ export const ENDPOINTS = {
     landlordDashboard: "/me/landlord-dashboard",
   },
 
-  /**
-   * KYC submission workflow, in two steps:
-   *   1. `documentGrants` — get a signed Cloudinary upload policy.
-   *   2. Upload the file straight to Cloudinary (never through this backend).
-   *   3. `submissions` — hand the resulting storage paths to the backend.
-   */
+  
   kyc: {
     documentGrants: "/kyc/documents/grants",
     submissions: "/kyc/submissions",
   },
 
   public: {
-    /**
-     * Backend exposes published listings through the resource-oriented
-     * `/properties` routes; the resource layer adapts the DTO to the frontend's
-     * `Listing`/`ListingSummary` view models.
-     */
+    
     listings: "/properties",
     listing: (propertyId: string) => `/properties/${propertyId}`,
-    /** No dedicated featured route; the resource derives it from the list. */
+    
     featuredListing: "/properties",
     profile: (profileId: string) => `/profiles/${profileId}`,
     platformStats: "/platform/stats",
@@ -51,7 +38,7 @@ export const ENDPOINTS = {
     acceptDepositDecision: "/tenant/caution-deposit/decision/accept",
     disputeDepositDecision: "/tenant/caution-deposit/decision/dispute",
     rentChange: "/tenant/rent-change",
-    /** Live backend route: `/api/v1/maintenance` (returns `{status,data}`, not the standard envelope). */
+    
     maintenance: "/maintenance",
     conversations: "/tenant/conversations",
     conversation: (conversationId: string) =>
@@ -61,7 +48,7 @@ export const ENDPOINTS = {
     notifications: "/tenant/notifications",
     readNotifications: "/tenant/notifications/read",
     referrals: "/tenant/referrals",
-    /** Live backend route: `/api/v1/applications`. */
+    
     applications: "/applications",
     lease: "/tenant/lease",
     signLease: "/tenant/lease/sign",

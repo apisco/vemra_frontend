@@ -14,11 +14,7 @@ import type {
   KycUploadGrantRequest,
 } from "@/types/api/auth";
 
-/**
- * Step 1 of the KYC workflow: fetch a signed Cloudinary upload policy. The
- * browser then POSTs the file straight to Cloudinary — file bytes never touch
- * the Vemra backend.
- */
+
 export async function createKycUploadGrantAction(
   input: KycUploadGrantRequest,
 ): Promise<ActionResult<KycUploadGrant>> {
@@ -33,10 +29,7 @@ export async function createKycUploadGrantAction(
   }
 }
 
-/**
- * Step 2: hand the resulting Cloudinary storage paths to the backend for
- * review.
- */
+
 export async function submitKycAction(
   payload: KycSubmissionPayload,
 ): Promise<ActionResult<KycSubmissionResult>> {

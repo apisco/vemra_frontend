@@ -13,13 +13,7 @@ import type {
   UserRole,
 } from "@/types/api/auth";
 
-/**
- * Account and session reads.
- *
- * Auth is owned by Supabase; the backend only reflects the resulting account at
- * `GET /me`. Everything below is a thin mapping from that one payload, cached
- * with React `cache()` so a layout and the page beneath it share one round trip.
- */
+
 
 const ROLE_MAP: Partial<Record<AccountRole, UserRole>> = {
   TENANT: "TENANT",
@@ -66,15 +60,7 @@ function toSession(account: AccountProfile): Session {
   return { user, activeRole, expiresAt: null };
 }
 
-/**
- * The caller's account, or `null` when nobody is signed in.
- *
- * Only a `401` (missing/invalid token) or a `404` resolves to `null`; a
- * transient network failure is *not* treated as signed-out. Folding an outage
- * into `null` would bounce an authenticated user to login — or make a protected
- * layout render as if they had no session — instead of surfacing the real
- * failure to `error.tsx`.
- */
+
 async function readAccount(): Promise<AccountProfile | null> {
   try {
     return await apiGetDataOptional<AccountProfile>(ENDPOINTS.identity.me);
@@ -88,18 +74,13 @@ async function readAccount(): Promise<AccountProfile | null> {
 
 export const getAccount = cache(readAccount);
 
-/** The signed-in user mapped into the app's session shape, or `null`. */
+
 export const getSession = cache(async (): Promise<Session | null> => {
   const account = await getAccount();
   return account === null ? null : toSession(account);
 });
 
-/**
- * The session, or a redirect to login.
- *
- * Use in authenticated layouts so every page beneath can assume a user. The
- * `next` parameter sends the user back where they were headed after login.
- */
+
 export const requireSession = cache(
   async (redirectTo?: string): Promise<Session> => {
     const session = await getSession();

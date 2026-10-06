@@ -23,7 +23,7 @@ export interface PropertyAdmin extends PersonRef {
 }
 
 export interface RevenuePoint {
-  /** First day of the month the bar represents. */
+  
   periodStart: Iso8601;
   amount: Money;
 }
@@ -119,7 +119,7 @@ export type LandlordApplicationStatus =
 export interface ApplicationSummary {
   id: string;
   applicant: PersonRef;
-  /** One-line summary, e.g. move-in date and occupation. */
+  
   summary: string;
   status: LandlordApplicationStatus;
   submittedAt: Iso8601;
@@ -209,14 +209,14 @@ export interface CautionDepositsOverview {
 export interface PayoutAccount {
   id: string;
   bankName: string;
-  /** Last four digits only. */
+  
   maskedNumber: string;
   accountInitials: string;
   connectedAt: Iso8601;
   isVerified: boolean;
   withdrawalMethod: string;
   typicalArrival: string;
-  /** Ratio, e.g. `0.025` for 2.5%. */
+  
   platformFeeRatio: number;
   availableBalance: Money;
 }

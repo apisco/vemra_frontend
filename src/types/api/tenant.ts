@@ -297,7 +297,7 @@ export interface TenantApplication {
   status: ApplicationStatus;
   submittedAt: Iso8601 | null;
   moveInDate: Iso8601 | null;
-  /** Expected turnaround copy from the backend, e.g. `"2–3 days"`. */
+  
   decisionWindow: string | null;
   reviewers: readonly PersonRef[];
 }

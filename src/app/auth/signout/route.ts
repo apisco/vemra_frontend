@@ -8,6 +8,6 @@ export async function POST(request: Request) {
     await supabase.auth.signOut();
   }
 
-  // 303 so the browser follows the form POST with a GET to the login page.
+  
   return authRedirect(authRedirectUrl(request, SIGNED_OUT_PATH), 303);
 }

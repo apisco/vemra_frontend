@@ -29,7 +29,7 @@ import type {
 } from "@/types/api/landlord";
 import type { NotificationPreferenceGroup } from "@/types/api/tenant";
 
-/** Landlord reads. Per-user, so `no-store`; `cache()` dedupes per render. */
+
 
 export const getLandlordDashboard = cache(
   async (): Promise<LandlordDashboard> =>

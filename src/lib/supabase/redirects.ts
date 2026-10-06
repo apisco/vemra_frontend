@@ -37,12 +37,7 @@ export function authErrorUrl(request: Request, reason: AuthErrorReason): URL {
   return url;
 }
 
-/**
- * Redirects without caching the destination. `status` defaults to 307, which
- * preserves the method — fine for the GET auth callbacks. A form POST (sign
- * out) must pass `303` so the browser follows with GET instead of re-POSTing
- * to the destination page.
- */
+
 export function authRedirect(url: URL, status = 307): NextResponse {
   const response = NextResponse.redirect(url, status);
   response.headers.set(

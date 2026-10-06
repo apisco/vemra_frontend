@@ -2,7 +2,7 @@ import { TENANT_ROUTES } from "@/constants/tenant";
 import type { ResponsiveCopy } from "@/components/ui/responsive-text";
 import type { CheckoutSummary } from "@/types/api/tenant";
 
-/** Shared placeholder when no checkout is ready, so both checkout screens agree. */
+
 export const EMPTY_CHECKOUT_SUMMARY: CheckoutSummary = {
   label: "Payment plan unavailable",
   amount: { amount: 0, currency: "NGN" },

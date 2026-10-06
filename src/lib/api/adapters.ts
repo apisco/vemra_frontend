@@ -40,15 +40,7 @@ import type {
   UnitRef,
 } from "@/types/api/tenant";
 
-/**
- * Adapters from the deployed Vemra backend (resource-oriented, money in minor
- * units, snake-ish DTOs) to the frontend's screen-shaped view models.
- *
- * The backend routes live under `/api/v1/properties`, `/api/v1/lease…`, etc.;
- * the frontend calls those directly and maps the payload here. Fields the
- * backend does not provide (contact, owner, verification badge, highlight) are
- * left as null/empty so the UI renders its empty state.
- */
+
 
 export interface BackendPropertyMedia {
   url: string;
@@ -199,12 +191,7 @@ export function toAppliedFilters(filters: ListingFilters): AppliedFilter[] {
   return applied;
 }
 
-/**
- * Some backend modules (`maintenance`) wrap their payload as
- * `{ status: 'success', data }` instead of the standard `{ data, requestId }`,
- * and others (`messaging`, `notifications`) return the payload raw. Unwrap all
- * three shapes so callers always receive the payload.
- */
+
 export function unwrapData<T>(body: unknown): T {
   if (
     body !== null &&
@@ -327,14 +314,7 @@ export function toTenantProfile(account: AccountProfile | null): TenantProfile {
   };
 }
 
-/* --------------------------------------------------------------------- *
- * Live role dashboards, landlord listings, and payment history.
- *
- * These backend payloads are untyped in the OpenAPI document, so the mappers
- * below read the documented camelCase fields with snake_case fallbacks and
- * normalise money from minor-unit strings (`amountMinor`) or major-unit
- * numbers. Unknown/missing fields degrade to sensible empty values.
- * --------------------------------------------------------------------- */
+
 
 function readRecord(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object"

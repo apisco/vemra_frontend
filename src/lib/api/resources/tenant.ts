@@ -37,16 +37,7 @@ import type {
   TenantSettings,
 } from "@/types/api/tenant";
 
-/**
- * Tenant reads.
- *
- * All per-user and therefore uncached by the fetch layer (`no-store`); `cache()`
- * here only dedupes within a single render pass.
- *
- * Reads that can legitimately have no record yet — a tenant with no lease, no
- * deposit, no plan — go through `apiGetOptional` so a `404` becomes `null` and
- * the screen shows its empty state instead of an error.
- */
+
 
 export const getTenantDashboard = cache(
   async (): Promise<TenantDashboard> =>

@@ -91,11 +91,11 @@ export interface AuthResult {
   expiresAt: Iso8601 | null;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Backend account contract (`GET /api/v1/me`)                                */
-/* -------------------------------------------------------------------------- */
 
-/** Roles as the backend spells them (the wire format is uppercase). */
+
+
+
+
 export type AccountRole =
   | "TENANT"
   | "LANDLORD"
@@ -112,7 +112,7 @@ export type OnboardingNextStep =
   | "ACTION_REQUIRED"
   | "COMPLETE";
 
-/** The `onboarding.kycStatus` value; `null` until a case exists. */
+
 export type KycStatus =
   | "PENDING"
   | "SUBMITTED"
@@ -126,11 +126,11 @@ export interface OnboardingState {
   nextStep: OnboardingNextStep;
   kycStatus: KycStatus | null;
   attemptsRemaining: number | null;
-  /** Neutral text from the reviewer, safe to show the applicant. */
+  
   applicantMessage: string | null;
 }
 
-/** The caller's profile and onboarding state, unwrapped from `data`. */
+
 export interface AccountProfile {
   userId: string;
   email: string;
@@ -149,7 +149,7 @@ export interface ProfileUpdatePayload {
   handle?: string | null;
 }
 
-/* KYC submission workflow --------------------------------------------------- */
+
 
 export interface KycUploadGrantRequest {
   fileName: string;
@@ -157,7 +157,7 @@ export interface KycUploadGrantRequest {
   maxSizeBytes: number;
 }
 
-/** A signed Cloudinary upload policy — POST the file to `url` with `fields`. */
+
 export interface KycUploadGrant {
   url: string;
   fields: Record<string, string>;
@@ -165,7 +165,7 @@ export interface KycUploadGrant {
 
 export interface KycDocumentInput {
   checkType: string;
-  /** Cloudinary `public_id` returned by the direct upload. */
+  
   storagePath: string;
 }
 

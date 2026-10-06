@@ -80,12 +80,12 @@ export const ENDPOINTS = {
       `/landlord/properties/${propertyId}/rent-approval`,
     decideRentApproval: (propertyId: string) =>
       `/landlord/properties/${propertyId}/rent-approval/decision`,
-    applications: "/landlord/applications",
+    applications: "/applications",
     application: (applicationId: string) =>
       `/landlord/applications/${applicationId}`,
     decideApplication: (applicationId: string) =>
       `/landlord/applications/${applicationId}/decision`,
-    maintenance: "/landlord/maintenance",
+    maintenance: "/maintenance",
     cautionDeposits: "/landlord/caution-deposits",
     decideDeduction: (depositId: string) =>
       `/landlord/caution-deposits/${depositId}/deduction/decision`,
@@ -97,7 +97,7 @@ export const ENDPOINTS = {
     paymentBreakdown: "/landlord/payment-breakdown",
     withdrawals: "/landlord/withdrawals",
     settings: "/landlord/settings",
-    notificationPreferences: "/landlord/settings/notifications",
+    notificationPreferences: "/notifications/preferences",
     profile: "/landlord/profile",
   },
 } as const;

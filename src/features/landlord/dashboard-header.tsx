@@ -2,11 +2,20 @@ import Link from "next/link";
 
 import { buttonClasses } from "@/components/ui/button";
 import { LANDLORD_DASHBOARD } from "@/constants/landlord";
+import type { LandlordDashboard } from "@/types/api/landlord";
 
-const { greeting, summary, withdrawAction, addPropertyAction } =
-  LANDLORD_DASHBOARD;
+const { withdrawAction, addPropertyAction } = LANDLORD_DASHBOARD;
 
-export function DashboardHeader() {
+export function DashboardHeader({
+  dashboard,
+}: {
+  dashboard: LandlordDashboard;
+}) {
+  const firstName = dashboard.landlordName.trim().split(/\s+/)[0] ?? "";
+  const greeting = firstName === "" ? "Welcome" : `Welcome, ${firstName}`;
+  const propertyLabel = dashboard.propertyCount === 1 ? "property" : "properties";
+  const summary = `${dashboard.propertyCount} ${propertyLabel} · ${dashboard.occupiedCount} occupied · ${dashboard.vacantCount} vacant`;
+
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-6">
       <div className="min-w-0">

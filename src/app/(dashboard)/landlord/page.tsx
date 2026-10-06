@@ -32,7 +32,7 @@ export default async function LandlordOverviewPage({
 
   return (
     <div className="flex flex-col gap-5 md:gap-8">
-      <DashboardHeader />
+      <DashboardHeader dashboard={dashboard} />
 
       <StatCardGrid dashboard={dashboard} />
 

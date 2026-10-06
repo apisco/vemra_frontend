@@ -6,9 +6,14 @@ import type {
   PersonRef,
 } from "@/types/api/common";
 import type {
+  ApplicationQueue,
+  ApplicationSummary,
+  LandlordApplicationStatus,
   LandlordDashboard,
+  LandlordMaintenanceReport,
   LandlordProperty,
   LandlordPropertySummary,
+  MaintenanceOverview,
   NextRentDue,
   PropertyAdmin,
   PropertyAdminRef,
@@ -22,6 +27,7 @@ import type {
 } from "@/types/api/listing";
 import type {
   MaintenanceRequest,
+  MaintenanceStatus,
   NextPayment,
   PaymentPlanProgress,
   PaymentStatus,
@@ -686,5 +692,103 @@ export function toLandlordProperty(value: unknown): LandlordProperty {
       (readString(record.status) ?? "").toLowerCase() === "published",
   };
 }
+
+export function toLandlordMaintenanceReport(
+  value: unknown,
+): LandlordMaintenanceReport {
+  const record = readRecord(value);
+  const status = (readString(record.status) ?? "").toUpperCase();
+  const priority = (
+    readString(readField(record, "priority", "urgency")) ?? ""
+  ).toUpperCase();
+  return {
+    id: readString(record.id) ?? "",
+    propertyName:
+      readString(readField(record, "propertyName", "property_name")) ??
+      readString(readField(record, "propertyId", "property_id")) ??
+      "Property",
+    issue: readString(readField(record, "issue", "title", "subject")) ?? "",
+    category: readString(readField(record, "category", "priority")) ?? "",
+    urgency: MAINTENANCE_URGENCY[priority] ?? "normal",
+    tenant: toPersonRef(readField(record, "tenant", "reporter")),
+    loggedAt:
+      readString(
+        readField(record, "loggedAt", "logged_at", "createdAt", "created_at"),
+      ) ?? "",
+    status: (MAINTENANCE_STATUS[status] ?? "open") as MaintenanceStatus,
+  };
+}
+
+export function toMaintenanceOverview(
+  values: readonly unknown[],
+): MaintenanceOverview {
+  const reports = values.map(toLandlordMaintenanceReport);
+  return {
+    openCount: reports.filter((report) => report.status === "open").length,
+    openNote: null,
+    scheduledCount: reports.filter((report) => report.status === "scheduled").length,
+    scheduledNote: null,
+    resolvedThisMonth: reports.filter((report) => report.status === "resolved").length,
+    resolvedNote: null,
+    reports,
+  };
+}
+
+const LANDLORD_APPLICATION_STATUS: Record<string, LandlordApplicationStatus> = {
+  NEW: "new",
+  PENDING: "new",
+  UNDER_REVIEW: "reviewed",
+  REVIEWED: "reviewed",
+  APPROVED: "approved",
+  REJECTED: "declined",
+  DECLINED: "declined",
+  WITHDRAWN: "declined",
+};
+
+export function toApplicationSummary(value: unknown): ApplicationSummary {
+  const record = readRecord(value);
+  const applicant =
+    toPersonRef(readField(record, "applicant", "tenant", "user")) ?? {
+      id:
+        readString(readField(record, "applicantId", "applicant_id")) ?? "",
+      name: "Applicant",
+      initials: "?",
+      avatarUrl: null,
+    };
+  return {
+    id: readString(record.id) ?? "",
+    applicant,
+    summary:
+      readString(readField(record, "summary", "note", "description")) ?? "",
+    status:
+      LANDLORD_APPLICATION_STATUS[(readString(record.status) ?? "").toUpperCase()] ??
+      "new",
+    submittedAt:
+      readString(
+        readField(record, "submittedAt", "submitted_at", "createdAt", "created_at"),
+      ) ?? "",
+  };
+}
+
+export function toApplicationQueue(
+  values: readonly unknown[],
+): ApplicationQueue {
+  const items = values.map(toApplicationSummary);
+  const counts: Record<LandlordApplicationStatus, number> = {
+    new: 0,
+    reviewed: 0,
+    approved: 0,
+    declined: 0,
+  };
+  for (const item of items) {
+    counts[item.status] += 1;
+  }
+  return {
+    listingName: null,
+    items,
+    counts: { all: items.length, ...counts },
+  };
+}
+
 
 

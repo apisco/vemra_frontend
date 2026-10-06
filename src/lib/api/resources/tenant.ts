@@ -5,7 +5,9 @@ import { cache } from "react";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import {
   toTenantApplication,
+  toTenantDashboard,
   toTenantMaintenance,
+  toTenantPayment,
   toTenantProfile,
   unwrapData,
   type BackendApplicationList,
@@ -50,7 +52,12 @@ export const getTenantDashboard = cache(
   async (): Promise<TenantDashboard> =>
     recoverableRead(
       "tenant dashboard",
-      () => apiGet<TenantDashboard>(ENDPOINTS.tenant.dashboard),
+      async () =>
+        toTenantDashboard(
+          unwrapData<unknown>(
+            await apiGet<unknown>(ENDPOINTS.identity.tenantDashboard),
+          ),
+        ),
       {
         tenantName: "",
         unit: null,
@@ -70,7 +77,12 @@ export const getTenantPayments = cache(
   async (): Promise<readonly TenantPayment[]> =>
     recoverableRead(
       "tenant payments",
-      () => apiGet<readonly TenantPayment[]>(ENDPOINTS.tenant.payments),
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.payments);
+        const payload = unwrapData<{ payments?: readonly unknown[] }>(body);
+        const rows = Array.isArray(payload?.payments) ? payload.payments : [];
+        return rows.map(toTenantPayment);
+      },
       [],
     ),
 );

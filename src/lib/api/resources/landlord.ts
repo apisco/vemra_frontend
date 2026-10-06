@@ -3,6 +3,12 @@ import "server-only";
 import { cache } from "react";
 
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import {
+  toLandlordDashboard,
+  toLandlordProperty,
+  toLandlordPropertySummary,
+  unwrapData,
+} from "@/lib/api/adapters";
 import { recoverableRead } from "@/lib/api/resilient";
 import { apiGet, apiGetOptional } from "@/lib/api/server";
 import type {
@@ -27,7 +33,12 @@ export const getLandlordDashboard = cache(
   async (): Promise<LandlordDashboard> =>
     recoverableRead(
       "landlord dashboard",
-      () => apiGet<LandlordDashboard>(ENDPOINTS.landlord.dashboard),
+      async () =>
+        toLandlordDashboard(
+          unwrapData<unknown>(
+            await apiGet<unknown>(ENDPOINTS.identity.landlordDashboard),
+          ),
+        ),
       {
         landlordName: "",
         propertyCount: 0,
@@ -50,17 +61,38 @@ export const getLandlordProperties = cache(
   async (): Promise<readonly LandlordPropertySummary[]> =>
     recoverableRead(
       "landlord properties",
-      () =>
-        apiGet<readonly LandlordPropertySummary[]>(
-          ENDPOINTS.landlord.properties,
-        ),
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.landlord.properties);
+        const payload = unwrapData<{ properties?: readonly unknown[] }>(body);
+        const rows = Array.isArray(payload?.properties) ? payload.properties : [];
+        return rows.map(toLandlordPropertySummary);
+      },
       [],
     ),
 );
 
 export const getLandlordProperty = cache(
   async (propertyId: string): Promise<LandlordProperty | null> =>
-    apiGetOptional<LandlordProperty>(ENDPOINTS.landlord.property(propertyId)),
+    recoverableRead(
+      "landlord property",
+      async () => {
+        const body = await apiGetOptional<unknown>(
+          ENDPOINTS.landlord.property(propertyId),
+        );
+        if (body === null) {
+          return null;
+        }
+        const payload = unwrapData<unknown>(body);
+        const property =
+          payload !== null && typeof payload === "object" && "data" in payload
+            ? (payload as { data: unknown }).data
+            : payload;
+        return property === null || property === undefined
+          ? null
+          : toLandlordProperty(property);
+      },
+      null,
+    ),
 );
 
 export const getRentApproval = cache(

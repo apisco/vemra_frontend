@@ -7,6 +7,8 @@ export const ENDPOINTS = {
   identity: {
     me: "/me",
     updateProfile: "/me/profile",
+    tenantDashboard: "/me/tenant-dashboard",
+    landlordDashboard: "/me/landlord-dashboard",
   },
 
   /**
@@ -38,7 +40,7 @@ export const ENDPOINTS = {
   tenant: {
     dashboard: "/tenant/dashboard",
     paymentPlan: "/tenant/payment-plan",
-    payments: "/tenant/payments",
+    payments: "/payments",
     checkout: "/tenant/payments/checkout",
     rentals: "/tenant/rentals",
     savedProperties: "/tenant/saved-properties",
@@ -69,8 +71,9 @@ export const ENDPOINTS = {
 
   landlord: {
     dashboard: "/landlord/dashboard",
-    properties: "/landlord/properties",
-    property: (propertyId: string) => `/landlord/properties/${propertyId}`,
+    properties: "/properties/me/listings",
+    property: (propertyId: string) =>
+      `/properties/me/listings/${propertyId}`,
     unlistProperty: (propertyId: string) =>
       `/landlord/properties/${propertyId}/unlist`,
     rentApproval: (propertyId: string) =>

@@ -167,8 +167,10 @@ export const getStatement = cache(
 );
 
 export const getPaymentBreakdown = cache(
-  async (): Promise<PaymentBreakdown | null> =>
-    apiGetOptional<PaymentBreakdown>(ENDPOINTS.landlord.paymentBreakdown),
+  async (accountId: string): Promise<PaymentBreakdown | null> =>
+    apiGetOptional<PaymentBreakdown>(
+      ENDPOINTS.landlord.paymentBreakdown(accountId),
+    ),
 );
 
 export const getLandlordSettings = cache(

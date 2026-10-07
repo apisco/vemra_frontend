@@ -28,6 +28,7 @@ import type {
   ReferralProgram,
   RentChange,
   SavedProperty,
+  Tenancy,
   TenantApplication,
   TenantDashboard,
   TenantMaintenance,
@@ -85,12 +86,53 @@ export const getCheckoutOptions = cache(
 
 export const getTenantRentals = cache(
   async (): Promise<TenantRentals> =>
-    apiGet<TenantRentals>(ENDPOINTS.tenant.rentals),
+    recoverableRead<TenantRentals>(
+      "tenant rentals",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.leases);
+        const payload = unwrapData<unknown>(body);
+        const rows = Array.isArray(payload)
+          ? payload
+          : Array.isArray((payload as { leases?: unknown })?.leases)
+            ? (payload as { leases: readonly unknown[] }).leases
+            : [];
+        const history = rows as readonly Tenancy[];
+        const current: Tenancy | null = history[0] ?? null;
+        return { current, history };
+      },
+      { current: null, history: [] },
+    ),
 );
 
 export const getSavedProperties = cache(
   async (): Promise<readonly SavedProperty[]> =>
-    apiGet<readonly SavedProperty[]>(ENDPOINTS.tenant.savedProperties),
+    recoverableRead(
+      "saved properties",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.savedProperties);
+        const payload = unwrapData<unknown>(body);
+        const rows = Array.isArray(payload)
+          ? payload
+          : Array.isArray((payload as { properties?: unknown })?.properties)
+            ? (payload as { properties: readonly unknown[] }).properties
+            : [];
+        return rows
+          .map((row) => {
+            if (row === null || typeof row !== "object" || !("id" in row)) {
+              return null;
+            }
+            const record = row as Record<string, unknown>;
+            return {
+              id: String(record.id),
+              savedAt:
+                typeof record.savedAt === "string" ? record.savedAt : "",
+              listing: (record.listing ?? null) as unknown as SavedProperty["listing"],
+            } satisfies SavedProperty;
+          })
+          .filter((row): row is SavedProperty => row !== null);
+      },
+      [],
+    ),
 );
 
 export const getCautionDeposit = cache(
@@ -124,7 +166,20 @@ export const getTenantMaintenance = cache(
 
 export const getConversations = cache(
   async (): Promise<readonly ConversationSummary[]> =>
-    apiGet<readonly ConversationSummary[]>(ENDPOINTS.tenant.conversations),
+    recoverableRead(
+      "conversations",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.conversations);
+        const payload = unwrapData<unknown>(body);
+        const rows = Array.isArray(payload)
+          ? payload
+          : Array.isArray((payload as { conversations?: unknown })?.conversations)
+            ? (payload as { conversations: readonly unknown[] }).conversations
+            : [];
+        return rows as readonly ConversationSummary[];
+      },
+      [],
+    ),
 );
 
 export const getConversation = cache(
@@ -136,7 +191,25 @@ export const getConversation = cache(
 
 export const getNotifications = cache(
   async (): Promise<NotificationFeed> =>
-    apiGet<NotificationFeed>(ENDPOINTS.tenant.notifications),
+    recoverableRead(
+      "notifications",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.notifications);
+        const payload = unwrapData<unknown>(body);
+        if (Array.isArray(payload)) {
+          return { items: payload, unreadCount: 0 } as NotificationFeed;
+        }
+        const record = payload as
+          | { items?: unknown; unreadCount?: unknown }
+          | null;
+        return {
+          items: Array.isArray(record?.items) ? record.items : [],
+          unreadCount:
+            typeof record?.unreadCount === "number" ? record.unreadCount : 0,
+        } as NotificationFeed;
+      },
+      { items: [], unreadCount: 0 },
+    ),
 );
 
 export const getReferralProgram = cache(
@@ -178,5 +251,17 @@ export const getTenantProfile = cache(
 
 export const getTenantSettings = cache(
   async (): Promise<TenantSettings> =>
-    apiGet<TenantSettings>(ENDPOINTS.tenant.settings),
+    recoverableRead(
+      "tenant settings",
+      async () => {
+        const body = await apiGet<unknown>(ENDPOINTS.tenant.settings);
+        const payload = unwrapData<unknown>(body) as Partial<TenantSettings> | null;
+        return {
+          notificationGroups: Array.isArray(payload?.notificationGroups)
+            ? payload.notificationGroups
+            : [],
+        };
+      },
+      { notificationGroups: [] },
+    ),
 );

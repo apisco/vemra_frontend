@@ -8,6 +8,7 @@ import {
   toBackendListingQuery,
   toListing,
   toListingSummary,
+  unwrapData,
   type BackendPropertyEnvelope,
   type BackendSinglePropertyEnvelope,
 } from "@/lib/api/adapters";
@@ -129,27 +130,45 @@ export const getPublicProfile = cache(
 
 export const getPlatformStats = cache(
   async (): Promise<PlatformStats | null> =>
-    publicRead(
-      () =>
-        apiGetOptionalPublic<PlatformStats>(ENDPOINTS.public.platformStats, {
+    publicRead(async () => {
+      const body = await apiGetOptionalPublic<unknown>(
+        ENDPOINTS.public.platformStats,
+        {
           revalidate: REVALIDATE.platformStats,
           tags: [CACHE_TAGS.platformStats],
-        }),
-      null,
-    ),
+        },
+      );
+      if (body === null) {
+        return null;
+      }
+      const record = unwrapData<unknown>(body) as { stats?: unknown } | null;
+      return record !== null && Array.isArray(record.stats)
+        ? ({ stats: record.stats } as PlatformStats)
+        : null;
+    }, null),
 );
 
 export const getDashboardPreview = cache(
   async (): Promise<DashboardPreview | null> =>
-    publicRead(
-      () =>
-        apiGetOptionalPublic<DashboardPreview>(
-          ENDPOINTS.public.dashboardPreview,
-          {
-            revalidate: REVALIDATE.platformStats,
-            tags: [CACHE_TAGS.platformStats],
-          },
-        ),
-      null,
-    ),
+    publicRead(async () => {
+      const body = await apiGetOptionalPublic<unknown>(
+        ENDPOINTS.public.dashboardPreview,
+        {
+          revalidate: REVALIDATE.platformStats,
+          tags: [CACHE_TAGS.platformStats],
+        },
+      );
+      if (body === null) {
+        return null;
+      }
+      const record = unwrapData<unknown>(body) as {
+        tenant?: unknown;
+        landlord?: unknown;
+      } | null;
+      const isPanel = (value: unknown): boolean =>
+        value !== null && typeof value === "object" && "title" in value;
+      return record !== null && isPanel(record.tenant) && isPanel(record.landlord)
+        ? (record as unknown as DashboardPreview)
+        : null;
+    }, null),
 );

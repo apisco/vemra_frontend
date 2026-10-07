@@ -40,6 +40,24 @@ import type {
 
 
 
+const getActiveLeaseId = cache(async (): Promise<string | null> => {
+  try {
+    const body = await apiGet<unknown>(ENDPOINTS.tenant.leases);
+    const payload = unwrapData<unknown>(body);
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray((payload as { leases?: unknown })?.leases)
+        ? (payload as { leases: readonly unknown[] }).leases
+        : [];
+    const first = rows[0];
+    return first !== null && typeof first === "object" && "id" in first
+      ? String((first as { id: unknown }).id)
+      : null;
+  } catch {
+    return null;
+  }
+});
+
 export const getTenantDashboard = cache(
   async (): Promise<TenantDashboard> =>
     recoverableRead(
@@ -62,7 +80,18 @@ export const getTenantDashboard = cache(
 
 export const getPaymentPlan = cache(
   async (): Promise<PaymentPlan | null> =>
-    apiGetOptional<PaymentPlan>(ENDPOINTS.tenant.paymentPlan),
+    recoverableRead(
+      "tenant payment plan",
+      async () => {
+        const leaseId = await getActiveLeaseId();
+        return leaseId === null
+          ? null
+          : apiGetOptional<PaymentPlan>(
+              ENDPOINTS.tenant.paymentPlan(leaseId),
+            );
+      },
+      null,
+    ),
 );
 
 export const getTenantPayments = cache(
@@ -80,8 +109,7 @@ export const getTenantPayments = cache(
 );
 
 export const getCheckoutOptions = cache(
-  async (): Promise<CheckoutOptions | null> =>
-    apiGetOptional<CheckoutOptions>(ENDPOINTS.tenant.checkout),
+  async (): Promise<CheckoutOptions | null> => null,
 );
 
 export const getTenantRentals = cache(
@@ -137,17 +165,48 @@ export const getSavedProperties = cache(
 
 export const getCautionDeposit = cache(
   async (): Promise<CautionDeposit | null> =>
-    apiGetOptional<CautionDeposit>(ENDPOINTS.tenant.cautionDeposit),
+    recoverableRead(
+      "tenant caution deposit",
+      async () => {
+        const leaseId = await getActiveLeaseId();
+        return leaseId === null
+          ? null
+          : apiGetOptional<CautionDeposit>(
+              ENDPOINTS.tenant.cautionDeposit(leaseId),
+            );
+      },
+      null,
+    ),
 );
 
 export const getDepositDecision = cache(
   async (): Promise<DepositDecision | null> =>
-    apiGetOptional<DepositDecision>(ENDPOINTS.tenant.depositDecision),
+    recoverableRead(
+      "tenant deposit decision",
+      async () => {
+        const leaseId = await getActiveLeaseId();
+        return leaseId === null
+          ? null
+          : apiGetOptional<DepositDecision>(
+              ENDPOINTS.tenant.depositDecision(leaseId),
+            );
+      },
+      null,
+    ),
 );
 
 export const getRentChange = cache(
   async (): Promise<RentChange | null> =>
-    apiGetOptional<RentChange>(ENDPOINTS.tenant.rentChange),
+    recoverableRead(
+      "tenant rent change",
+      async () => {
+        const leaseId = await getActiveLeaseId();
+        return leaseId === null
+          ? null
+          : apiGetOptional<RentChange>(ENDPOINTS.tenant.rentChange(leaseId));
+      },
+      null,
+    ),
 );
 
 export const getTenantMaintenance = cache(
@@ -232,7 +291,16 @@ export const getTenantApplications = cache(
 
 export const getLease = cache(
   async (): Promise<Lease | null> =>
-    apiGetOptional<Lease>(ENDPOINTS.tenant.lease),
+    recoverableRead(
+      "tenant lease",
+      async () => {
+        const leaseId = await getActiveLeaseId();
+        return leaseId === null
+          ? null
+          : apiGetOptional<Lease>(ENDPOINTS.tenant.lease(leaseId));
+      },
+      null,
+    ),
 );
 
 export const getTenantProfile = cache(

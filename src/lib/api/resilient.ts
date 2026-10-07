@@ -4,11 +4,16 @@ import { isApiError, isNotFound } from "@/lib/api/errors";
 
 
 export function isRecoverableReadError(error: unknown): boolean {
-  return (
-    isNotFound(error) ||
-    (isApiError(error) &&
-      (error.kind === "network" || error.kind === "timeout"))
-  );
+  if (isNotFound(error)) {
+    return true;
+  }
+  if (!isApiError(error)) {
+    return false;
+  }
+  if (error.kind === "network" || error.kind === "timeout") {
+    return true;
+  }
+  return typeof error.status === "number" && error.status >= 500;
 }
 
 

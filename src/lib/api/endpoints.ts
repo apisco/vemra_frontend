@@ -1,60 +1,54 @@
 export const ENDPOINTS = {
-  
   identity: {
     me: "/me",
     updateProfile: "/me/profile",
+    settings: "/me/settings",
     tenantDashboard: "/me/tenant-dashboard",
     landlordDashboard: "/me/landlord-dashboard",
   },
 
-  
   kyc: {
     documentGrants: "/kyc/documents/grants",
     submissions: "/kyc/submissions",
   },
 
   public: {
-    
     listings: "/properties",
     listing: (propertyId: string) => `/properties/${propertyId}`,
-    
     featuredListing: "/properties",
     profile: (propertyAdminId: string) =>
       `/admin/properties/${propertyAdminId}/public`,
-    platformStats: "/platform/stats",
-    dashboardPreview: "/platform/dashboard-preview",
+    platformStats: "/public/stats",
+    dashboardPreview: "/public/dashboard-preview",
   },
 
   tenant: {
-    dashboard: "/tenant/dashboard",
-    paymentPlan: "/tenant/payment-plan",
     payments: "/payments",
-    checkout: "/tenant/payments/checkout",
-    rentals: "/tenant/rentals",
+    leases: "/leases",
+    lease: (leaseId: string) => `/leases/${leaseId}`,
+    paymentPlan: (leaseId: string) => `/leases/${leaseId}/payment-plan`,
+    checkout: (leaseId: string) => `/leases/${leaseId}/pay`,
+    cautionDeposit: (leaseId: string) => `/leases/${leaseId}/deposit`,
+    depositDecision: (leaseId: string) => `/leases/${leaseId}/deposit`,
+    acceptDepositDecision: (leaseId: string) =>
+      `/leases/${leaseId}/deposit/accept`,
+    disputeDepositDecision: (leaseId: string) =>
+      `/leases/${leaseId}/deposit/dispute`,
+    rentChange: (leaseId: string) => `/leases/${leaseId}/rent-changes`,
     savedProperties: "/properties/saved",
     savedProperty: (propertyId: string) =>
       `/properties/saved/${propertyId}`,
-    cautionDeposit: "/tenant/caution-deposit",
-    depositDecision: "/tenant/caution-deposit/decision",
-    acceptDepositDecision: "/tenant/caution-deposit/decision/accept",
-    disputeDepositDecision: "/tenant/caution-deposit/decision/dispute",
-    rentChange: "/tenant/rent-change",
-    
     maintenance: "/maintenance",
     conversations: "/messaging",
     conversation: (conversationId: string) =>
-      `/messaging/${conversationId}`,
+      `/messaging/${conversationId}/messages`,
     conversationMessages: (conversationId: string) =>
       `/messaging/${conversationId}/messages`,
     notifications: "/notifications",
     readNotifications: (notificationId: string) =>
       `/notifications/${notificationId}/read`,
     referrals: "/referrals",
-    leases: "/leases",
-    
     applications: "/applications",
-    lease: "/tenant/lease",
-    signLease: "/tenant/lease/sign",
     profile: "/me",
     settings: "/me/settings",
   },
@@ -66,28 +60,22 @@ export const ENDPOINTS = {
       `/properties/me/listings/${propertyId}`,
     unlistProperty: (propertyId: string) =>
       `/properties/${propertyId}/unlist`,
-    rentApproval: (propertyId: string) =>
-      `/landlord/properties/${propertyId}/rent-approval`,
-    decideRentApproval: (propertyId: string) =>
-      `/landlord/properties/${propertyId}/rent-approval/decision`,
+    rentApproval: (leaseId: string) => `/leases/${leaseId}/rent-changes`,
     applications: "/applications",
-    application: (applicationId: string) =>
-      `/landlord/applications/${applicationId}`,
-    decideApplication: (applicationId: string) =>
-      `/landlord/applications/${applicationId}/decision`,
+    approveApplication: (applicationId: string) =>
+      `/applications/${applicationId}/approve`,
+    rejectApplication: (applicationId: string) =>
+      `/applications/${applicationId}/reject`,
     maintenance: "/maintenance",
-    cautionDeposits: "/landlord/caution-deposits",
-    decideDeduction: (depositId: string) =>
-      `/landlord/caution-deposits/${depositId}/deduction/decision`,
-    refundDeposit: (depositId: string) =>
-      `/landlord/caution-deposits/${depositId}/refund`,
-    payoutAccount: "/wallet/payout-accounts",
+    cautionDeposits: (leaseId: string) => `/leases/${leaseId}/resolve-caution`,
     ledgerAccounts: "/ledger/accounts",
-    statement: "/ledger/accounts",
+    statement: (accountId: string) =>
+      `/ledger/accounts/${accountId}/breakdown`,
     statementExport: (accountId: string) =>
       `/ledger/accounts/${accountId}/statement-export`,
     paymentBreakdown: (accountId: string) =>
       `/ledger/accounts/${accountId}/breakdown`,
+    payoutAccount: "/wallet/payout-accounts",
     withdrawals: "/withdrawals",
     settings: "/me/settings",
     notificationPreferences: "/notifications/preferences",

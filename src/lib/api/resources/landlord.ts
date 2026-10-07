@@ -29,7 +29,7 @@ import type {
 } from "@/types/api/landlord";
 import type { NotificationPreferenceGroup } from "@/types/api/tenant";
 
-/** Landlord reads. Per-user, so `no-store`; `cache()` dedupes per render. */
+
 
 export const getLandlordDashboard = cache(
   async (): Promise<LandlordDashboard> =>
@@ -167,8 +167,10 @@ export const getStatement = cache(
 );
 
 export const getPaymentBreakdown = cache(
-  async (): Promise<PaymentBreakdown | null> =>
-    apiGetOptional<PaymentBreakdown>(ENDPOINTS.landlord.paymentBreakdown),
+  async (accountId: string): Promise<PaymentBreakdown | null> =>
+    apiGetOptional<PaymentBreakdown>(
+      ENDPOINTS.landlord.paymentBreakdown(accountId),
+    ),
 );
 
 export const getLandlordSettings = cache(

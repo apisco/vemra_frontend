@@ -120,9 +120,9 @@ function readErrorEnvelope(payload: unknown): ErrorEnvelope {
     }
   }
 
-  // Vemra's `details` is an array of `{ field, reason }` where `field` is
-  // namespaced with its location (`body.email`); fold it into the same map so
-  // callers have one source of per-field messages.
+  
+  
+  
   if (fieldErrors === null && Array.isArray(nested.details)) {
     const entries = (nested.details as unknown[]).flatMap((detail) => {
       if (detail === null || typeof detail !== "object") {
@@ -211,13 +211,7 @@ function buildInit(
   return init;
 }
 
-/**
- * Next signals framework control flow (dynamic rendering, redirect, notFound)
- * by throwing errors with a `digest`. `fetch` can throw one of these when a
- * server component is being prerendered; it must be rethrown untouched so the
- * framework marks the route dynamic instead of treating it as a network error
- * and failing the build.
- */
+
 function isDynamicServerUsage(cause: unknown): boolean {
   return (
     cause instanceof Error &&

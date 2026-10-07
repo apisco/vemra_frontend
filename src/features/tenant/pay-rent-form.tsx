@@ -19,11 +19,7 @@ const UNAVAILABLE_METHODS: readonly PaymentMethod[] = ["bank"];
 const REDIRECT_ERROR =
   "We could not start the bank verification step. Please try again.";
 
-/**
- * Only follows a 3-D Secure/bank continuation on our own origin or over HTTPS,
- * so a malformed or unexpected backend value cannot navigate the browser to an
- * arbitrary (or `javascript:`) destination.
- */
+
 function safeRedirectUrl(value: string | null): string | null {
   if (value === null) {
     return null;

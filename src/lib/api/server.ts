@@ -9,11 +9,7 @@ import type { ApiEnvelope } from "@/types/api/common";
 
 export type ServerRequestOptions = Omit<RequestOptions, "method">;
 
-/**
- * Forward the caller's Supabase access token as a bearer credential. When
- * nobody is signed in the request goes out unauthenticated and the backend
- * decides whether the route is public or answers `401`.
- */
+
 async function withSession(
   options: ServerRequestOptions,
 ): Promise<RequestOptions> {
@@ -111,14 +107,7 @@ export async function apiGetOptional<T>(
   }
 }
 
-/**
- * Envelope-aware variants.
- *
- * Vemra wraps every success payload in `{ data, requestId }`, so pages and
- * actions that want the payload itself use these instead of unwrapping by hand.
- * The unwrapped `requestId` is still available on the error path through
- * `ApiError.requestId`.
- */
+
 export async function apiGetDataOptional<T>(
   path: string,
   options: ServerRequestOptions = {},

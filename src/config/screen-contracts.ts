@@ -1,18 +1,4 @@
-/**
-/**
- * Figma is the source of truth for the product screen inventory.
- *
- * This file mirrors the live Figma file, its four in-scope sections, and the
- * desktop/tablet/mobile frame IDs. Agent and Admin screens are intentionally
- * excluded from this application contract.
- *
- * `fields: null` means that a detailed field schema has not been captured for
- * the frame. It is not implementation guidance and must not be filled from
- * mock data or inference. Design ambiguities belong in the relevant
- * `docs/*-figma-deltas.md` file.
- *
- * Transport configuration is not Figma-derived and lives in `src/config/api.ts`.
- */
+
 
 export type ScreenSection = "marketing" | "auth" | "tenant" | "landlord";
 
@@ -30,7 +16,7 @@ export const FIGMA_SECTIONS = {
   landlord: { node: "50:5", name: "🏢 Landlord Flow" },
 } as const satisfies Record<ScreenSection, { node: string; name: string }>;
 
-/** Node IDs at the three designed widths: 1440, 768, 390. */
+
 export type FigmaNodes = readonly [
   desktop: string,
   tablet: string,
@@ -38,23 +24,23 @@ export type FigmaNodes = readonly [
 ];
 
 export interface ContractField {
-  /** Property name the screen will read. */
+  
   readonly name: string;
-  /** Shape of the value, as the frame implies it. */
+  
   readonly type: string;
-  /** Figma node the value was read from, for traceability. */
+  
   readonly node: string;
-  /** Literal value the frame draws, if it shows one. */
+  
   readonly sample?: string;
 }
 
 export interface ScreenContract {
   readonly section: ScreenSection;
   readonly title: string;
-  /** Route in `src/app`, or `null` for a state with no route of its own. */
+  
   readonly route: string | null;
   readonly nodes: FigmaNodes;
-  /** `null` until the frame has been read from Figma. */
+  
   readonly fields: readonly ContractField[] | null;
 }
 
@@ -574,7 +560,7 @@ export function screenContractsForSection(
   return SCREEN_SECTIONS[section].screenIds.map((id) => SCREEN_CONTRACTS[id]);
 }
 
-/** Screens whose frame has not been read from Figma yet. */
+
 export function pendingFigmaRead(): readonly ScreenId[] {
   return (Object.keys(SCREEN_CONTRACTS) as ScreenId[]).filter(
     (id) => SCREEN_CONTRACTS[id].fields === null,

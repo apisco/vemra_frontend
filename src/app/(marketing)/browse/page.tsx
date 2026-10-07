@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description: BROWSE_PAGE.subheading,
 };
 
-/** The backend exposes no total, so fetch a page big enough to hold the set. */
+
 const BROWSE_PAGE_SIZE = 100;
 
 function firstValue(value: string | string[] | undefined): string | undefined {

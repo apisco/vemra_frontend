@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   description: SIGNUP_VERIFICATION_SCREEN.description,
 };
 
-/** Reads the Supabase session and the caller's onboarding state. */
+
 export const dynamic = "force-dynamic";
 
 interface CallToAction {
@@ -66,9 +66,9 @@ function callToAction(account: AccountProfile): CallToAction {
 export default async function SignupVerificationPage() {
   const account = await getAccount();
 
-  // No session means the email is not confirmed yet (Supabase withholds the
-  // session until then). Send them to the confirmation screen; the `verified`
-  // state there links back here once they confirm.
+  
+  
+  
   if (account === null) {
     redirect(PENDING_EMAIL_PATH);
   }

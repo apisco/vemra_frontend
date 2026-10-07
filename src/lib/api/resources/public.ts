@@ -23,21 +23,10 @@ import type {
 } from "@/types/api/listing";
 import type { DashboardPreview, PlatformStats } from "@/types/api/platform";
 
-/**
- * Public reads for the marketing pages.
- *
- * Unlike the dashboard resources these are tagged and revalidated rather than
- * `no-store`: nothing here is per-user, so a shared cache is both correct and
- * much cheaper. A Server Action that publishes a listing revalidates
- * `CACHE_TAGS.listings`.
- *
- * These read without forwarding the session cookie, so the routes stay
- * statically renderable (ISR) instead of being opted into dynamic rendering by
- * `cookies()`.
- */
+
 
 export interface BrowseResult extends Paginated<ListingSummary> {
-  /** Filters the backend actually applied, for the empty-search screen. */
+  
   appliedFilters: readonly AppliedFilter[];
 }
 
@@ -50,14 +39,7 @@ const EMPTY_BROWSE_RESULT: BrowseResult = {
   appliedFilters: [],
 };
 
-/**
- * Public marketing content is non-critical and every screen already has a
- * designed empty/fallback state, so a missing or unreachable endpoint degrades
- * to that fallback instead of failing the render (or the build's prerender).
- * `404`s are treated as "no data" because the public endpoint set is still
- * settling; network/timeout failures are equally transient. Other HTTP errors
- * (auth, server faults) still surface.
- */
+
 async function publicRead<T>(run: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await run();

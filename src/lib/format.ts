@@ -122,7 +122,7 @@ export function formatRelativeDate(
   return formatter.format(Math.round(days / 365), "year");
 }
 
-/** Whole days until a date, negative once it has passed. `null` if unset. */
+
 export function daysUntil(
   value: Iso8601 | null | undefined,
   now: Date = new Date(),

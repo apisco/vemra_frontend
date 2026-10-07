@@ -33,7 +33,7 @@ function safeRedirectUrl(value: string | null): string | null {
   }
 }
 
-export function PayRentForm() {
+export function PayRentForm({ leaseId = "" }: { leaseId?: string }) {
   const router = useRouter();
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,8 +56,12 @@ export function PayRentForm() {
         };
 
         try {
+          if (leaseId === "") {
+            setError("No active lease is available for payment.");
+            return;
+          }
           const result = await clientPost<PaymentResult>(
-            ENDPOINTS.tenant.checkout,
+            ENDPOINTS.tenant.checkout(leaseId),
             payload,
           );
           if (result.outcome === "declined") {

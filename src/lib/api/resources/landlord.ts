@@ -16,7 +16,6 @@ import { apiGet, apiGetOptional } from "@/lib/api/server";
 import type {
   ApplicationQueue,
   CautionDepositsOverview,
-  LandlordApplication,
   LandlordDashboard,
   LandlordProperty,
   LandlordPropertySummary,
@@ -98,9 +97,9 @@ export const getLandlordProperty = cache(
 );
 
 export const getRentApproval = cache(
-  async (propertyId: string): Promise<RentApprovalRequest | null> =>
+  async (leaseId: string): Promise<RentApprovalRequest | null> =>
     apiGetOptional<RentApprovalRequest>(
-      ENDPOINTS.landlord.rentApproval(propertyId),
+      ENDPOINTS.landlord.rentApproval(leaseId),
     ),
 );
 
@@ -121,13 +120,6 @@ export const getApplicationQueue = cache(
         items: [],
         counts: { all: 0, new: 0, reviewed: 0, approved: 0, declined: 0 },
       },
-    ),
-);
-
-export const getLandlordApplication = cache(
-  async (applicationId: string): Promise<LandlordApplication | null> =>
-    apiGetOptional<LandlordApplication>(
-      ENDPOINTS.landlord.application(applicationId),
     ),
 );
 
@@ -153,8 +145,10 @@ export const getMaintenanceOverview = cache(
 );
 
 export const getCautionDeposits = cache(
-  async (): Promise<CautionDepositsOverview> =>
-    apiGet<CautionDepositsOverview>(ENDPOINTS.landlord.cautionDeposits),
+  async (leaseId: string): Promise<CautionDepositsOverview> =>
+    apiGet<CautionDepositsOverview>(
+      ENDPOINTS.landlord.cautionDeposits(leaseId),
+    ),
 );
 
 export const getPayoutAccount = cache(
@@ -163,7 +157,8 @@ export const getPayoutAccount = cache(
 );
 
 export const getStatement = cache(
-  async (): Promise<Statement> => apiGet<Statement>(ENDPOINTS.landlord.statement),
+  async (accountId: string): Promise<Statement> =>
+    apiGet<Statement>(ENDPOINTS.landlord.statement(accountId)),
 );
 
 export const getPaymentBreakdown = cache(

@@ -17,6 +17,6 @@ export const SERVER_ERROR_CONTENT: ErrorScreenContent = {
 };
 
 export const ERROR_BACK_LINK = {
-  href: "/browse",
-  label: "Back to browse rentals",
+  href: "/",
+  label: "Go back",
 } as const;

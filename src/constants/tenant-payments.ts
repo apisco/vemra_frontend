@@ -35,7 +35,7 @@ export const PAY_RENT = {
     cardNumber: { label: "Card number", placeholder: "4242 4242 4242 4242" },
     expiry: { label: "Expiry (MM/YY)", placeholder: "09/28" },
     cvc: { label: "CVC", placeholder: "123" },
-    cardName: { label: "Name on card", placeholder: "Aisha Bello" },
+    cardName: { label: "Name on card", placeholder: "Full name on card" },
   },
   submitLabel: "Simulate declined payment",
   footnote: {

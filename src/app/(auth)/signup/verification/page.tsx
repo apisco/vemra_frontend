@@ -100,7 +100,13 @@ export default async function SignupVerificationPage() {
       />
 
       {canSubmitKyc ? (
-        <KycUploadForm account={account} className={COLUMN_CLASSES} />
+        <KycUploadForm
+          account={account}
+          className={COLUMN_CLASSES}
+          skipHref={
+            primaryRole(account) === "LANDLORD" ? "/landlord" : "/tenant"
+          }
+        />
       ) : (
         <Link
           href={cta.href}

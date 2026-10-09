@@ -257,7 +257,7 @@ export const FORGOT_PASSWORD_SCREEN = {
 } as const;
 
 export const RESET_PASSWORD_SCREEN = {
-  email: "aisha.bello@example.com",
+  email: "your email address",
   title: "Set a new password",
   descriptionPrefix: "Choose a new password for ",
   passwordLabel: "New password",
@@ -283,7 +283,7 @@ export interface VerifyEmailStateCopy {
 }
 
 export const VERIFY_EMAIL_SCREEN = {
-  email: "aisha.bello@example.com",
+  email: "your email address",
   copyright: "© 2026 Vemra Technologies. All rights reserved.",
   backLabel: "Back to log in",
   resentNotice: "A new link is on its way.",
@@ -336,7 +336,7 @@ export interface OnboardingCompleteCopy {
 export const ONBOARDING_COMPLETE: Record<AuthRole, OnboardingCompleteCopy> = {
   TENANT: {
     metaTitle: "Tenant account ready · Vemra",
-    title: "You're all set, Aisha",
+    title: "You're all set",
     description:
       "Your tenant account is ready. You can browse verified homes and contact your assigned Property Admin or Vemra Support.",
     stepsLabel: "What to do next",

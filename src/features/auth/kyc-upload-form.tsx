@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useId, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createKycUploadGrantAction, submitKycAction } from "@/lib/api/actions/kyc";
 import { AuthCard } from "@/features/auth/auth-card";
@@ -73,13 +74,19 @@ async function uploadToCloudinary(
 export interface KycUploadFormProps {
   account: AccountProfile;
   className?: string;
+  skipHref: string;
 }
 
-export function KycUploadForm({ account, className }: KycUploadFormProps) {
+export function KycUploadForm({ account, className, skipHref }: KycUploadFormProps) {
   const router = useRouter();
   const groupId = useId();
   const [files, setFiles] = useState<Record<string, File | null>>({});
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [nin, setNin] = useState("");
+  const [dob, setDob] = useState("");
+  const [address, setAddress] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -105,6 +112,19 @@ export function KycUploadForm({ account, className }: KycUploadFormProps) {
       return;
     }
 
+    if (
+      firstName.trim() === "" ||
+      lastName.trim() === "" ||
+      nin.trim() === "" ||
+      dob.trim() === "" ||
+      address.trim() === ""
+    ) {
+      setError(
+        "Fill in your first name, last name, NIN (VNIN), date of birth and current address.",
+      );
+      return;
+    }
+
     const tooLarge = selected.find((entry) => entry.file.size > MAX_UPLOAD_BYTES);
     if (tooLarge !== undefined) {
       setError(
@@ -123,10 +143,20 @@ export function KycUploadForm({ account, className }: KycUploadFormProps) {
       );
 
       setPhase("submitting");
-      const trimmedNin = nin.trim();
+      const claims: Record<string, string> = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        nin: nin.trim(),
+        dateOfBirth: dob.trim(),
+        currentAddress: address.trim(),
+      };
+      const trimmedMiddleName = middleName.trim();
+      if (trimmedMiddleName !== "") {
+        claims.middleName = trimmedMiddleName;
+      }
       const result = await submitKycAction({
         documents,
-        claims: trimmedNin === "" ? {} : { nin: trimmedNin },
+        claims,
       });
 
       if (!result.ok) {
@@ -174,6 +204,15 @@ export function KycUploadForm({ account, className }: KycUploadFormProps) {
         ) : null}
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input label="First name" name="firstName" value={firstName} onChange={(event) => setFirstName(event.target.value)} disabled={isBusy} />
+        <Input label="Middle name (optional)" name="middleName" value={middleName} onChange={(event) => setMiddleName(event.target.value)} disabled={isBusy} />
+        <Input label="Last name" name="lastName" value={lastName} onChange={(event) => setLastName(event.target.value)} disabled={isBusy} />
+        <Input label="NIN (VNIN)" name="nin" inputMode="numeric" placeholder="12345678901" value={nin} onChange={(event) => setNin(event.target.value)} disabled={isBusy} />
+        <Input label="Date of birth" name="dob" type="date" value={dob} onChange={(event) => setDob(event.target.value)} disabled={isBusy} />
+        <Input label="Current address" name="address" value={address} onChange={(event) => setAddress(event.target.value)} disabled={isBusy} />
+      </div>
+
       {KYC_CHECKS.map((check) => {
         const inputId = `${groupId}-${check.checkType}`;
         const file = files[check.checkType] ?? null;
@@ -208,17 +247,6 @@ export function KycUploadForm({ account, className }: KycUploadFormProps) {
         );
       })}
 
-      <Input
-        label="NIN (optional)"
-        name="nin"
-        inputMode="numeric"
-        placeholder="12345678901"
-        helperText="Your National Identification Number, if you have it handy."
-        value={nin}
-        onChange={(event) => setNin(event.target.value)}
-        disabled={isBusy}
-      />
-
       <Button
         type="button"
         fullWidth
@@ -232,6 +260,13 @@ export function KycUploadForm({ account, className }: KycUploadFormProps) {
             ? "Submitting for review…"
             : "Submit for review"}
       </Button>
+
+      <Link
+        href={skipHref}
+        className={buttonClasses({ variant: "secondary", fullWidth: true })}
+      >
+        Skip for now
+      </Link>
 
       {error ? (
         <p role="alert" className="text-center text-label-sm text-error-600">

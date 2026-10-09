@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 
 import { ArrowLeftIcon } from "@/components/icons/arrow-left-icon";
 import type { ButtonVariant } from "@/components/ui/button";
@@ -10,9 +12,18 @@ export interface ErrorBackLinkProps {
 }
 
 export function ErrorBackLink({ variant = "primary" }: ErrorBackLinkProps) {
+  const router = useRouter();
+
   return (
-    <Link
-      href={ERROR_BACK_LINK.href}
+    <button
+      type="button"
+      onClick={() => {
+        if (typeof window !== "undefined" && window.history.length > 1) {
+          router.back();
+        } else {
+          router.push(ERROR_BACK_LINK.href);
+        }
+      }}
       className={buttonClasses({
         variant,
         size: "sm",
@@ -22,6 +33,6 @@ export function ErrorBackLink({ variant = "primary" }: ErrorBackLinkProps) {
     >
       <ArrowLeftIcon />
       {ERROR_BACK_LINK.label}
-    </Link>
+    </button>
   );
 }

@@ -44,7 +44,7 @@ function copyFor(status: KycStatus | null): KycCopy {
     case "EXPIRED":
       return { state: "pending", status: "Needs update" };
     default:
-      return { state: "pending", status: "Not started" };
+      return { state: "pending", status: "Start now" };
   }
 }
 

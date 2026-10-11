@@ -4,14 +4,13 @@ import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
 import { ResponsiveText } from "@/components/ui/responsive-text";
 import { TENANT_ROUTES } from "@/constants/tenant";
+import { LoadErrorPanel } from "@/features/errors/load-error-panel";
+import { MetricCardRow } from "@/features/tenant/metric-card-row";
+import { RecentPaymentsPanel } from "@/features/tenant/recent-payments-panel";
 import {
-  getPaymentPlan,
   getTenantDashboard,
   getTenantPayments,
 } from "@/lib/api/resources/tenant";
-import { MetricCardRow } from "@/features/tenant/metric-card-row";
-import { PaymentPlanPanel } from "@/features/tenant/payment-plan-panel";
-import { RecentPaymentsPanel } from "@/features/tenant/recent-payments-panel";
 
 export const metadata: Metadata = {
   title: "Overview · Vemra",
@@ -19,21 +18,24 @@ export const metadata: Metadata = {
 };
 
 export default async function TenantOverviewPage() {
-  const [dashboard, plan, payments] = await Promise.all([
+  const [dashboard, payments] = await Promise.all([
     getTenantDashboard(),
-    getPaymentPlan(),
     getTenantPayments(),
   ]);
-  const unit = dashboard.unit?.name ?? "No active rental";
+
   return (
     <div className="flex flex-col gap-5 md:gap-8">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <h1 className="font-display text-heading-lg font-bold text-neutral-900 md:text-heading-xl">
-            Hi {dashboard.tenantName}
+            {dashboard.ok && dashboard.data.tenantName !== ""
+              ? `Hi ${dashboard.data.tenantName}`
+              : "Overview"}
           </h1>
           <p className="text-body-md text-neutral-700 md:text-body-lg">
-            {unit}
+            {dashboard.ok
+              ? (dashboard.data.unit?.name ?? "No active rental")
+              : "Rent details are unavailable right now."}
           </p>
         </div>
         <Link
@@ -48,13 +50,18 @@ export default async function TenantOverviewPage() {
         </Link>
       </div>
 
-      <MetricCardRow dashboard={dashboard} />
+      {dashboard.ok ? (
+        <MetricCardRow dashboard={dashboard.data} />
+      ) : (
+        <LoadErrorPanel label="Your rent summary" failure={dashboard} />
+      )}
 
-      <div className="grid gap-5 md:grid-cols-[380fr_300fr] md:gap-6 lg:grid-cols-[608fr_420fr]">
-        <PaymentPlanPanel plan={plan} />
-        <div className="flex flex-col gap-5 md:gap-6">
-          <RecentPaymentsPanel payments={payments} />
-        </div>
+      <div className="grid gap-5 md:gap-6">
+        {payments.ok ? (
+          <RecentPaymentsPanel payments={payments.data} />
+        ) : (
+          <LoadErrorPanel label="Your recent payments" failure={payments} />
+        )}
       </div>
     </div>
   );

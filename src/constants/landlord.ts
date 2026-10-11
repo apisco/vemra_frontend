@@ -7,10 +7,7 @@ import { UsersIcon } from "@/components/icons/users-icon";
 import { WalletIcon } from "@/components/icons/wallet-icon";
 import { WrenchIcon } from "@/components/icons/wrench-icon";
 import type { ResponsiveCopy } from "@/components/ui/responsive-text";
-import type {
-  DashboardNavItem,
-  DashboardUser,
-} from "@/types/dashboard";
+import type { DashboardNavItem } from "@/types/dashboard";
 
 export const LANDLORD_ROUTES = {
   overview: "/landlord",
@@ -75,12 +72,6 @@ export const LANDLORD_NAV_MOBILE: readonly DashboardNavItem[] = [
   },
   { href: LANDLORD_ROUTES.settings, label: "Settings", icon: SettingsIcon },
 ];
-
-export const LANDLORD_USER: DashboardUser = {
-  name: "Daniel Osei",
-  role: "Landlord",
-  initials: "DO",
-};
 
 export const LANDLORD_DASHBOARD = {
   greeting: "Good afternoon, Daniel",

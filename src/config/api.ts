@@ -1,8 +1,6 @@
-
-
 const DEFAULT_BASE_URL = "http://localhost:8000";
 const DEFAULT_PREFIX = "/api/v1";
-const DEFAULT_TIMEOUT_MS = 15000;
+const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_RETRY_ATTEMPTS = 1;
 const DEFAULT_RETRY_DELAY_MS = 500;
 
@@ -48,33 +46,27 @@ const prefix = stripTrailingSlash(
 );
 
 export const API_CONFIG = {
-  
   baseUrl,
-  
+
   prefix,
-  
+
   root: `${baseUrl}${prefix}`,
-  
+
   timeoutMs: readNumber(
     process.env.NEXT_PUBLIC_API_TIMEOUT_MS,
     DEFAULT_TIMEOUT_MS,
   ),
-  
+
   retryAttempts: readNumber(
     process.env.NEXT_PUBLIC_API_RETRY_ATTEMPTS,
     DEFAULT_RETRY_ATTEMPTS,
   ),
-  
+
   retryDelayMs: readNumber(
     process.env.NEXT_PUBLIC_API_RETRY_DELAY_MS,
     DEFAULT_RETRY_DELAY_MS,
   ),
-  
-  withCredentials:
-    process.env.NEXT_PUBLIC_API_WITH_CREDENTIALS?.trim().toLowerCase() !==
-    "false",
 } as const;
-
 
 export const DEFAULT_API_HEADERS = {
   Accept: "application/json",
@@ -83,16 +75,17 @@ export const DEFAULT_API_HEADERS = {
 
 export const API_HEADER_NAMES = {
   authorization: "Authorization",
-  
+
   requestId: "X-Request-Id",
-  
+
+  idempotencyKey: "Idempotency-Key",
+
   activeRole: "X-Vemra-Role",
 } as const;
 
 export const AUTH_SCHEME = "Bearer";
 
 export type QueryValue = string | number | boolean | null | undefined;
-
 
 export function apiUrl(
   path: string,

@@ -2,125 +2,134 @@ import "server-only";
 
 import { cache } from "react";
 
-import { ENDPOINTS } from "@/lib/api/endpoints";
 import {
   toApplicationQueue,
-  toLandlordDashboard,
   toLandlordProperty,
   toLandlordPropertySummary,
   toMaintenanceOverview,
   unwrapData,
 } from "@/lib/api/adapters";
-import { recoverableRead } from "@/lib/api/resilient";
+import { ENDPOINTS } from "@/lib/api/endpoints";
+import { recoverableRead, safeRead } from "@/lib/api/resilient";
+import type { ReadResult } from "@/lib/api/resilient";
+import {
+  landlordDashboardSchema,
+  notificationPreferencesSchema,
+  parseOrThrow,
+  readPayoutAccounts,
+  walletSchema,
+  withdrawalListSchema,
+  type NotificationPreferences,
+  type ParsedPayoutAccount,
+  type Wallet,
+  type Withdrawal,
+} from "@/lib/api/schemas";
 import { apiGet, apiGetOptional } from "@/lib/api/server";
+import type { Money } from "@/types/api/common";
 import type {
   ApplicationQueue,
-  CautionDepositsOverview,
   LandlordDashboard,
   LandlordProperty,
   LandlordPropertySummary,
-  LandlordSettings,
   MaintenanceOverview,
-  PaymentBreakdown,
-  PayoutAccount,
-  RentApprovalRequest,
-  Statement,
 } from "@/types/api/landlord";
-import type { NotificationPreferenceGroup } from "@/types/api/tenant";
 
+const ZERO: Money = { minor: 0, currency: "NGN" };
 
+function toMoney(
+  value: { minor: number; currency: string } | null | undefined,
+): Money {
+  return value === null || value === undefined
+    ? ZERO
+    : { minor: value.minor, currency: value.currency };
+}
+
+function rowsOf(payload: unknown, key: string): readonly unknown[] {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload !== null && typeof payload === "object") {
+    const value = (payload as Record<string, unknown>)[key];
+    if (Array.isArray(value)) {
+      return value;
+    }
+  }
+  return [];
+}
 
 export const getLandlordDashboard = cache(
-  async (): Promise<LandlordDashboard> =>
-    recoverableRead(
-      "landlord dashboard",
-      async () =>
-        toLandlordDashboard(
-          unwrapData<unknown>(
-            await apiGet<unknown>(ENDPOINTS.identity.landlordDashboard),
-          ),
-        ),
-      {
-        landlordName: "",
-        propertyCount: 0,
-        occupiedCount: 0,
-        vacantCount: 0,
-        vacantSince: null,
-        vacantUnitName: null,
-        readyToWithdraw: { amount: 0, currency: "NGN" },
-        clearedPaymentCount: 0,
-        monthlyRentRoll: { amount: 0, currency: "NGN" },
-        nextRentDue: null,
-        revenueSeries: [],
+  async (): Promise<ReadResult<LandlordDashboard>> =>
+    safeRead("landlord dashboard", async () => {
+      const body = await apiGet<unknown>(ENDPOINTS.identity.landlordDashboard);
+      const parsed = parseOrThrow(
+        "landlord dashboard",
+        landlordDashboardSchema,
+        unwrapData<unknown>(body) ?? {},
+      );
+
+      return {
+        landlordName: parsed.landlordName ?? "",
+        propertyCount: parsed.propertyCount ?? 0,
+        occupiedCount: parsed.occupiedCount ?? 0,
+        vacantCount: parsed.vacantCount ?? 0,
+        vacantSince: parsed.vacantSince ?? null,
+        vacantUnitName: parsed.vacantUnitName ?? null,
+        readyToWithdraw: toMoney(parsed.readyToWithdraw),
+        clearedPaymentCount: parsed.clearedPaymentCount ?? 0,
+        monthlyRentRoll: toMoney(parsed.monthlyRentRoll),
+        nextRentDue:
+          parsed.nextRentDue === null || parsed.nextRentDue === undefined
+            ? null
+            : {
+                dueDate: parsed.nextRentDue.dueDate ?? "",
+                unitName: parsed.nextRentDue.unitName ?? "",
+                amount: toMoney(parsed.nextRentDue.amount),
+              },
+        revenueSeries: (parsed.revenueSeries ?? []).map((point) => ({
+          periodStart: point.periodStart ?? "",
+          amount: toMoney(point.amount),
+        })),
         assignedAdmin: null,
         propertyAdmins: [],
-      },
-    ),
+      } satisfies LandlordDashboard;
+    }),
 );
 
 export const getLandlordProperties = cache(
-  async (): Promise<readonly LandlordPropertySummary[]> =>
-    recoverableRead(
-      "landlord properties",
-      async () => {
-        const body = await apiGet<unknown>(ENDPOINTS.landlord.properties);
-        const payload = unwrapData<{ properties?: readonly unknown[] }>(body);
-        const rows = Array.isArray(payload?.properties) ? payload.properties : [];
-        return rows.map(toLandlordPropertySummary);
-      },
-      [],
-    ),
+  async (): Promise<ReadResult<readonly LandlordPropertySummary[]>> =>
+    safeRead("landlord properties", async () => {
+      const body = await apiGet<unknown>(ENDPOINTS.landlord.properties);
+      const payload = unwrapData<unknown>(body);
+      return rowsOf(payload, "properties").map(toLandlordPropertySummary);
+    }),
 );
 
 export const getLandlordProperty = cache(
-  async (propertyId: string): Promise<LandlordProperty | null> =>
-    recoverableRead(
-      "landlord property",
-      async () => {
-        const body = await apiGetOptional<unknown>(
-          ENDPOINTS.landlord.property(propertyId),
-        );
-        if (body === null) {
-          return null;
-        }
-        const payload = unwrapData<unknown>(body);
-        const property =
-          payload !== null && typeof payload === "object" && "data" in payload
-            ? (payload as { data: unknown }).data
-            : payload;
-        return property === null || property === undefined
-          ? null
-          : toLandlordProperty(property);
-      },
-      null,
-    ),
-);
-
-export const getRentApproval = cache(
-  async (leaseId: string): Promise<RentApprovalRequest | null> =>
-    apiGetOptional<RentApprovalRequest>(
-      ENDPOINTS.landlord.rentApproval(leaseId),
-    ),
+  async (propertyId: string): Promise<LandlordProperty | null> => {
+    const body = await apiGetOptional<unknown>(
+      ENDPOINTS.landlord.property(propertyId),
+    );
+    if (body === null) {
+      return null;
+    }
+    const payload = unwrapData<unknown>(body);
+    const property =
+      payload !== null && typeof payload === "object" && "data" in payload
+        ? (payload as { data: unknown }).data
+        : payload;
+    return property === null || property === undefined
+      ? null
+      : toLandlordProperty(property);
+  },
 );
 
 export const getApplicationQueue = cache(
-  async (): Promise<ApplicationQueue> =>
-    recoverableRead(
-      "landlord applications",
-      async () => {
-        const body = await apiGet<unknown>(ENDPOINTS.landlord.applications);
-        const payload = unwrapData<{ applications?: readonly unknown[] }>(body);
-        const rows = Array.isArray(payload?.applications)
-          ? payload.applications
-          : [];
-        return toApplicationQueue(rows);
-      },
-      {
-        listingName: null,
-        items: [],
-        counts: { all: 0, new: 0, reviewed: 0, approved: 0, declined: 0 },
-      },
-    ),
+  async (): Promise<ReadResult<ApplicationQueue>> =>
+    safeRead("landlord applications", async () => {
+      const body = await apiGet<unknown>(ENDPOINTS.landlord.applications);
+      const payload = unwrapData<unknown>(body);
+      return toApplicationQueue(rowsOf(payload, "data"));
+    }),
 );
 
 export const getMaintenanceOverview = cache(
@@ -129,8 +138,11 @@ export const getMaintenanceOverview = cache(
       "landlord maintenance",
       async () => {
         const body = await apiGet<unknown>(ENDPOINTS.landlord.maintenance);
-        const rows = unwrapData<readonly unknown[]>(body);
-        return toMaintenanceOverview(Array.isArray(rows) ? rows : []);
+        const payload = unwrapData<unknown>(body);
+        const rows = rowsOf(payload, "issues");
+        return toMaintenanceOverview(
+          rows.length > 0 ? rows : rowsOf(payload, "maintenance"),
+        );
       },
       {
         openCount: 0,
@@ -144,38 +156,45 @@ export const getMaintenanceOverview = cache(
     ),
 );
 
-export const getCautionDeposits = cache(
-  async (leaseId: string): Promise<CautionDepositsOverview> =>
-    apiGet<CautionDepositsOverview>(
-      ENDPOINTS.landlord.cautionDeposits(leaseId),
-    ),
+export const getLandlordWallet = cache(
+  async (): Promise<ReadResult<Wallet>> =>
+    safeRead("landlord wallet", async () => {
+      const body = await apiGet<unknown>(ENDPOINTS.landlord.wallet);
+      return parseOrThrow("wallet", walletSchema, unwrapData<unknown>(body));
+    }),
 );
 
-export const getPayoutAccount = cache(
-  async (): Promise<PayoutAccount | null> =>
-    apiGetOptional<PayoutAccount>(ENDPOINTS.landlord.payoutAccount),
+export const getPayoutAccounts = cache(
+  async (): Promise<ReadResult<readonly ParsedPayoutAccount[]>> =>
+    safeRead("payout accounts", async () => {
+      const body = await apiGet<unknown>(ENDPOINTS.landlord.payoutAccounts);
+      return readPayoutAccounts(unwrapData<unknown>(body));
+    }),
 );
 
-export const getStatement = cache(
-  async (accountId: string): Promise<Statement> =>
-    apiGet<Statement>(ENDPOINTS.landlord.statement(accountId)),
-);
-
-export const getPaymentBreakdown = cache(
-  async (accountId: string): Promise<PaymentBreakdown | null> =>
-    apiGetOptional<PaymentBreakdown>(
-      ENDPOINTS.landlord.paymentBreakdown(accountId),
-    ),
-);
-
-export const getLandlordSettings = cache(
-  async (): Promise<LandlordSettings> =>
-    apiGet<LandlordSettings>(ENDPOINTS.landlord.settings),
+export const getWithdrawals = cache(
+  async (): Promise<ReadResult<readonly Withdrawal[]>> =>
+    safeRead("withdrawals", async () => {
+      const body = await apiGet<unknown>(ENDPOINTS.landlord.withdrawals);
+      const parsed = parseOrThrow(
+        "withdrawals",
+        withdrawalListSchema,
+        unwrapData<unknown>(body) ?? { withdrawals: [] },
+      );
+      return parsed.withdrawals;
+    }),
 );
 
 export const getLandlordNotificationPreferences = cache(
-  async (): Promise<readonly NotificationPreferenceGroup[]> =>
-    apiGet<readonly NotificationPreferenceGroup[]>(
-      ENDPOINTS.landlord.notificationPreferences,
-    ),
+  async (): Promise<ReadResult<NotificationPreferences>> =>
+    safeRead("notification preferences", async () => {
+      const body = await apiGet<unknown>(
+        ENDPOINTS.landlord.notificationPreferences,
+      );
+      return parseOrThrow(
+        "notification preferences",
+        notificationPreferencesSchema,
+        unwrapData<unknown>(body),
+      );
+    }),
 );

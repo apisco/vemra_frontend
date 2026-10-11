@@ -1,27 +1,259 @@
-import { buttonClasses } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
-
-export function TenantApplicationScreen() {
-  return <TenantFormShell title="Apply to rent this home" description="Daniel Osei and Priya Nandan will review your application. You'll hear back within 2–3 days."><section className="rounded-lg border border-neutral-200 bg-white p-5"><h2 className="text-heading-sm font-bold">About you</h2><div className="mt-4 grid gap-4 md:grid-cols-2"><Field label="Full name" value="Grace Adeyemi" /><Field label="Move-in date" value="Sep 15, 2026" /><Field label="Current employer" value="Stripe Inc." wide /><Field label="Application note to Vemra (optional)" value="Hi Daniel and Priya, I'm looking forward to potentially moving in." wide /></div></section><section className="rounded-lg border border-neutral-200 bg-white p-5"><h2 className="text-heading-sm font-bold">Verification documents</h2><div className="mt-4 rounded-lg border border-dashed border-brand-700 p-8 text-center text-body-sm text-brand-700">Click to upload ID and proof of income</div></section><button className={buttonClasses({ fullWidth: true })}>Submit application</button></TenantFormShell>;
-}
-
-export function TenantLeaseScreen() {
-  return <TenantFormShell title="Lease signing" description="Review and sign your lease agreement for Unit 4B · Maple and 9th."><section className="rounded-lg border border-neutral-200 bg-white p-6"><h2 className="text-heading-sm font-bold">Lease agreement</h2><p className="mt-4 text-body-sm text-neutral-700">Your approved lease is ready to review. Read the agreement before signing.</p><div className="mt-5 rounded-lg bg-neutral-50 p-5 text-body-sm text-neutral-700">Lease summary · Unit 4B · Maple and 9th · Daniel Osei</div><button className={buttonClasses({ fullWidth: true, className: "mt-5" })}>Sign lease agreement</button></section></TenantFormShell>;
-}
-
-export function TenantDecisionScreen() {
-  return <TenantFormShell title="Deposit decision review" description="Review the landlord's caution deposit decision before the remaining amount is released."><section className="rounded-lg border border-neutral-200 bg-white p-6"><h2 className="text-heading-sm font-bold">Refund decision</h2><p className="mt-3 text-body-sm text-neutral-700">No deductions were recorded. Your caution deposit remains fully intact.</p><div className="mt-5 flex gap-3"><button className={buttonClasses({ size: "sm" })}>Accept decision</button><button className={buttonClasses({ size: "sm", variant: "secondary" })}>Dispute decision</button></div></section></TenantFormShell>;
-}
-
-export function TenantRentChangeScreen() {
-  return <TenantFormShell title="Approved rent change" description="Review the updated rent amount and payment plan for your tenancy."><section className="rounded-lg border border-neutral-200 bg-white p-6"><p className="text-caption text-neutral-700">New annual rent</p><p className="mt-2 font-display text-display-sm font-bold text-brand-700">₦1,250,000</p><p className="mt-4 text-body-sm text-neutral-700">Starting 1 Oct. Your Assigned Property Admin will coordinate the next steps.</p><button className={buttonClasses({ size: "sm", className: "mt-5" })}>Review payment plan</button></section></TenantFormShell>;
-}
-
-function TenantFormShell({ title, description, children }: { title: string; description: string; children: ReactNode }) {
-  return <div className={cn("mx-auto flex max-w-140 flex-col gap-5")}><div><h1 className="font-display text-heading-lg font-bold">{title}</h1><p className="mt-1 text-body-md text-neutral-700">{description}</p></div>{children}</div>;
-}
-
-function Field({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
-  return <label className={cn("text-label-sm font-semibold", wide && "md:col-span-2")}>{label}<div className="mt-2 rounded-md border border-neutral-200 px-3 py-3 text-body-sm font-normal text-neutral-700">{value}</div></label>;
-}
 import type { ReactNode } from "react";
+
+import { TENANT_ROUTES } from "@/constants/tenant";
+import { LoadErrorPanel } from "@/features/errors/load-error-panel";
+import { LeasePicker } from "@/features/tenant/lease-picker";
+import {
+  DepositDecisionActions,
+  SignLeaseButton,
+  WithdrawApplicationButton,
+} from "@/features/tenant/tenant-actions";
+import {
+  getDeposit,
+  getLease,
+  getTenantApplications,
+  resolveLeaseSelection,
+} from "@/lib/api/resources/tenant";
+import { cn } from "@/lib/cn";
+import { formatDate, formatMoney } from "@/lib/format";
+import type { LeaseSelection } from "@/lib/api/resources/tenant";
+
+function TenantFormShell({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={cn("mx-auto flex max-w-140 flex-col gap-5")}>
+      <div>
+        <h1 className="font-display text-heading-lg font-bold">{title}</h1>
+        <p className="mt-1 text-body-md text-neutral-700">{description}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function selectionFailure(
+  selection: Extract<LeaseSelection, { kind: "error" }>,
+) {
+  return {
+    ok: false as const,
+    message: selection.message,
+    requestId: selection.requestId,
+    isWaking: selection.isWaking,
+  };
+}
+
+export async function TenantApplicationScreen() {
+  const applications = await getTenantApplications();
+
+  return (
+    <TenantFormShell
+      title="Your applications"
+      description="Vemra reviews every application and records the decision here."
+    >
+      {!applications.ok ? (
+        <LoadErrorPanel label="Your applications" failure={applications} />
+      ) : applications.data.length === 0 ? (
+        <section className="rounded-lg border border-neutral-200 bg-white p-5">
+          <p className="text-body-md text-neutral-700">
+            You have not applied for any properties yet.
+          </p>
+        </section>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {applications.data.map((application) => (
+            <section
+              key={application.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white p-5"
+            >
+              <div className="min-w-0">
+                <p className="text-body-md font-semibold text-neutral-900">
+                  {application.listing?.title ?? "Application"}
+                </p>
+                <p className="text-label-sm text-neutral-700">
+                  {application.status} · submitted{" "}
+                  {formatDate(application.submittedAt)}
+                </p>
+              </div>
+              {application.status === "approved" ||
+              application.status === "declined" ? null : (
+                <WithdrawApplicationButton applicationId={application.id} />
+              )}
+            </section>
+          ))}
+        </div>
+      )}
+    </TenantFormShell>
+  );
+}
+
+export async function TenantLeaseScreen({
+  leaseId = null,
+}: {
+  leaseId?: string | null;
+}) {
+  const selection = await resolveLeaseSelection(leaseId);
+
+  return (
+    <TenantFormShell
+      title="Lease signing"
+      description="Review and sign your lease agreement."
+    >
+      {selection.kind === "error" ? (
+        <LoadErrorPanel
+          label="Your leases"
+          failure={selectionFailure(selection)}
+        />
+      ) : selection.kind === "none" || selection.kind === "invalid" ? (
+        <section className="rounded-lg border border-neutral-200 bg-white p-6">
+          <p className="text-body-md text-neutral-700">
+            There is no lease on your account yet. Vemra prepares a lease once
+            an application is approved.
+          </p>
+        </section>
+      ) : selection.kind === "choose" ? (
+        <LeasePicker
+          leases={selection.leases}
+          basePath={TENANT_ROUTES.myRentals}
+          title="Which lease?"
+          description="Pick the lease you want to review and sign."
+        />
+      ) : (
+        <LeaseDetail leaseId={selection.leaseId} />
+      )}
+    </TenantFormShell>
+  );
+}
+
+async function LeaseDetail({ leaseId }: { leaseId: string }) {
+  const lease = await getLease(leaseId);
+
+  if (!lease.ok) {
+    return <LoadErrorPanel label="This lease" failure={lease} />;
+  }
+
+  const isSigned = lease.data.status !== "DRAFT";
+
+  return (
+    <section className="rounded-lg border border-neutral-200 bg-white p-6">
+      <h2 className="text-heading-sm font-bold">Lease agreement</h2>
+
+      <dl className="mt-5 flex flex-col gap-3 rounded-lg bg-neutral-50 p-5 text-body-sm">
+        {[
+          ["Status", lease.data.status],
+          ["Annual rent", formatMoney(lease.data.annualRent)],
+          ["Caution deposit", formatMoney(lease.data.cautionDeposit)],
+          ["Term", `${lease.data.termYears} year(s)`],
+          ["Starts", formatDate(lease.data.startDate)],
+          ["Ends", formatDate(lease.data.endDate)],
+        ].map(([label, value]) => (
+          <div key={label} className="flex justify-between gap-4">
+            <dt className="text-neutral-700">{label}</dt>
+            <dd className="font-semibold text-neutral-900">{value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="mt-5">
+        {isSigned ? (
+          <p
+            role="status"
+            className="rounded-md border border-success-600 bg-success-50 p-3 text-body-sm text-neutral-800"
+          >
+            This lease is already signed.
+          </p>
+        ) : (
+          <SignLeaseButton leaseId={leaseId} />
+        )}
+      </div>
+    </section>
+  );
+}
+
+export async function TenantDecisionScreen({
+  leaseId = null,
+}: {
+  leaseId?: string | null;
+}) {
+  const selection = await resolveLeaseSelection(leaseId);
+
+  return (
+    <TenantFormShell
+      title="Deposit decision review"
+      description="Review Vemra's caution deposit decision before the remaining amount is released."
+    >
+      {selection.kind === "error" ? (
+        <LoadErrorPanel
+          label="Your leases"
+          failure={selectionFailure(selection)}
+        />
+      ) : selection.kind === "none" || selection.kind === "invalid" ? (
+        <section className="rounded-lg border border-neutral-200 bg-white p-6">
+          <p className="text-body-md text-neutral-700">
+            There is no lease on your account, so there is no deposit decision
+            to review.
+          </p>
+        </section>
+      ) : selection.kind === "choose" ? (
+        <LeasePicker
+          leases={selection.leases}
+          basePath="/tenant/deposit-decision"
+          title="Which lease?"
+          description="Pick the lease whose deposit decision you want to review."
+        />
+      ) : (
+        <DecisionDetail leaseId={selection.leaseId} />
+      )}
+    </TenantFormShell>
+  );
+}
+
+async function DecisionDetail({ leaseId }: { leaseId: string }) {
+  const deposit = await getDeposit(leaseId);
+
+  if (!deposit.ok) {
+    return <LoadErrorPanel label="The deposit decision" failure={deposit} />;
+  }
+
+  const record =
+    deposit.data !== null && typeof deposit.data === "object"
+      ? (deposit.data as Record<string, unknown>)
+      : {};
+
+  const rows = Object.entries(record).filter(
+    ([, value]) => typeof value === "string" || typeof value === "number",
+  );
+
+  return (
+    <section className="rounded-lg border border-neutral-200 bg-white p-6">
+      <h2 className="text-heading-sm font-bold">Refund decision</h2>
+
+      {rows.length === 0 ? (
+        <p className="mt-3 text-body-sm text-neutral-700">
+          Vemra has not published a decision for this lease yet.
+        </p>
+      ) : (
+        <dl className="mt-4 flex flex-col gap-2 text-body-sm">
+          {rows.map(([key, value]) => (
+            <div key={key} className="flex justify-between gap-4">
+              <dt className="text-neutral-700">{key}</dt>
+              <dd className="font-semibold text-neutral-900">
+                {String(value)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <div className="mt-5">
+        <DepositDecisionActions leaseId={leaseId} />
+      </div>
+    </section>
+  );
+}

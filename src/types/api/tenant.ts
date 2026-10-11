@@ -107,23 +107,7 @@ export interface CheckoutOptions {
   methods: readonly PaymentMethodOption[];
 }
 
-export interface CardPaymentPayload {
-  method: PaymentMethodKind;
-  cardNumber: string;
-  expiry: string;
-  cvc: string;
-  cardName: string;
-}
-
-export type PaymentOutcome = "succeeded" | "declined" | "requires_action";
-
-export interface PaymentResult {
-  outcome: PaymentOutcome;
-  paymentId: string | null;
-  declineCode: string | null;
-  declineReason: string | null;
-  redirectUrl: string | null;
-}
+export type PaymentOutcome = "succeeded" | "pending" | "failed";
 
 export interface TenantRentals {
   current: Tenancy | null;

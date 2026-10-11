@@ -1,5 +1,10 @@
 import type { AccountProfile } from "@/types/api/auth";
 import type {
+  SpecApplicationList,
+  SpecMaintenanceIssue,
+  SpecPropertyList,
+} from "@/types/api/operations";
+import type {
   ApiEnvelope,
   ImageRef,
   Money,
@@ -70,10 +75,9 @@ export interface BackendProperty {
   media?: readonly BackendPropertyMedia[];
 }
 
-export interface BackendPropertyList {
+export type BackendPropertyList = SpecPropertyList & {
   properties: readonly BackendProperty[];
-  pagination: { limit: number; offset: number; count: number };
-}
+};
 
 export type BackendPropertyEnvelope = ApiEnvelope<BackendPropertyList>;
 export type BackendSinglePropertyEnvelope = ApiEnvelope<BackendProperty>;
@@ -82,13 +86,13 @@ const MINOR_UNITS_PER_MAJOR = 100;
 
 export function toMoney(
   money: { amountMinor: string | number; currency: string } | undefined,
-) {
+): Money {
   if (money === undefined) {
-    return { amount: 0, currency: "NGN" };
+    return { minor: 0, currency: "NGN" };
   }
   const minor = Number(money.amountMinor);
   return {
-    amount: Number.isFinite(minor) ? minor / MINOR_UNITS_PER_MAJOR : 0,
+    minor: Number.isSafeInteger(minor) ? minor : 0,
     currency: money.currency,
   };
 }
@@ -203,6 +207,14 @@ export function unwrapData<T>(body: unknown): T {
   return body as T;
 }
 
+export function readRequestId(body: unknown): string | null {
+  if (body === null || typeof body !== "object") {
+    return null;
+  }
+  const value = (body as Record<string, unknown>).requestId;
+  return typeof value === "string" && value !== "" ? value : null;
+}
+
 export interface BackendApplication {
   id: string;
   propertyId: string;
@@ -213,10 +225,7 @@ export interface BackendApplication {
   updatedAt: string;
 }
 
-export interface BackendApplicationList {
-  applications: readonly BackendApplication[];
-  pagination: { limit: number; offset: number; count: number };
-}
+export type BackendApplicationList = SpecApplicationList;
 
 const APPLICATION_STATUS: Record<string, TenantApplication["status"]> = {
   PENDING: "under_review",
@@ -239,18 +248,7 @@ export function toTenantApplication(
   };
 }
 
-export interface BackendMaintenanceRequest {
-  id: string;
-  propertyId: string;
-  reporterId: string;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  assignedTo?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+export type BackendMaintenanceRequest = SpecMaintenanceIssue;
 
 const MAINTENANCE_URGENCY: Record<string, MaintenanceRequest["urgency"]> = {
   LOW: "low",
@@ -361,17 +359,20 @@ function initialsOf(name: string): string {
 }
 
 export function toMoneyValue(value: unknown): Money {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return { amount: value, currency: "NGN" };
+  if (typeof value === "number" && Number.isSafeInteger(value)) {
+    return { minor: value, currency: "NGN" };
   }
   const record = readRecord(value);
   const currency = readString(record.currency) ?? "NGN";
   const minor = readNumber(readField(record, "amountMinor", "amount_minor"));
   if (minor !== null) {
-    return { amount: minor / MINOR_UNITS_PER_MAJOR, currency };
+    return { minor: Math.trunc(minor), currency };
   }
   const major = readNumber(readField(record, "amount", "value"));
-  return { amount: major ?? 0, currency };
+  return {
+    minor: major === null ? 0 : Math.round(major * MINOR_UNITS_PER_MAJOR),
+    currency,
+  };
 }
 
 function toPersonRef(value: unknown): PersonRef | null {

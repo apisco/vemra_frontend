@@ -2,8 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { buttonClasses } from "@/components/ui/button";
+import { SavePropertyButton } from "@/features/marketing/save-property-button";
 import { cn } from "@/lib/cn";
 import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
+import { getSession } from "@/lib/api/resources/auth";
 import { getListing, getPlatformStats, getPublicProfile } from "@/lib/api/resources/public";
 import { formatDate, formatRent } from "@/lib/format";
 
@@ -15,7 +17,11 @@ const applicationSteps = [
 ] as const;
 
 export async function ListingDetailScreen({ listingId }: { listingId: string }) {
-  const listing = await getListing(listingId);
+  const [listing, session] = await Promise.all([
+    getListing(listingId),
+    getSession(),
+  ]);
+  const canSave = session?.user.roles.includes("TENANT") === true;
   if (!listing) {
     return <div className={cn(CONTAINER, SECTION_GUTTER, "py-20 text-center")}><h1 className="text-heading-md font-bold">Listing not found</h1><p className="mt-2 text-body-md text-neutral-700">This home may no longer be available.</p><Link href="/browse" className={buttonClasses({ size: "sm", className: "mt-6" })}>Browse rentals</Link></div>;
   }
@@ -46,7 +52,7 @@ export async function ListingDetailScreen({ listingId }: { listingId: string }) 
           <section className="border-b border-neutral-200 py-6"><h2 className="text-heading-sm font-bold">How applications work</h2><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{applicationSteps.map(([number, title, copy]) => <article key={number} className="rounded-lg border border-neutral-200 p-3"><span className="inline-flex size-5 items-center justify-center rounded-full bg-brand-700 text-caption font-bold text-white">{number}</span><h3 className="mt-2 text-label-md font-bold">{title}</h3><p className="mt-2 text-caption text-neutral-700">{copy}</p></article>)}</div></section>
           <section className="py-6"><h2 className="text-heading-sm font-bold">Amenities</h2><ul className="mt-3 grid grid-cols-2 gap-2 text-body-sm text-neutral-700">{listing.amenities.map((amenity) => <li key={amenity}>• {amenity}</li>)}</ul></section>
         </div>
-        <aside className="h-fit overflow-hidden rounded-lg border border-neutral-200"><div className="bg-[#003e48] px-4 py-3 text-label-sm text-white">◯ &nbsp;{listing.isVerified ? "Landlord verified" : "Vemra listing"}</div><div className="space-y-4 p-4">{listing.contact ? <div className="flex items-center gap-3"><span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-label-sm text-white">{listing.contact.initials}</span><div><p className="text-label-sm font-bold">{listing.contact.name}</p><p className="text-caption text-neutral-700">{listing.contact.role} · manages this property only</p></div></div> : null}<dl className="space-y-3 border-t border-neutral-200 pt-4 text-caption"><div className="flex justify-between"><dt>Owned by</dt><dd className="font-semibold">{listing.owner?.name ?? "—"}</dd></div><div className="flex justify-between"><dt>On Vemra since</dt><dd className="font-semibold">{listing.owner?.onVemraSince ?? "—"}</dd></div></dl><Link href="/signup" className={buttonClasses({ size: "sm", fullWidth: true })}>Apply through Vemra</Link>{listing.contact ? <Link href={`/profile/${listing.contact.id}`} className={buttonClasses({ size: "sm", variant: "secondary", fullWidth: true })}>Contact Property Admin</Link> : null}</div></aside>
+        <aside className="h-fit overflow-hidden rounded-lg border border-neutral-200"><div className="bg-[#003e48] px-4 py-3 text-label-sm text-white">◯ &nbsp;{listing.isVerified ? "Landlord verified" : "Vemra listing"}</div><div className="space-y-4 p-4">{listing.contact ? <div className="flex items-center gap-3"><span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-label-sm text-white">{listing.contact.initials}</span><div><p className="text-label-sm font-bold">{listing.contact.name}</p><p className="text-caption text-neutral-700">{listing.contact.role} · manages this property only</p></div></div> : null}<dl className="space-y-3 border-t border-neutral-200 pt-4 text-caption"><div className="flex justify-between"><dt>Owned by</dt><dd className="font-semibold">{listing.owner?.name ?? "—"}</dd></div><div className="flex justify-between"><dt>On Vemra since</dt><dd className="font-semibold">{listing.owner?.onVemraSince ?? "—"}</dd></div></dl><Link href="/signup" className={buttonClasses({ size: "sm", fullWidth: true })}>Apply through Vemra</Link>{canSave ? <SavePropertyButton propertyId={listing.id} /> : null}{listing.contact ? <Link href={`/profile/${listing.contact.id}`} className={buttonClasses({ size: "sm", variant: "secondary", fullWidth: true })}>Contact Property Admin</Link> : null}</div></aside>
       </div>
     </div>
   );

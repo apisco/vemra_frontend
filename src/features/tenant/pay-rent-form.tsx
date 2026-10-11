@@ -1,86 +1,75 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ResponsiveText } from "@/components/ui/responsive-text";
-import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PAY_RENT } from "@/constants/tenant-payments";
-import type { PaymentMethod } from "@/constants/tenant-payments";
-import { apiErrorMessage } from "@/lib/api/errors";
-import { clientPost } from "@/lib/api/client";
-import { ENDPOINTS } from "@/lib/api/endpoints";
-import type { CardPaymentPayload, PaymentResult } from "@/types/api/tenant";
+import { initiateRentPaymentAction } from "@/lib/api/actions/payments";
+import type { PaymentBreakdown } from "@/lib/api/actions/payments";
+import { PAYMENT_PROVIDER, isAllowedCheckoutUrl } from "@/lib/payments/provider";
+import { formatMoney } from "@/lib/format";
 
-const UNAVAILABLE_METHODS: readonly PaymentMethod[] = ["bank"];
+const NO_LEASE = "Select the lease you want to pay for first.";
 
-const REDIRECT_ERROR =
-  "We could not start the bank verification step. Please try again.";
+const BREAKDOWN_ORDER = [
+  "rentMinor",
+  "cautionDepositMinor",
+  "tenantPlatformFeeMinor",
+  "paystackFeeMinor",
+] as const;
 
-
-function safeRedirectUrl(value: string | null): string | null {
-  if (value === null) {
-    return null;
-  }
-  try {
-    const url = new URL(value, window.location.origin);
-    const isSameOrigin = url.origin === window.location.origin;
-    return isSameOrigin || url.protocol === "https:" ? url.toString() : null;
-  } catch {
-    return null;
-  }
+function newIdempotencyKey(): string {
+  return crypto.randomUUID();
 }
 
-export function PayRentForm({ leaseId = "" }: { leaseId?: string }) {
-  const router = useRouter();
-  const [method, setMethod] = useState<PaymentMethod>("card");
+export interface PayRentFormProps {
+  leaseId: string | null;
+}
+
+export function PayRentForm({ leaseId }: PayRentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [breakdown, setBreakdown] = useState<PaymentBreakdown | null>(null);
+  const [attemptKey, setAttemptKey] = useState<string | null>(null);
+
+  const isDisabled = leaseId === null || isSubmitting;
 
   return (
     <form
       onSubmit={async (event) => {
         event.preventDefault();
+
+        if (leaseId === null) {
+          setError(NO_LEASE);
+          return;
+        }
+
         setIsSubmitting(true);
         setError(null);
 
-        const formData = new FormData(event.currentTarget);
-        const payload: CardPaymentPayload = {
-          method,
-          cardNumber: String(formData.get("cardNumber") ?? ""),
-          expiry: String(formData.get("expiry") ?? ""),
-          cvc: String(formData.get("cvc") ?? ""),
-          cardName: String(formData.get("cardName") ?? ""),
-        };
+        const key = attemptKey ?? newIdempotencyKey();
+        setAttemptKey(key);
 
-        try {
-          if (leaseId === "") {
-            setError("No active lease is available for payment.");
-            return;
-          }
-          const result = await clientPost<PaymentResult>(
-            ENDPOINTS.tenant.checkout(leaseId),
-            payload,
-          );
-          if (result.outcome === "declined") {
-            router.push(PAY_RENT.failedHref);
-          } else if (result.outcome === "requires_action") {
-            const redirect = safeRedirectUrl(result.redirectUrl);
-            if (redirect === null) {
-              setError(REDIRECT_ERROR);
-            } else {
-              window.location.assign(redirect);
-            }
-          } else {
-            router.push("/tenant/payment-history");
-          }
-        } catch (requestError) {
-          setError(apiErrorMessage(requestError));
-        } finally {
+        const result = await initiateRentPaymentAction(leaseId, key);
+
+        if (!result.ok) {
+          setError(result.message);
           setIsSubmitting(false);
+          return;
         }
+
+        setBreakdown(result.data.breakdown);
+
+        if (!isAllowedCheckoutUrl(result.data.checkoutUrl)) {
+          setError(
+            "The checkout link was not recognised, so nothing was charged.",
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
+        window.location.assign(result.data.checkoutUrl);
       }}
       className="flex flex-1 flex-col gap-5 lg:justify-between"
     >
@@ -94,56 +83,73 @@ export function PayRentForm({ leaseId = "" }: { leaseId?: string }) {
           </p>
         </header>
 
-        <SegmentedControl
-          label={PAY_RENT.methodLabel}
-          options={PAY_RENT.methods}
-          value={method}
-          onChange={setMethod}
-          disabledValues={UNAVAILABLE_METHODS}
-        />
-
-        <div className="flex flex-col gap-4">
-          <Input
-            label={PAY_RENT.fields.cardNumber.label}
-            placeholder={PAY_RENT.fields.cardNumber.placeholder}
-            name="cardNumber"
-            autoComplete="cc-number"
-            inputMode="numeric"
-            required
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label={PAY_RENT.fields.expiry.label}
-              placeholder={PAY_RENT.fields.expiry.placeholder}
-              name="expiry"
-              autoComplete="cc-exp"
-              inputMode="numeric"
-              required
-            />
-            <Input
-              label={PAY_RENT.fields.cvc.label}
-              placeholder={PAY_RENT.fields.cvc.placeholder}
-              name="cvc"
-              autoComplete="cc-csc"
-              inputMode="numeric"
-              required
-            />
+        <div className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white p-3">
+          <span
+            aria-hidden="true"
+            className="flex size-9 items-center justify-center rounded-sm bg-brand-50 text-label-md font-bold text-brand-700"
+          >
+            {PAYMENT_PROVIDER.label.charAt(0)}
+          </span>
+          <div className="min-w-0">
+            <p className="text-label-md font-semibold text-neutral-900">
+              Pay with {PAYMENT_PROVIDER.label}
+            </p>
+            <p className="text-label-sm text-neutral-700">
+              Card, bank transfer and USSD are offered on the next screen.
+            </p>
           </div>
-
-          <Input
-            label={PAY_RENT.fields.cardName.label}
-            placeholder={PAY_RENT.fields.cardName.placeholder}
-            name="cardName"
-            autoComplete="cc-name"
-            required
-          />
         </div>
+
+        {breakdown === null ? null : (
+          <section
+            aria-label={PAY_RENT.breakdownTitle}
+            className="flex flex-col gap-2 rounded-md border border-neutral-200 bg-white p-3"
+          >
+            <h2 className="text-label-md font-semibold text-neutral-900">
+              {PAY_RENT.breakdownTitle}
+            </h2>
+            {BREAKDOWN_ORDER.map((key) => (
+              <div
+                key={key}
+                className="flex items-center justify-between gap-4 text-label-sm"
+              >
+                <span className="text-neutral-700">
+                  {PAY_RENT.breakdownLabels[key]}
+                </span>
+                <span className="font-semibold text-neutral-900">
+                  {formatMoney(
+                    { minor: breakdown[key], currency: breakdown.currency },
+                    { showDecimals: true },
+                  )}
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between gap-4 border-t border-neutral-200 pt-2 text-label-md">
+              <span className="font-semibold text-neutral-900">
+                {PAY_RENT.breakdownLabels.totalAmountMinor}
+              </span>
+              <span className="font-bold text-brand-700">
+                {formatMoney(
+                  {
+                    minor: breakdown.totalAmountMinor,
+                    currency: breakdown.currency,
+                  },
+                  { showDecimals: true },
+                )}
+              </span>
+            </div>
+          </section>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button type="submit" fullWidth isLoading={isSubmitting}>
-          {PAY_RENT.submitLabel}
+        <Button
+          type="submit"
+          fullWidth
+          isLoading={isSubmitting}
+          disabled={isDisabled}
+        >
+          {isSubmitting ? PAY_RENT.pendingLabel : PAY_RENT.submitLabel}
         </Button>
         {error ? (
           <p role="alert" className="text-center text-label-sm text-error-600">

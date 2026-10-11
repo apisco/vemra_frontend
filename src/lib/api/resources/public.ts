@@ -104,7 +104,7 @@ export const getFeaturedListing = cache(
   async (): Promise<ListingSummary | null> =>
     publicRead(async () => {
       const envelope = await apiGetPublic<BackendPropertyEnvelope>(
-        ENDPOINTS.public.featuredListing,
+        ENDPOINTS.public.listings,
         {
           query: { status: "published", limit: 1, offset: 0 },
           revalidate: REVALIDATE.listings,
@@ -120,10 +120,13 @@ export const getPublicProfile = cache(
   async (profileId: string): Promise<PublicProfile | null> =>
     publicRead(
       () =>
-        apiGetOptionalPublic<PublicProfile>(ENDPOINTS.public.profile(profileId), {
-          revalidate: REVALIDATE.profile,
-          tags: [CACHE_TAGS.profile(profileId)],
-        }),
+        apiGetOptionalPublic<PublicProfile>(
+          ENDPOINTS.public.propertyAdminProfile(profileId),
+          {
+            revalidate: REVALIDATE.profile,
+            tags: [CACHE_TAGS.profile(profileId)],
+          },
+        ),
       null,
     ),
 );

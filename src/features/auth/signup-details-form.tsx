@@ -14,8 +14,10 @@ import {
 } from "@/constants/auth";
 import { AuthCard } from "@/features/auth/auth-card";
 import { AuthDivider } from "@/features/auth/auth-divider";
+import { CaptchaField, resetCaptcha } from "@/features/auth/captcha-field";
 import { PasswordField } from "@/features/auth/password-field";
 import { useAuthForm } from "@/features/auth/use-auth-form";
+import { CAPTCHA_CONFIG } from "@/config/captcha";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseErrorMessage } from "@/lib/supabase/errors";
 import { authCallbackUrl, rememberPendingEmail } from "@/lib/supabase/urls";
@@ -31,6 +33,8 @@ const TERMS_LINK_CLASSES =
 
 const VERIFIED_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=verified`;
 const PENDING_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=pending`;
+
+const CAPTCHA_REQUIRED = "Complete the verification challenge to continue.";
 
 type SignupDetailsValues = {
   email: string;
@@ -51,6 +55,7 @@ export function SignupDetailsForm({
   const termsErrorId = useId();
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const form = useAuthForm<SignupDetailsValues>({
     initialValues: {
@@ -71,6 +76,12 @@ export function SignupDetailsForm({
     }),
     onSubmit: async (values) => {
       setSubmitError(null);
+
+      if (CAPTCHA_CONFIG.isEnabled && captchaToken === null) {
+        setSubmitError(CAPTCHA_REQUIRED);
+        throw new Error(CAPTCHA_REQUIRED);
+      }
+
       try {
         const supabase = createClient();
         const { data, error } = await supabase.auth.signUp({
@@ -79,6 +90,7 @@ export function SignupDetailsForm({
           options: {
             data: { role },
             emailRedirectTo: authCallbackUrl(VERIFIED_EMAIL_PATH),
+            ...(captchaToken === null ? {} : { captchaToken }),
           },
         });
         if (error) {
@@ -91,6 +103,8 @@ export function SignupDetailsForm({
         }
         router.push(AUTH_ROUTES.signupVerification);
       } catch (error) {
+        resetCaptcha();
+        setCaptchaToken(null);
         setSubmitError(supabaseErrorMessage(error));
         throw error;
       }
@@ -180,7 +194,14 @@ export function SignupDetailsForm({
           ) : null}
         </div>
 
-        <Button type="submit" fullWidth isLoading={form.isSubmitting}>
+        <CaptchaField onToken={setCaptchaToken} />
+
+        <Button
+          type="submit"
+          fullWidth
+          isLoading={form.isSubmitting}
+          disabled={form.isSubmitting}
+        >
           {SIGNUP_DETAILS_SCREEN.submitLabel}
         </Button>
         {submitError ? (

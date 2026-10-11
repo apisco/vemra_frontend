@@ -20,6 +20,7 @@ export const AUTH_ROUTES = {
   verifyEmail: "/verify-email",
   staffLogin: "/staff/login",
   twoFactor: "/staff/two-factor",
+  twoFactorSetup: "/two-factor",
   verificationPending: "/verification/pending",
   verificationRejected: "/verification/rejected",
   terms: "/terms",

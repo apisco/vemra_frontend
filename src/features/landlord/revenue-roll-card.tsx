@@ -16,12 +16,12 @@ function barHeightClass(ratio: number): BarHeightClass {
 
 export function RevenueRollCard({ dashboard }: { dashboard: LandlordDashboard }) {
   const maxValue = Math.max(
-    ...dashboard.revenueSeries.map((point) => point.amount.amount),
+    ...dashboard.revenueSeries.map((point) => point.amount.minor),
     1,
   );
   const bars = dashboard.revenueSeries.map((point) => ({
-    heightClass: barHeightClass(point.amount.amount / maxValue),
-    isHighlighted: point.amount.amount === dashboard.monthlyRentRoll.amount,
+    heightClass: barHeightClass(point.amount.minor / maxValue),
+    isHighlighted: point.amount.minor === dashboard.monthlyRentRoll.minor,
   }));
   return (
     <section

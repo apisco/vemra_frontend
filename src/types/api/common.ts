@@ -7,9 +7,11 @@ export interface ApiEnvelope<T> {
 }
 
 export interface Money {
-  amount: number;
+  minor: number;
   currency: string;
 }
+
+export const ZERO_MONEY: Money = { minor: 0, currency: "NGN" };
 
 export interface Paginated<T> {
   items: readonly T[];

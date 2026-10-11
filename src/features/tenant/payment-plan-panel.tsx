@@ -43,7 +43,7 @@ export function PaymentPlanPanel({ plan }: { plan: PaymentPlan | null }) {
           </p>
           <p className="text-body-lg text-neutral-700">of {total} total</p>
         </div>
-        <ProgressBar percent={percentOf(plan.paidAmount.amount, plan.totalAmount.amount)} label="Rent paid" />
+        <ProgressBar percent={percentOf(plan.paidAmount.minor, plan.totalAmount.minor)} label="Rent paid" />
       </div>
 
       <ul className="flex flex-col">

@@ -12,6 +12,7 @@ import { ManageListingForm } from "@/features/landlord/manage-listing-form";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
 import { getLandlordProperty } from "@/lib/api/resources/landlord";
+import { isUuid } from "@/lib/validation";
 
 const { breadcrumbLabel, listedSincePrefix } = LANDLORD_MANAGE_LISTING;
 
@@ -19,6 +20,11 @@ export async function generateMetadata({
   params,
 }: PageProps<"/landlord/properties/[propertyId]">): Promise<Metadata> {
   const { propertyId } = await params;
+
+  if (!isUuid(propertyId)) {
+    return { title: "Manage listing · Vemra" };
+  }
+
   const property = await getLandlordProperty(propertyId);
 
   if (!property) return { title: "Manage listing · Vemra" };
@@ -33,6 +39,11 @@ export default async function ManageListingPage({
   params,
 }: PageProps<"/landlord/properties/[propertyId]">) {
   const { propertyId } = await params;
+
+  if (!isUuid(propertyId)) {
+    notFound();
+  }
+
   const property = await getLandlordProperty(propertyId);
 
   if (!property) notFound();

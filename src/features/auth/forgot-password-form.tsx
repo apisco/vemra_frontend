@@ -10,8 +10,10 @@ import { AUTH_ROUTES, FORGOT_PASSWORD_SCREEN } from "@/constants/auth";
 import { AuthCard } from "@/features/auth/auth-card";
 import { AuthFooter } from "@/features/auth/auth-footer";
 import { AuthHeader } from "@/features/auth/auth-header";
+import { CaptchaField, resetCaptcha } from "@/features/auth/captcha-field";
 import { StatusIcon } from "@/features/auth/status-icon";
 import { useAuthForm } from "@/features/auth/use-auth-form";
+import { CAPTCHA_CONFIG } from "@/config/captcha";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseErrorMessage } from "@/lib/supabase/errors";
 import { authCallbackUrl } from "@/lib/supabase/urls";
@@ -21,25 +23,39 @@ type ForgotPasswordValues = {
   email: string;
 };
 
+const CAPTCHA_REQUIRED = "Complete the verification challenge to continue.";
+
 export function ForgotPasswordForm() {
   const confirmation = useRef<HTMLDivElement>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const form = useAuthForm<ForgotPasswordValues>({
     initialValues: { email: "" },
     validate: (values) => ({ email: validateEmail(values.email) }),
     onSubmit: async (values) => {
       setSubmitError(null);
+
+      if (CAPTCHA_CONFIG.isEnabled && captchaToken === null) {
+        setSubmitError(CAPTCHA_REQUIRED);
+        throw new Error(CAPTCHA_REQUIRED);
+      }
+
       try {
         const supabase = createClient();
         const { error } = await supabase.auth.resetPasswordForEmail(
           values.email,
-          { redirectTo: authCallbackUrl(AUTH_ROUTES.resetPassword) },
+          {
+            redirectTo: authCallbackUrl(AUTH_ROUTES.resetPassword),
+            ...(captchaToken === null ? {} : { captchaToken }),
+          },
         );
         if (error) {
           throw error;
         }
       } catch (error) {
+        resetCaptcha();
+        setCaptchaToken(null);
         setSubmitError(supabaseErrorMessage(error));
         throw error;
       }
@@ -108,7 +124,13 @@ export function ForgotPasswordForm() {
           onChange={(event) => form.setValue("email", event.target.value)}
           error={form.errorFor("email")}
         />
-        <Button type="submit" fullWidth isLoading={form.isSubmitting}>
+        <CaptchaField onToken={setCaptchaToken} />
+        <Button
+          type="submit"
+          fullWidth
+          isLoading={form.isSubmitting}
+          disabled={form.isSubmitting}
+        >
           {FORGOT_PASSWORD_SCREEN.submitLabel}
         </Button>
         {submitError ? (

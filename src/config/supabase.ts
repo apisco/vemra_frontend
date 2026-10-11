@@ -31,7 +31,7 @@ export const SUPABASE_AUTH_ROUTES = {
   signOut: "/auth/signout",
 } as const;
 
-export const DEFAULT_SIGNED_IN_PATH = "/tenant";
+export const DEFAULT_SIGNED_IN_PATH = "/dashboard";
 
 export const SIGNED_OUT_PATH = "/login";
 

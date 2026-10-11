@@ -23,6 +23,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
   timeoutMs?: number;
   retryAttempts?: number;
+  idempotencyKey?: string;
   role?: string;
   cache?: RequestCache;
   revalidate?: number | false;
@@ -33,7 +34,7 @@ interface NextFetchInit extends RequestInit {
   next?: { revalidate?: number | false; tags?: string[] };
 }
 
-function newRequestId(): string {
+export function newRequestId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
@@ -70,14 +71,20 @@ function isJsonResponse(response: Response): boolean {
   return contentType.includes("json");
 }
 
-interface ErrorEnvelope {
+export interface ErrorEnvelope {
   message: string | null;
   code: string | null;
   fieldErrors: Record<string, string> | null;
+  requestId: string | null;
 }
 
-function readErrorEnvelope(payload: unknown): ErrorEnvelope {
-  const empty: ErrorEnvelope = { message: null, code: null, fieldErrors: null };
+export function readErrorEnvelope(payload: unknown): ErrorEnvelope {
+  const empty: ErrorEnvelope = {
+    message: null,
+    code: null,
+    fieldErrors: null,
+    requestId: null,
+  };
 
   if (typeof payload === "string") {
     return { ...empty, message: payload.trim() === "" ? null : payload };
@@ -100,30 +107,13 @@ function readErrorEnvelope(payload: unknown): ErrorEnvelope {
     (value): value is string => typeof value === "string" && value !== "",
   );
 
-  const rawFields = nested.errors ?? nested.fieldErrors ?? nested.fields;
+  const requestId = [record.requestId, nested.requestId].find(
+    (value): value is string => typeof value === "string" && value !== "",
+  );
+
   let fieldErrors: Record<string, string> | null = null;
 
-  if (typeof rawFields === "object" && rawFields !== null) {
-    const entries = Object.entries(rawFields as Record<string, unknown>).flatMap(
-      ([field, value]) => {
-        if (typeof value === "string") {
-          return [[field, value] as const];
-        }
-        if (Array.isArray(value) && typeof value[0] === "string") {
-          return [[field, value[0]] as const];
-        }
-        return [];
-      },
-    );
-    if (entries.length > 0) {
-      fieldErrors = Object.fromEntries(entries);
-    }
-  }
-
-  
-  
-  
-  if (fieldErrors === null && Array.isArray(nested.details)) {
+  if (Array.isArray(nested.details)) {
     const entries = (nested.details as unknown[]).flatMap((detail) => {
       if (detail === null || typeof detail !== "object") {
         return [];
@@ -132,7 +122,9 @@ function readErrorEnvelope(payload: unknown): ErrorEnvelope {
       if (typeof field !== "string" || typeof reason !== "string") {
         return [];
       }
-      const key = field.includes(".") ? (field.split(".").pop() ?? field) : field;
+      const key = field.includes(".")
+        ? (field.split(".").pop() ?? field)
+        : field;
       return [[key, reason] as const];
     });
     if (entries.length > 0) {
@@ -140,7 +132,32 @@ function readErrorEnvelope(payload: unknown): ErrorEnvelope {
     }
   }
 
-  return { message: message ?? null, code: code ?? null, fieldErrors };
+  if (fieldErrors === null) {
+    const rawFields = nested.errors ?? nested.fieldErrors ?? nested.fields;
+    if (typeof rawFields === "object" && rawFields !== null) {
+      const entries = Object.entries(
+        rawFields as Record<string, unknown>,
+      ).flatMap(([field, value]) => {
+        if (typeof value === "string") {
+          return [[field, value] as const];
+        }
+        if (Array.isArray(value) && typeof value[0] === "string") {
+          return [[field, value[0]] as const];
+        }
+        return [];
+      });
+      if (entries.length > 0) {
+        fieldErrors = Object.fromEntries(entries);
+      }
+    }
+  }
+
+  return {
+    message: message ?? null,
+    code: code ?? null,
+    fieldErrors,
+    requestId: requestId ?? null,
+  };
 }
 
 async function readBody(response: Response): Promise<unknown> {
@@ -178,6 +195,10 @@ function buildInit(
     headers[API_HEADER_NAMES.activeRole] = options.role;
   }
 
+  if (options.idempotencyKey !== undefined) {
+    headers[API_HEADER_NAMES.idempotencyKey] = options.idempotencyKey;
+  }
+
   const init: NextFetchInit = {
     method,
     headers,
@@ -186,10 +207,6 @@ function buildInit(
       options.timeoutMs ?? API_CONFIG.timeoutMs,
     ),
   };
-
-  if (API_CONFIG.withCredentials) {
-    init.credentials = "include";
-  }
 
   if (options.body !== undefined && method !== "GET") {
     init.body = isFormData
@@ -211,7 +228,6 @@ function buildInit(
   return init;
 }
 
-
 function isDynamicServerUsage(cause: unknown): boolean {
   return (
     cause instanceof Error &&
@@ -228,9 +244,9 @@ export async function request<T>(
   const requestId = newRequestId();
 
   const budget = options.retryAttempts ?? API_CONFIG.retryAttempts;
-  const maxAttempts = IDEMPOTENT_METHODS.has(method)
-    ? Math.max(0, budget) + 1
-    : 1;
+  const isReplayable =
+    IDEMPOTENT_METHODS.has(method) || options.idempotencyKey !== undefined;
+  const maxAttempts = isReplayable ? Math.max(0, budget) + 1 : 1;
 
   let lastError: ApiError | undefined;
 
@@ -303,7 +319,7 @@ export async function request<T>(
       code: envelope.code,
       fieldErrors: envelope.fieldErrors,
       details: payload,
-      requestId,
+      requestId: envelope.requestId ?? requestId,
     });
 
     if (!lastError.isRetryable) {

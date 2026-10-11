@@ -1,19 +1,32 @@
 import Link from "next/link";
 
-import { buttonClasses } from "@/components/ui/button";
+import { TENANT_ROUTES } from "@/constants/tenant";
+import { LoadErrorPanel } from "@/features/errors/load-error-panel";
+import { UnsupportedPanel } from "@/features/errors/unsupported-panel";
+import { NotificationPreferencesForm } from "@/features/settings/notification-preferences-form";
+import { ProfileForm } from "@/features/settings/profile-form";
+import { LeasePicker } from "@/features/tenant/lease-picker";
 import {
-  getCautionDeposit,
+  DepositDecisionActions,
+  MarkNotificationReadButton,
+  MessageComposer,
+  UnsavePropertyButton,
+} from "@/features/tenant/tenant-actions";
+import { UNSUPPORTED } from "@/lib/api/capabilities";
+import { getAccount } from "@/lib/api/resources/auth";
+import {
   getConversations,
+  getDeposit,
+  getNotificationPreferences,
   getNotifications,
-  getReferralProgram,
   getSavedProperties,
+  getTenantLeases,
   getTenantMaintenance,
   getTenantPayments,
-  getTenantProfile,
-  getTenantRentals,
-  getTenantSettings,
+  resolveLeaseSelection,
+  getReferralProgram,
 } from "@/lib/api/resources/tenant";
-import { formatDate, formatMoney, formatRent } from "@/lib/format";
+import { formatDate, formatMoney } from "@/lib/format";
 
 export type TenantScreenKey =
   | "messages"
@@ -54,7 +67,8 @@ const COPY: Record<TenantScreenKey, { title: string; description: string }> = {
   },
   referrals: {
     title: "Refer and earn",
-    description: "Invite friends to Vemra and earn when they complete a tenancy.",
+    description:
+      "Invite friends to Vemra and earn when they complete a tenancy.",
   },
   notifications: {
     title: "Notification Inbox",
@@ -66,160 +80,372 @@ const COPY: Record<TenantScreenKey, { title: string; description: string }> = {
   },
   profile: {
     title: "Your profile",
-    description: "Manage the personal details connected to your Vemra account.",
+    description:
+      "Manage the personal details connected to your Vemra account.",
   },
 };
 
-export async function TenantFlowScreen({ screen }: { screen: TenantScreenKey }) {
+export async function TenantFlowScreen({
+  screen,
+  leaseId = null,
+}: {
+  screen: TenantScreenKey;
+  leaseId?: string | null;
+}) {
   const copy = COPY[screen];
+
   return (
     <div className="flex max-w-240 flex-col gap-6">
       <ScreenHeading title={copy.title} description={copy.description} />
-      <section className="rounded-lg border border-neutral-200 bg-white p-5 md:p-6">
-        {await renderScreen(screen)}
-      </section>
+      {await renderScreen(screen, leaseId)}
     </div>
   );
 }
 
-async function renderScreen(screen: TenantScreenKey) {
+function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="rounded-lg border border-neutral-200 bg-white p-5 md:p-6">
+      {children}
+    </section>
+  );
+}
+
+async function renderScreen(screen: TenantScreenKey, leaseId: string | null) {
   switch (screen) {
     case "messages": {
-      const data = await getConversations();
+      const conversations = await getConversations();
+      if (conversations.length === 0) {
+        return (
+          <Panel>
+            <p className="text-body-md text-neutral-700">
+              No conversations yet. Vemra opens a conversation when you apply
+              for a property.
+            </p>
+          </Panel>
+        );
+      }
       return (
-        <DataList
-          items={data.map(
-            (item) => `${item.participant.name}: ${item.lastMessagePreview}`,
-          )}
-        />
+        <div className="flex flex-col gap-4">
+          {conversations.map((conversation) => (
+            <Panel key={conversation.id}>
+              <div className="flex flex-col gap-3">
+                <p className="text-body-md font-semibold text-neutral-900">
+                  {conversation.participant?.name ?? "Vemra"}
+                </p>
+                <p className="text-body-sm text-neutral-700">
+                  {conversation.lastMessagePreview ?? "No messages yet."}
+                </p>
+                <MessageComposer conversationId={conversation.id} />
+              </div>
+            </Panel>
+          ))}
+        </div>
       );
     }
+
     case "payment-history": {
-      const data = await getTenantPayments();
+      const payments = await getTenantPayments();
+      if (!payments.ok) {
+        return (
+          <LoadErrorPanel label="Your payment history" failure={payments} />
+        );
+      }
       return (
-        <DataList
-          items={data.map(
-            (item) =>
-              `${item.label} · ${formatDate(item.date)} · ${formatMoney(item.amount)} · ${item.status}`,
-          )}
-        />
+        <Panel>
+          <DataList
+            items={payments.data.map(
+              (item) =>
+                `${item.label} · ${formatDate(item.date)} · ${formatMoney(
+                  item.amount,
+                )} · ${item.status}`,
+            )}
+            empty="No payments recorded yet."
+          />
+        </Panel>
       );
     }
+
     case "maintenance": {
       const data = await getTenantMaintenance();
       return (
-        <DataList
-          items={data.requests.map(
-            (item) =>
-              `${item.title} · ${item.status} · ${formatDate(item.submittedAt)}`,
-          )}
-          empty="No maintenance requests yet."
-        />
-      );
-    }
-    case "caution-deposit": {
-      const data = await getCautionDeposit();
-      return data ? (
-        <DataList
-          items={[
-            `${formatMoney(data.amount)} · ${data.status}`,
-            ...data.timeline.map(
+        <Panel>
+          <DataList
+            items={data.requests.map(
               (item) =>
-                `${item.label} · ${item.isComplete ? "Complete" : "Pending"}`,
-            ),
-            ...data.deductions.map(
-              (item) => `${item.reason} · ${formatMoney(item.amount)}`,
-            ),
-          ]}
-        />
-      ) : (
-        <EmptyState />
+                `${item.title} · ${item.status} · ${formatDate(
+                  item.submittedAt,
+                )}`,
+            )}
+            empty="No maintenance requests yet."
+          />
+        </Panel>
       );
     }
+
+    case "caution-deposit": {
+      const selection = await resolveLeaseSelection(leaseId);
+
+      if (selection.kind === "error") {
+        return (
+          <LoadErrorPanel
+            label="Your leases"
+            failure={{
+              ok: false,
+              message: selection.message,
+              requestId: selection.requestId,
+              isWaking: selection.isWaking,
+            }}
+          />
+        );
+      }
+      if (selection.kind === "none" || selection.kind === "invalid") {
+        return (
+          <Panel>
+            <p className="text-body-md text-neutral-700">
+              No active lease is connected to your account, so there is no
+              caution deposit to show.
+            </p>
+          </Panel>
+        );
+      }
+      if (selection.kind === "choose") {
+        return (
+          <LeasePicker
+            leases={selection.leases}
+            basePath={TENANT_ROUTES.cautionDeposit}
+            title="Which lease?"
+            description="Pick the lease whose caution deposit you want to see."
+          />
+        );
+      }
+
+      const deposit = await getDeposit(selection.leaseId);
+      if (!deposit.ok) {
+        return (
+          <LoadErrorPanel label="Your caution deposit" failure={deposit} />
+        );
+      }
+      if (deposit.data === null) {
+        return (
+          <Panel>
+            <p className="text-body-md text-neutral-700">
+              Vemra has not recorded a caution deposit for this lease yet.
+            </p>
+          </Panel>
+        );
+      }
+
+      return (
+        <div className="flex flex-col gap-4">
+          <Panel>
+            <DepositSummary deposit={deposit.data} />
+          </Panel>
+          <Panel>
+            <h2 className="text-body-md font-semibold text-neutral-900">
+              Refund decision
+            </h2>
+            <p className="mt-2 text-body-sm text-neutral-700">
+              If Vemra has published a decision on this deposit, you can accept
+              it or raise a dispute here.
+            </p>
+            <div className="mt-4">
+              <DepositDecisionActions leaseId={selection.leaseId} />
+            </div>
+          </Panel>
+        </div>
+      );
+    }
+
     case "saved-properties": {
-      const data = await getSavedProperties();
+      const saved = await getSavedProperties();
+      if (saved.length === 0) {
+        return (
+          <Panel>
+            <p className="text-body-md text-neutral-700">
+              No saved properties yet.{" "}
+              <Link href="/browse" className="font-semibold text-brand-700">
+                Browse rentals
+              </Link>
+              .
+            </p>
+          </Panel>
+        );
+      }
       return (
-        <DataList
-          items={data.map(
-            (item) => `${item.listing.title} · ${formatDate(item.savedAt)}`,
-          )}
-          empty="No saved properties yet."
-        />
+        <div className="flex flex-col gap-3">
+          {saved.map((item) => (
+            <Panel key={item.id}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-body-md font-semibold text-neutral-900">
+                    {item.listing?.title ?? "Saved property"}
+                  </p>
+                  <p className="text-label-sm text-neutral-700">
+                    Saved {formatDate(item.savedAt)}
+                  </p>
+                </div>
+                <UnsavePropertyButton propertyId={item.id} />
+              </div>
+            </Panel>
+          ))}
+        </div>
       );
     }
+
     case "my-rentals": {
-      const data = await getTenantRentals();
+      const leases = await getTenantLeases();
+      if (!leases.ok) {
+        return <LoadErrorPanel label="Your rentals" failure={leases} />;
+      }
       return (
-        <DataList
-          items={[
-            ...(data.current
-              ? [
-                  `${data.current.unit.name} · ${formatRent(
-                    data.current.rent,
-                    data.current.rentPeriod,
-                  )} · ${data.current.status}`,
-                ]
-              : []),
-            ...data.history.map((item) => `${item.unit.name} · ${item.status}`),
-          ]}
-          empty="No rental records yet."
-        />
+        <Panel>
+          <DataList
+            items={leases.data.map(
+              (lease) =>
+                `${lease.status ?? "Lease"}${
+                  lease.annualRent === undefined
+                    ? ""
+                    : ` · ${formatMoney(lease.annualRent)}`
+                }${
+                  lease.startDate === undefined
+                    ? ""
+                    : ` · from ${formatDate(lease.startDate)}`
+                }`,
+            )}
+            empty="No rental records yet."
+          />
+        </Panel>
       );
     }
+
     case "referrals": {
       const data = await getReferralProgram();
-      return data ? (
-        <DataList
-          items={[
-            `Share link: ${data.shareUrl}`,
-            `${data.referredCount} referred · ${data.successfulCount} successful · ${formatMoney(data.rewardsEarned)} earned`,
-            ...data.referrals.map((item) => `${item.name} · ${item.status}`),
-          ]}
-        />
-      ) : (
-        <EmptyState />
+      return (
+        <Panel>
+          {data === null ? (
+            <p className="text-body-md text-neutral-700">
+              Your referral details are not available yet.
+            </p>
+          ) : (
+            <DataList
+              items={[
+                `Share link: ${data.shareUrl}`,
+                `${data.referredCount} referred · ${data.successfulCount} successful · ${formatMoney(
+                  data.rewardsEarned,
+                )} earned`,
+                ...data.referrals.map((item) => `${item.name} · ${item.status}`),
+              ]}
+            />
+          )}
+        </Panel>
       );
     }
+
     case "notifications": {
       const data = await getNotifications();
+      if (data.items.length === 0) {
+        return (
+          <Panel>
+            <p className="text-body-md text-neutral-700">
+              No notifications yet.
+            </p>
+          </Panel>
+        );
+      }
       return (
-        <DataList
-          items={data.items.map(
-            (item) =>
-              `${item.title}${item.body ? ` · ${item.body}` : ""} · ${formatDate(item.createdAt)}`,
-          )}
-          empty="No notifications yet."
-        />
+        <div className="flex flex-col gap-3">
+          {data.items.map((item) => (
+            <Panel key={item.id}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-body-md font-semibold text-neutral-900">
+                    {item.title}
+                  </p>
+                  {item.body ? (
+                    <p className="text-body-sm text-neutral-700">{item.body}</p>
+                  ) : null}
+                  <p className="text-label-sm text-neutral-700">
+                    {formatDate(item.createdAt)}
+                  </p>
+                </div>
+                <MarkNotificationReadButton notificationId={item.id} />
+              </div>
+            </Panel>
+          ))}
+        </div>
       );
     }
+
     case "settings": {
-      const data = await getTenantSettings();
-      return (
-        <DataList
-          items={data.notificationGroups.flatMap((group) =>
-            group.preferences.map(
-              (item) =>
-                `${group.title}: ${item.label} · ${item.isEnabled ? "On" : "Off"}`,
-            ),
-          )}
-          empty="No notification preferences available."
+      const preferences = await getNotificationPreferences();
+      return preferences.ok ? (
+        <NotificationPreferencesForm preferences={preferences.data} />
+      ) : (
+        <LoadErrorPanel
+          label="Your notification preferences"
+          failure={preferences}
         />
       );
     }
+
     case "profile": {
-      const data = await getTenantProfile();
-      return (
-        <DataList
-          items={[
-            data.fullName,
-            data.email,
-            data.phone ?? "No phone number",
-            data.isVerified ? "Verified" : data.verificationNote ?? "Verification pending",
-          ]}
+      const account = await getAccount();
+      return account === null ? (
+        <LoadErrorPanel
+          label="Your profile"
+          failure={{
+            ok: false,
+            message: "We could not load your account details.",
+            requestId: null,
+            isWaking: false,
+          }}
+        />
+      ) : (
+        <ProfileForm
+          displayName={account.displayName ?? ""}
+          email={account.email}
+          phone={account.phone ?? ""}
+          handle={account.handle ?? ""}
         />
       );
     }
   }
+}
+
+function DepositSummary({ deposit }: { deposit: unknown }) {
+  const record =
+    deposit !== null && typeof deposit === "object"
+      ? (deposit as Record<string, unknown>)
+      : {};
+
+  const rows = Object.entries(record)
+    .filter(([, value]) => typeof value === "string" || typeof value === "number")
+    .map(([key, value]) => `${key}: ${String(value)}`);
+
+  return (
+    <>
+      <h2 className="text-body-md font-semibold text-neutral-900">
+        Deposit held
+      </h2>
+      <div className="mt-3">
+        <DataList items={rows} empty="No deposit details available." />
+      </div>
+    </>
+  );
+}
+
+export function TenantRentChangeScreen() {
+  return (
+    <div className="mx-auto flex max-w-140 flex-col gap-5">
+      <div>
+        <h1 className="font-display text-heading-lg font-bold">Rent change</h1>
+        <p className="mt-1 text-body-md text-neutral-700">
+          Rent changes are proposed and approved inside Vemra.
+        </p>
+      </div>
+      <UnsupportedPanel capability={UNSUPPORTED.tenantRentChange} />
+    </div>
+  );
 }
 
 function ScreenHeading({
@@ -248,34 +474,18 @@ function DataList({
   items: readonly string[];
   empty?: string;
 }) {
-  return items.length ? (
+  return items.length > 0 ? (
     <ul className="divide-y divide-neutral-200">
       {items.map((item, index) => (
-        <li key={`${item}-${index}`} className="py-3 text-body-sm text-neutral-800">
+        <li
+          key={`${item}-${index}`}
+          className="py-3 text-body-sm text-neutral-800"
+        >
           {item}
         </li>
       ))}
     </ul>
   ) : (
     <p className="text-body-md text-neutral-700">{empty}</p>
-  );
-}
-
-function EmptyState({
-  action,
-  href,
-}: {
-  action?: string;
-  href?: string;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <p className="text-body-md text-neutral-700">No data available yet.</p>
-      {action && href ? (
-        <Link href={href} className={buttonClasses({ size: "sm" })}>
-          {action}
-        </Link>
-      ) : null}
-    </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { Skeleton } from "@/components/feedback/skeleton";
 import { Spinner } from "@/components/feedback/spinner";
@@ -55,6 +56,9 @@ const SECTIONS = [
 ] as const;
 
 export default function DesignSystemPage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
       <header className="flex flex-col gap-3">

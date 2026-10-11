@@ -2,18 +2,15 @@ import { TENANT_ROUTES } from "@/constants/tenant";
 import type { ResponsiveCopy } from "@/components/ui/responsive-text";
 import type { CheckoutSummary } from "@/types/api/tenant";
 
-
 export const EMPTY_CHECKOUT_SUMMARY: CheckoutSummary = {
   label: "Payment plan unavailable",
-  amount: { amount: 0, currency: "NGN" },
+  amount: { minor: 0, currency: "NGN" },
   unit: null,
   landlordName: null,
   dueDate: null,
   installmentSequence: null,
   installmentTotal: null,
 };
-
-export type PaymentMethod = "card" | "bank";
 
 export const PAY_RENT = {
   title: {
@@ -22,38 +19,35 @@ export const PAY_RENT = {
     lg: "Complete payment",
   } satisfies ResponsiveCopy,
   description: {
-    base: "Paying the final installment on your September plan.",
-    md: "Secure rent processing held in Escrow.",
-    lg: "Paying the final installment on your September plan.",
+    base: "Secure rent processing held in escrow.",
+    md: "Secure rent processing held in escrow.",
+    lg: "Secure rent processing held in escrow.",
   } satisfies ResponsiveCopy,
-  methodLabel: "Payment method",
-  methods: [
-    { value: "card", label: "Card" },
-    { value: "bank", label: "Bank transfer" },
-  ] as const,
-  fields: {
-    cardNumber: { label: "Card number", placeholder: "4242 4242 4242 4242" },
-    expiry: { label: "Expiry (MM/YY)", placeholder: "09/28" },
-    cvc: { label: "CVC", placeholder: "123" },
-    cardName: { label: "Name on card", placeholder: "Full name on card" },
-  },
-  submitLabel: "Simulate declined payment",
+  submitLabel: "Continue to secure checkout",
+  pendingLabel: "Opening secure checkout…",
   footnote: {
-    base: "Secure encrypted checkout.",
-    md: "Payments are encrypted and processed securely.",
+    base: "You will finish paying on Paystack. Vemra never sees your card details.",
+    md: "You will finish paying on Paystack's secure checkout. Vemra never receives or stores your card details.",
   } satisfies ResponsiveCopy,
+  breakdownTitle: "What you will pay",
+  breakdownLabels: {
+    rentMinor: "Rent",
+    cautionDepositMinor: "Caution deposit",
+    tenantPlatformFeeMinor: "Vemra fee",
+    paystackFeeMinor: "Payment processing fee",
+    totalAmountMinor: "Total",
+  },
   failedHref: `${TENANT_ROUTES.paymentPlan}/failed`,
+  callbackPath: `${TENANT_ROUTES.paymentPlan}/callback`,
 } as const;
 
 export const PAYMENT_FAILED = {
-  title: "Payment Failed",
+  title: "Payment not completed",
   description: {
-    base: "Your card was declined. Please check details or use a different method.",
-    md: "Your card was declined. Please check your card details or try a different payment method.",
+    base: "The payment did not go through. No money has left your account.",
+    md: "The payment did not go through. No money has left your account. You can start a new attempt below.",
   } satisfies ResponsiveCopy,
-  diagnosisLabel: "System diagnosis",
-  diagnosisCode: "Error code: CARD_DECLINED",
-  retryLabel: "Try Again",
-  changeCardLabel: "Use Different Card",
+  diagnosisLabel: "Reference",
+  retryLabel: "Try again",
   retryHref: TENANT_ROUTES.paymentPlan,
 } as const;

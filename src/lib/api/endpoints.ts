@@ -1,8 +1,13 @@
+function seg(value: string): string {
+  return encodeURIComponent(value);
+}
+
 export const ENDPOINTS = {
   identity: {
     me: "/me",
     updateProfile: "/me/profile",
     settings: "/me/settings",
+    activities: "/my-activities",
     tenantDashboard: "/me/tenant-dashboard",
     landlordDashboard: "/me/landlord-dashboard",
   },
@@ -10,76 +15,86 @@ export const ENDPOINTS = {
   kyc: {
     documentGrants: "/kyc/documents/grants",
     submissions: "/kyc/submissions",
+    me: "/kyc/me",
+    verifyNin: "/kyc/verify-nin",
   },
 
   public: {
     listings: "/properties",
-    listing: (propertyId: string) => `/properties/${propertyId}`,
-    featuredListing: "/properties",
-    profile: (propertyAdminId: string) =>
-      `/admin/properties/${propertyAdminId}/public`,
+    listing: (propertyId: string) => `/properties/${seg(propertyId)}`,
+    propertyAdminProfile: (propertyAdminId: string) =>
+      `/super-admin/property-admins/${seg(propertyAdminId)}/public`,
     platformStats: "/public/stats",
     dashboardPreview: "/public/dashboard-preview",
+    help: "/public/help",
+    helpArticle: (slug: string) => `/public/help/${seg(slug)}`,
+    legalLatest: (slug: string) => `/public/legal/${seg(slug)}/latest`,
+    waitlist: "/public/waitlist",
+    contact: "/public/contact",
   },
 
   tenant: {
     payments: "/payments",
+    wallet: "/wallet",
+    withdrawals: "/withdrawals",
     leases: "/leases",
-    lease: (leaseId: string) => `/leases/${leaseId}`,
-    paymentPlan: (leaseId: string) => `/leases/${leaseId}/payment-plan`,
-    checkout: (leaseId: string) => `/leases/${leaseId}/pay`,
-    cautionDeposit: (leaseId: string) => `/leases/${leaseId}/deposit`,
-    depositDecision: (leaseId: string) => `/leases/${leaseId}/deposit`,
-    acceptDepositDecision: (leaseId: string) =>
-      `/leases/${leaseId}/deposit/accept`,
-    disputeDepositDecision: (leaseId: string) =>
-      `/leases/${leaseId}/deposit/dispute`,
-    rentChange: (leaseId: string) => `/leases/${leaseId}/rent-changes`,
+    lease: (leaseId: string) => `/leases/${seg(leaseId)}`,
+    signLease: (leaseId: string) => `/leases/${seg(leaseId)}/sign`,
+    paymentPlan: (leaseId: string) => `/leases/${seg(leaseId)}/payment-plan`,
+    checkout: (leaseId: string) => `/leases/${seg(leaseId)}/pay`,
+    rentSavingsTopUp: "/rent-savings/top-up",
+    deposit: (leaseId: string) => `/leases/${seg(leaseId)}/deposit`,
+    acceptDeposit: (leaseId: string) =>
+      `/leases/${seg(leaseId)}/deposit/accept`,
+    disputeDeposit: (leaseId: string) =>
+      `/leases/${seg(leaseId)}/deposit/dispute`,
     savedProperties: "/properties/saved",
     savedProperty: (propertyId: string) =>
-      `/properties/saved/${propertyId}`,
+      `/properties/saved/${seg(propertyId)}`,
     maintenance: "/maintenance",
     conversations: "/messaging",
-    conversation: (conversationId: string) =>
-      `/messaging/${conversationId}/messages`,
     conversationMessages: (conversationId: string) =>
-      `/messaging/${conversationId}/messages`,
+      `/messaging/${seg(conversationId)}/messages`,
     notifications: "/notifications",
-    readNotifications: (notificationId: string) =>
-      `/notifications/${notificationId}/read`,
+    readNotification: (notificationId: string) =>
+      `/notifications/${seg(notificationId)}/read`,
+    notificationPreferences: "/notifications/preferences",
     referrals: "/referrals",
+    referralCode: "/referrals/code",
+    referralStats: "/referrals/stats",
     applications: "/applications",
-    profile: "/me",
-    settings: "/me/settings",
+    withdrawApplication: (applicationId: string) =>
+      `/applications/${seg(applicationId)}/withdraw`,
   },
 
   landlord: {
     dashboard: "/me/landlord-dashboard",
     properties: "/properties/me/listings",
     property: (propertyId: string) =>
-      `/properties/me/listings/${propertyId}`,
+      `/properties/me/listings/${seg(propertyId)}`,
+    createProperty: "/properties",
+    updateProperty: (propertyId: string) => `/properties/${seg(propertyId)}`,
+    mediaTicket: (propertyId: string) =>
+      `/properties/${seg(propertyId)}/media/ticket`,
+    media: (propertyId: string) => `/properties/${seg(propertyId)}/media`,
+    publishProperty: (propertyId: string) =>
+      `/properties/${seg(propertyId)}/publish`,
     unlistProperty: (propertyId: string) =>
-      `/properties/${propertyId}/unlist`,
-    rentApproval: (leaseId: string) => `/leases/${leaseId}/rent-changes`,
+      `/properties/${seg(propertyId)}/unlist`,
+    archiveProperty: (propertyId: string) =>
+      `/properties/${seg(propertyId)}/archive`,
     applications: "/applications",
-    approveApplication: (applicationId: string) =>
-      `/applications/${applicationId}/approve`,
-    rejectApplication: (applicationId: string) =>
-      `/applications/${applicationId}/reject`,
     maintenance: "/maintenance",
-    cautionDeposits: (leaseId: string) => `/leases/${leaseId}/resolve-caution`,
-    ledgerAccounts: "/ledger/accounts",
-    statement: (accountId: string) =>
-      `/ledger/accounts/${accountId}/breakdown`,
-    statementExport: (accountId: string) =>
-      `/ledger/accounts/${accountId}/statement-export`,
-    paymentBreakdown: (accountId: string) =>
-      `/ledger/accounts/${accountId}/breakdown`,
-    payoutAccount: "/wallet/payout-accounts",
+    wallet: "/wallet",
+    payoutAccounts: "/wallet/payout-accounts",
+    payoutAccount: (payoutAccountId: string) =>
+      `/wallet/payout-accounts/${seg(payoutAccountId)}`,
+    payoutAccountPrimary: (payoutAccountId: string) =>
+      `/wallet/payout-accounts/${seg(payoutAccountId)}/primary`,
+    payoutAccountVerify: (payoutAccountId: string) =>
+      `/wallet/payout-accounts/${seg(payoutAccountId)}/verify`,
     withdrawals: "/withdrawals",
-    settings: "/me/settings",
     notificationPreferences: "/notifications/preferences",
-    profile: "/me",
   },
 } as const;
 

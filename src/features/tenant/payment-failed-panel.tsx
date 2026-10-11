@@ -5,7 +5,13 @@ import { buttonClasses } from "@/components/ui/button";
 import { ResponsiveText } from "@/components/ui/responsive-text";
 import { PAYMENT_FAILED } from "@/constants/tenant-payments";
 
-export function PaymentFailedPanel() {
+export interface PaymentFailedPanelProps {
+  reference?: string | null;
+}
+
+export function PaymentFailedPanel({
+  reference = null,
+}: PaymentFailedPanelProps) {
   return (
     <div className="flex flex-1 flex-col gap-5 lg:justify-between">
       <div className="flex flex-col gap-5">
@@ -23,14 +29,16 @@ export function PaymentFailedPanel() {
           </div>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="text-label-sm font-semibold tracking-wide text-neutral-700 uppercase">
-            {PAYMENT_FAILED.diagnosisLabel}
-          </h2>
-          <p className="rounded-md border border-neutral-200 bg-white px-3 py-2.5 text-body-md text-neutral-900">
-            {PAYMENT_FAILED.diagnosisCode}
-          </p>
-        </section>
+        {reference === null ? null : (
+          <section className="flex flex-col gap-2">
+            <h2 className="text-label-sm font-semibold tracking-wide text-neutral-700 uppercase">
+              {PAYMENT_FAILED.diagnosisLabel}
+            </h2>
+            <p className="rounded-md border border-neutral-200 bg-white px-3 py-2.5 font-mono text-body-md text-neutral-900">
+              {reference}
+            </p>
+          </section>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
@@ -39,12 +47,6 @@ export function PaymentFailedPanel() {
           className={buttonClasses({ fullWidth: true })}
         >
           {PAYMENT_FAILED.retryLabel}
-        </Link>
-        <Link
-          href={PAYMENT_FAILED.retryHref}
-          className={buttonClasses({ variant: "secondary", fullWidth: true })}
-        >
-          {PAYMENT_FAILED.changeCardLabel}
         </Link>
       </div>
     </div>

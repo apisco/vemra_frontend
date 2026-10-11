@@ -1,5 +1,19 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_PATTERN.test(value);
+}
+
+export function readUuidParam(value: unknown): string | null {
+  if (Array.isArray(value)) {
+    return isUuid(value[0]) ? value[0] : null;
+  }
+  return isUuid(value) ? value : null;
+}
+
 export function validateRequired(value: string, label: string): string | undefined {
   return value.trim() === "" ? `${label} is required.` : undefined;
 }

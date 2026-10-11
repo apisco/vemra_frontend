@@ -5,24 +5,32 @@ import {
   TENANT_NAV,
   TENANT_NAV_MOBILE,
   TENANT_NAV_TABLET,
-  TENANT_USER,
 } from "@/constants/tenant";
+import { ROLE_LABELS, requireRole } from "@/lib/api/resources/auth";
 
-export default function TenantCheckoutLayout({
+export default async function TenantCheckoutLayout({
   children,
 }: LayoutProps<"/tenant">) {
+  const session = await requireRole("TENANT", "/tenant");
+
+  const user = {
+    name: session.user.name,
+    role: ROLE_LABELS[session.activeRole],
+    initials: session.user.initials,
+  };
+
   return (
     <div className="flex min-h-dvh flex-col bg-neutral-50">
       <DashboardTopbar
-        navLabel="Tenant"
+        navLabel={ROLE_LABELS.TENANT}
         links={toNavLinks(TENANT_NAV_TABLET)}
-        user={TENANT_USER}
+        user={user}
       />
       <DashboardMobileNav
-        navLabel="Tenant"
+        navLabel={ROLE_LABELS.TENANT}
         links={toNavLinks(TENANT_NAV)}
         tabs={toNavLinks(TENANT_NAV_MOBILE)}
-        user={TENANT_USER}
+        user={user}
       />
 
       <main className="flex-1 max-md:pb-17">

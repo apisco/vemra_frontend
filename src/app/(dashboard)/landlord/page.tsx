@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { LoadErrorPanel } from "@/features/errors/load-error-panel";
 import { DashboardHeader } from "@/features/landlord/dashboard-header";
 import { EmptyDashboard } from "@/features/landlord/empty-dashboard";
 import { PropertiesOverviewTable } from "@/features/landlord/properties-overview-table";
@@ -30,19 +31,36 @@ export default async function LandlordOverviewPage({
     getLandlordProperties(),
   ]);
 
+  if (!dashboard.ok) {
+    return (
+      <div className="flex flex-col gap-5 md:gap-8">
+        <LoadErrorPanel label="Your dashboard" failure={dashboard} />
+        {properties.ok ? (
+          <div className="hidden md:grid md:gap-6">
+            <PropertiesOverviewTable properties={properties.data} />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5 md:gap-8">
-      <DashboardHeader dashboard={dashboard} />
+      <DashboardHeader dashboard={dashboard.data} />
 
-      <StatCardGrid dashboard={dashboard} />
+      <StatCardGrid dashboard={dashboard.data} />
 
-      <RevenueRollCard dashboard={dashboard} />
+      <RevenueRollCard dashboard={dashboard.data} />
 
       <div className="hidden md:grid md:gap-6 lg:grid-cols-[678fr_378fr]">
-        <PropertiesOverviewTable properties={properties} />
+        {properties.ok ? (
+          <PropertiesOverviewTable properties={properties.data} />
+        ) : (
+          <LoadErrorPanel label="Your properties" failure={properties} />
+        )}
 
         <div className="hidden flex-col gap-6 lg:flex">
-          <WithdrawWidget dashboard={dashboard} />
+          <WithdrawWidget dashboard={dashboard.data} />
         </div>
       </div>
     </div>

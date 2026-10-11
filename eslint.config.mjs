@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Scratch Figma tooling, not application code.
+    ".figma-refs/**",
+    // Generated from the OpenAPI spec.
+    "src/types/api/generated.ts",
+    "playwright-report/**",
+    "test-results/**",
   ]),
   {
     // Avatar photos are user-uploaded, so the host is unknown at build time and

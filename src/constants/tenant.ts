@@ -81,9 +81,3 @@ export const TENANT_NAV_MOBILE: readonly DashboardNavItem[] = [
   { href: TENANT_ROUTES.maintenance, label: "Maintenance", icon: WrenchIcon },
   { href: TENANT_ROUTES.settings, label: "More", icon: EllipsisIcon },
 ];
-
-export const TENANT_USER: DashboardUser = {
-  name: "Tenant",
-  role: "Tenant",
-  initials: "T",
-};

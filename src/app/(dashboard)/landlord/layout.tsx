@@ -1,28 +1,35 @@
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { RoleSwitcher } from "@/components/layout/role-switcher";
 import {
   LANDLORD_NAV,
   LANDLORD_NAV_MOBILE,
   LANDLORD_NAV_TABLET,
 } from "@/constants/landlord";
-import { requireSession } from "@/lib/api/resources/auth";
+import { ROLE_LABELS, requireRole } from "@/lib/api/resources/auth";
 
 export default async function LandlordLayout({
   children,
 }: LayoutProps<"/landlord">) {
-  const session = await requireSession();
+  const session = await requireRole("LANDLORD", "/landlord");
 
   return (
     <DashboardShell
-      navLabel="Landlord"
+      navLabel={ROLE_LABELS.LANDLORD}
       navItems={LANDLORD_NAV}
       compactNavItems={LANDLORD_NAV_TABLET}
       mobileNavItems={LANDLORD_NAV_MOBILE}
       user={{
         name: session.user.name,
-        role: "Landlord",
+        role: ROLE_LABELS[session.activeRole],
         initials: session.user.initials,
       }}
       userProfileHref="/landlord/profile"
+      banner={
+        <RoleSwitcher
+          roles={session.user.roles}
+          activeRole={session.activeRole}
+        />
+      }
     >
       {children}
     </DashboardShell>

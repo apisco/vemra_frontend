@@ -36,10 +36,16 @@ export default async function BrowsePage({ searchParams }: PageProps<"/browse">)
   const bedsValue = beds === "any" ? undefined : Number(beds);
 
   const items = result.items.filter((item) => {
-    if (priceRange?.min !== undefined && item.rent.amount < priceRange.min) {
+    if (
+      priceRange?.min !== undefined &&
+      item.rent.minor < priceRange.min * 100
+    ) {
       return false;
     }
-    if (priceRange?.max !== undefined && item.rent.amount > priceRange.max) {
+    if (
+      priceRange?.max !== undefined &&
+      item.rent.minor > priceRange.max * 100
+    ) {
       return false;
     }
     if (bedsValue !== undefined && !Number.isNaN(bedsValue)) {

@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { CAPTCHA_CONFIG } from "@/config/captcha";
 import { DEFAULT_SIGNED_IN_PATH } from "@/config/supabase";
 import type { AuthRole } from "@/constants/auth";
 import { AUTH_ROLES, AUTH_ROUTES, LOGIN_SCREEN } from "@/constants/auth";
 import { AuthDivider } from "@/features/auth/auth-divider";
+import { CaptchaField, resetCaptcha } from "@/features/auth/captcha-field";
 import { useAuthForm } from "@/features/auth/use-auth-form";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseErrorMessage } from "@/lib/supabase/errors";
@@ -31,18 +33,13 @@ export interface LoginFormProps {
 
 const VERIFIED_EMAIL_PATH = `${AUTH_ROUTES.verifyEmail}?status=verified`;
 
-function signedInPath(role: AuthRole): string {
-  return role === "LANDLORD" ? "/landlord" : DEFAULT_SIGNED_IN_PATH;
-}
-
-function roleFromMetadata(metadata: Record<string, unknown>): AuthRole | null {
-  return metadata.role === "LANDLORD" ? "LANDLORD" : null;
-}
+const CAPTCHA_REQUIRED = "Complete the verification challenge to continue.";
 
 export function LoginForm({ next = null }: LoginFormProps) {
   const router = useRouter();
   const [role, setRole] = useState<AuthRole>("TENANT");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const form = useAuthForm<LoginValues>({
     initialValues: { email: "", password: "", remember: true },
@@ -52,11 +49,18 @@ export function LoginForm({ next = null }: LoginFormProps) {
     }),
     onSubmit: async (values) => {
       setSubmitError(null);
+
+      if (CAPTCHA_CONFIG.isEnabled && captchaToken === null) {
+        setSubmitError(CAPTCHA_REQUIRED);
+        throw new Error(CAPTCHA_REQUIRED);
+      }
+
       try {
         const supabase = createClient();
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
+          ...(captchaToken === null ? {} : { options: { captchaToken } }),
         });
         if (error) {
           if (error.code === "email_not_confirmed") {
@@ -76,10 +80,10 @@ export function LoginForm({ next = null }: LoginFormProps) {
           }
           throw error;
         }
-        const metadata: Record<string, unknown> = data.user?.user_metadata ?? {};
-        const fallback = signedInPath(roleFromMetadata(metadata) ?? role);
-        router.push(resolveNextPath(next, fallback));
+        router.push(resolveNextPath(next, DEFAULT_SIGNED_IN_PATH));
       } catch (error) {
+        resetCaptcha();
+        setCaptchaToken(null);
         setSubmitError(supabaseErrorMessage(error));
         throw error;
       }
@@ -93,7 +97,9 @@ export function LoginForm({ next = null }: LoginFormProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: authCallbackUrl(resolveNextPath(next, signedInPath(role))),
+          redirectTo: authCallbackUrl(
+            resolveNextPath(next, DEFAULT_SIGNED_IN_PATH),
+          ),
         },
       });
       if (error) {
@@ -156,8 +162,15 @@ export function LoginForm({ next = null }: LoginFormProps) {
         </Link>
       </div>
 
+      <CaptchaField onToken={setCaptchaToken} />
+
       <div className="flex flex-col gap-4 md:gap-3">
-        <Button type="submit" fullWidth isLoading={form.isSubmitting}>
+        <Button
+          type="submit"
+          fullWidth
+          isLoading={form.isSubmitting}
+          disabled={form.isSubmitting}
+        >
           {LOGIN_SCREEN.submitLabel}
         </Button>
         {submitError ? (

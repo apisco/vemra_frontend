@@ -8,6 +8,7 @@ import { Tabs } from "@/components/ui/tabs";
 import {
   LANDLORD_PROPERTIES_SCREEN,
 } from "@/constants/landlord";
+import { LoadErrorPanel } from "@/features/errors/load-error-panel";
 import { PropertiesPanel } from "@/features/landlord/properties-panel";
 import { getLandlordProperties } from "@/lib/api/resources/landlord";
 import type { LandlordPropertySummary } from "@/types/api/landlord";
@@ -33,7 +34,9 @@ function filterProperties(
 export default async function LandlordPropertiesPage() {
   const properties = await getLandlordProperties();
   const items: TabItem[] = filters.map((filter) => {
-    const filteredProperties = filterProperties(filter.id, properties);
+    const filteredProperties = properties.ok
+      ? filterProperties(filter.id, properties.data)
+      : [];
 
     return {
       id: filter.id,
@@ -64,7 +67,11 @@ export default async function LandlordPropertiesPage() {
         </Link>
       </div>
 
-      <Tabs items={items} label="Filter properties by status" />
+      {properties.ok ? (
+        <Tabs items={items} label="Filter properties by status" />
+      ) : (
+        <LoadErrorPanel label="Your properties" failure={properties} />
+      )}
     </div>
   );
 }

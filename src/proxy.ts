@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { DEFAULT_SIGNED_IN_PATH, SUPABASE_CONFIG } from "@/config/supabase";
+import { SUPABASE_CONFIG } from "@/config/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
-const PROTECTED_PREFIXES = ["/tenant", "/landlord"];
+const PROTECTED_PREFIXES = ["/tenant", "/landlord", "/dashboard"];
 const PUBLIC_ONLY_PATHS = new Set(["/login", "/signup", "/signup/details"]);
+
+const ACTIVE_ROLE_COOKIE = "vemra_active_role";
+const ROLE_HOME: Record<string, string> = {
+  TENANT: "/tenant",
+  LANDLORD: "/landlord",
+};
+
+const ROLE_DISPATCH_PATH = "/dashboard";
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -18,6 +26,14 @@ function unconfiguredResponse(): NextResponse {
     });
   }
   return NextResponse.next();
+}
+
+function signedInDestination(request: NextRequest): string {
+  const active = request.cookies.get(ACTIVE_ROLE_COOKIE)?.value;
+  if (active !== undefined && active in ROLE_HOME) {
+    return ROLE_HOME[active] as string;
+  }
+  return ROLE_DISPATCH_PATH;
 }
 
 export async function proxy(request: NextRequest) {
@@ -58,7 +74,7 @@ export async function proxy(request: NextRequest) {
 
   if (data.user !== null && PUBLIC_ONLY_PATHS.has(pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = DEFAULT_SIGNED_IN_PATH;
+    url.pathname = signedInDestination(request);
     url.search = "";
     return NextResponse.redirect(url);
   }
@@ -70,6 +86,7 @@ export const config = {
   matcher: [
     "/tenant/:path*",
     "/landlord/:path*",
+    "/dashboard",
     "/login",
     "/signup",
     "/signup/details",

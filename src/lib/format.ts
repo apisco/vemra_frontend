@@ -26,7 +26,7 @@ export function formatMoney(
     return EMPTY_VALUE;
   }
 
-  const major = money.amount / 100;
+  const major = money.minor / 100;
   const fractionDigits = showDecimals ? 2 : 0;
 
   const formatted = new Intl.NumberFormat(LOCALE, {

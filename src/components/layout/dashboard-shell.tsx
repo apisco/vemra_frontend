@@ -18,6 +18,7 @@ export interface DashboardShellProps {
   mobileNavItems: readonly DashboardNavItem[];
   user: DashboardUser;
   userProfileHref?: string;
+  banner?: ReactNode;
   children: ReactNode;
 }
 
@@ -38,6 +39,7 @@ export function DashboardShell({
   mobileNavItems,
   user,
   userProfileHref,
+  banner,
   children,
 }: DashboardShellProps) {
   const links = toNavLinks(navItems);
@@ -68,6 +70,9 @@ export function DashboardShell({
 
         <main className="flex-1 max-md:pb-17">
           <div className="mx-auto w-full max-w-263 px-4 py-4 md:px-8 md:py-8 lg:px-16 lg:py-12">
+            {banner === undefined ? null : (
+              <div className="mb-4 flex justify-end">{banner}</div>
+            )}
             {children}
           </div>
         </main>

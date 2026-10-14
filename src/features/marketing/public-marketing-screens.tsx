@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { buttonClasses } from "@/components/ui/button";
+import { MediaPreview } from "@/components/media/media-preview";
 import { SavePropertyButton } from "@/features/marketing/save-property-button";
 import { cn } from "@/lib/cn";
 import { CONTAINER, SECTION_GUTTER } from "@/lib/layout";
@@ -37,9 +38,9 @@ export async function ListingDetailScreen({ listingId }: { listingId: string }) 
       <div className="grid gap-6 lg:grid-cols-[1fr_242px]">
         <div>
           <div className="grid gap-2 md:grid-cols-[2fr_1fr]">
-            <Image src={listing.photos[0]?.url ?? "/marketing/listing-maple-9th.png"} alt={listing.photos[0]?.alt ?? ""} width={800} height={560} className="h-full min-h-60 w-full rounded-lg object-cover md:row-span-2" />
-            <Image src={listing.photos[1]?.url ?? listing.photos[0]?.url ?? "/marketing/listing-maple-9th-2.png"} alt={listing.photos[1]?.alt ?? ""} width={400} height={220} className="h-32 w-full rounded-lg object-cover md:h-full" />
-            <Image src={listing.photos[2]?.url ?? listing.photos[0]?.url ?? "/marketing/listing-maple-9th-3.png"} alt={listing.photos[2]?.alt ?? ""} width={400} height={220} className="h-32 w-full rounded-lg object-cover md:h-full" />
+            <MediaPreview url={listing.photos[0]?.url ?? "/marketing/listing-maple-9th.png"} alt={listing.photos[0]?.alt ?? ""} width={800} height={560} controls className="h-full min-h-60 w-full rounded-lg bg-neutral-900 object-cover md:row-span-2" />
+            <MediaPreview url={listing.photos[1]?.url ?? listing.photos[0]?.url ?? "/marketing/listing-maple-9th-2.png"} alt={listing.photos[1]?.alt ?? ""} width={400} height={220} controls className="h-32 w-full rounded-lg bg-neutral-900 object-cover md:h-full" />
+            <MediaPreview url={listing.photos[2]?.url ?? listing.photos[0]?.url ?? "/marketing/listing-maple-9th-3.png"} alt={listing.photos[2]?.alt ?? ""} width={400} height={220} controls className="h-32 w-full rounded-lg bg-neutral-900 object-cover md:h-full" />
           </div>
           <div className="mt-5 flex items-start justify-between border-b border-neutral-200 pb-5">
             <div><h1 className="font-display text-heading-lg font-bold text-neutral-900">{listing.title}</h1><p className="text-body-sm text-neutral-700">{listing.location}</p></div>

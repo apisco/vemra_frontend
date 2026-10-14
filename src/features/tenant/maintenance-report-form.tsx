@@ -165,7 +165,7 @@ export function MaintenanceReportForm({
           Report an issue
         </h2>
         <p className="mt-1 text-label-sm text-neutral-700">
-          Photos help your Property Admin triage the problem faster.
+          Photos and videos help your Property Admin triage the problem faster.
         </p>
       </div>
 
@@ -230,8 +230,8 @@ export function MaintenanceReportForm({
         <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-300 bg-neutral-50 p-4 text-center">
           <span className="text-label-md font-semibold text-neutral-900">
             {photos.length === 0
-              ? "Add photos (optional)"
-              : `${photos.length} photo${photos.length === 1 ? "" : "s"} selected`}
+              ? "Add photos or videos (optional)"
+              : `${photos.length} item${photos.length === 1 ? "" : "s"} selected`}
           </span>
           <span className="text-label-sm text-neutral-700">
             {describeLimits("MAINTENANCE")} each

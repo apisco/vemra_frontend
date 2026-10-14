@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { MediaPreview } from "@/components/media/media-preview";
 import { Button } from "@/components/ui/button";
 import {
   attachMediaAction,
@@ -27,8 +27,8 @@ export interface ListingMediaManagerProps {
 }
 
 /**
- * Landlord photo manager for an existing listing: add photos, choose the
- * cover, reorder, and remove.
+ * Landlord media manager for an existing listing: add photos or videos, choose
+ * the cover, reorder, and remove.
  *
  * Photos carry a media id only when the backend includes one. Without it a
  * photo cannot be patched or deleted, so those controls are disabled and the
@@ -100,18 +100,23 @@ export function ListingMediaManager({
     }
 
     const failures: string[] = [];
-    let order = photos.length;
+    // Orders can be sparse after a delete (the backend does not renumber), so
+    // append past the highest existing order rather than at `photos.length`.
+    let order =
+      photos.reduce((highest, photo) => Math.max(highest, photo.order), -1) + 1;
+    let isFirst = photos.length === 0;
 
     for (const asset of assets) {
       const attached = await attachMediaAction(
         propertyId,
         asset.url,
-        photos.length === 0 && order === 0,
+        isFirst,
         order,
       );
       if (!attached.ok) {
         failures.push(attached.message);
       }
+      isFirst = false;
       order += 1;
     }
 
@@ -124,7 +129,7 @@ export function ListingMediaManager({
       setError(failures[0]);
     } else {
       setNotice(
-        `Added ${assets.length} photo${assets.length === 1 ? "" : "s"}.`,
+        `Added ${assets.length} item${assets.length === 1 ? "" : "s"}.`,
       );
     }
     router.refresh();
@@ -154,7 +159,7 @@ export function ListingMediaManager({
           order: photo.order,
         });
       },
-      "Photo order updated.",
+      "Order updated.",
     );
   };
 
@@ -166,10 +171,10 @@ export function ListingMediaManager({
             id={`${inputId}-heading`}
             className="font-display text-heading-sm font-semibold text-neutral-900"
           >
-            Listing photos
+            Listing photos &amp; videos
           </h2>
           <p className="mt-1 text-label-sm text-neutral-700">
-            The cover photo is shown first in search results.{" "}
+            The first item is the cover shown in search results.{" "}
             {describeLimits("PROPERTY_MEDIA")} each.
           </p>
         </div>
@@ -181,7 +186,7 @@ export function ListingMediaManager({
           isLoading={upload.isUploading}
           onClick={() => inputRef.current?.click()}
         >
-          Add photos
+          Add photos or videos
         </Button>
       </div>
 
@@ -203,7 +208,8 @@ export function ListingMediaManager({
 
       {photos.length === 0 ? (
         <p className="mt-4 rounded-md border border-dashed border-neutral-300 bg-neutral-50 p-4 text-body-sm text-neutral-700">
-          No photos yet. Add at least one so renters can see the property.
+          No photos or videos yet. Add at least one so renters can see the
+          property.
         </p>
       ) : (
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -217,13 +223,14 @@ export function ListingMediaManager({
                 className="flex flex-col overflow-hidden rounded-md border border-neutral-200"
               >
                 <div className="relative">
-                  <Image
-                    src={photo.url}
-                    alt={photo.alt || `Listing photo ${index + 1}`}
+                  <MediaPreview
+                    url={photo.url}
+                    alt={photo.alt || `Listing media ${index + 1}`}
                     width={200}
                     height={140}
                     sizes="(max-width: 640px) 50vw, 200px"
-                    className="h-28 w-full object-cover"
+                    controls
+                    className="h-28 w-full bg-neutral-900 object-cover"
                   />
                   {isMain ? (
                     <span className="absolute left-2 top-2 rounded-full bg-brand-700 px-2 py-0.5 text-caption font-semibold text-white">
@@ -241,7 +248,7 @@ export function ListingMediaManager({
                       className="rounded-sm px-2 py-1 text-label-sm font-semibold text-neutral-800 disabled:opacity-45"
                     >
                       ↑
-                      <span className="sr-only">Move photo {index + 1} up</span>
+                      <span className="sr-only">Move item {index + 1} up</span>
                     </button>
                     <button
                       type="button"
@@ -253,7 +260,7 @@ export function ListingMediaManager({
                     >
                       ↓
                       <span className="sr-only">
-                        Move photo {index + 1} down
+                        Move item {index + 1} down
                       </span>
                     </button>
                   </div>
@@ -272,7 +279,7 @@ export function ListingMediaManager({
                             updateMediaAction(propertyId, photo.id as string, {
                               isMain: true,
                             }),
-                          "Cover photo updated.",
+                          "Cover updated.",
                         );
                       }}
                       className="self-start text-label-sm font-semibold text-brand-700 disabled:opacity-45"
@@ -291,7 +298,7 @@ export function ListingMediaManager({
                       void run(
                         `remove:${photo.id}`,
                         () => deleteMediaAction(propertyId, photo.id as string),
-                        "Photo removed.",
+                        "Item removed.",
                       );
                     }}
                     className="self-start text-label-sm font-semibold text-error-600 disabled:opacity-45"
@@ -313,7 +320,7 @@ export function ListingMediaManager({
 
       {photos.some((photo) => photo.id === null) ? (
         <p className="mt-3 text-label-sm text-neutral-700">
-          Some photos cannot be reordered or removed because Vemra did not
+          Some items cannot be reordered or removed because Vemra did not
           return a media id for them.
         </p>
       ) : null}

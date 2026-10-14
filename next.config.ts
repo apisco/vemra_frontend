@@ -134,6 +134,7 @@ function contentSecurityPolicy(): string {
     ["script-src", scriptSrc],
     ["style-src", ["'self'", "'unsafe-inline'"]],
     ["img-src", imgSrc],
+    ["media-src", imgSrc],
     ["font-src", ["'self'", "data:"]],
     ["connect-src", connectSrc],
     [

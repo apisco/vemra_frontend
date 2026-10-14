@@ -550,17 +550,17 @@ export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
 
       <section className="flex flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-4 md:p-6">
         <div>
-          <h2 className="text-body-md font-semibold text-neutral-900">Photos</h2>
+          <h2 className="text-body-md font-semibold text-neutral-900">Photos &amp; videos</h2>
           <p className="mt-1 text-label-sm text-neutral-700">
-            Add at least 3 photos. The first will be the cover image.
+            Add at least 3 photos or videos. The first will be the cover image.
           </p>
         </div>
         <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-neutral-300 bg-neutral-50 text-center">
           <span className="text-body-md text-brand-700">▧</span>
           <span className="text-label-md font-semibold text-neutral-900">
             {photos.length === 0
-              ? "Click to upload or drag photos here"
-              : `${photos.length} photo${photos.length === 1 ? "" : "s"} selected`}
+              ? "Click to upload or drag files here"
+              : `${photos.length} item${photos.length === 1 ? "" : "s"} selected`}
           </span>
           <span className="text-label-sm text-neutral-700">
             {describeLimits("PROPERTY_MEDIA")} each

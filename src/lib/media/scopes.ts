@@ -11,12 +11,22 @@ const MB = 1024 * 1024;
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
+const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"] as const;
+
+/** Photos and videos, accepted by property media and maintenance. */
+const PHOTO_VIDEO_TYPES = [...IMAGE_TYPES, ...VIDEO_TYPES];
+
 const TYPE_LABELS: Readonly<Record<string, string>> = {
   "image/jpeg": "JPEG",
   "image/png": "PNG",
   "image/webp": "WebP",
   "application/pdf": "PDF",
+  "video/mp4": "MP4",
+  "video/webm": "WebM",
+  "video/quicktime": "MOV",
 };
+
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"] as const;
 
 /**
  * Size and format limits per storage scope, from the media upload guide.
@@ -33,9 +43,9 @@ export const MEDIA_SCOPES: Readonly<Record<MediaScope, MediaScopeRules>> = {
     contentTypes: IMAGE_TYPES,
   },
   PROPERTY_MEDIA: {
-    label: "property photo",
+    label: "property photo or video",
     maxBytes: 15 * MB,
-    contentTypes: IMAGE_TYPES,
+    contentTypes: PHOTO_VIDEO_TYPES,
   },
   KYC: {
     label: "identity document",
@@ -45,10 +55,15 @@ export const MEDIA_SCOPES: Readonly<Record<MediaScope, MediaScopeRules>> = {
   APPLICATIONS: {
     label: "supporting document",
     maxBytes: 10 * MB,
-    contentTypes: ["application/pdf", "image/jpeg", "image/png"],
+    contentTypes: ["application/pdf", ...IMAGE_TYPES],
   },
   MAINTENANCE: {
-    label: "issue photo",
+    label: "issue photo or video",
+    maxBytes: 10 * MB,
+    contentTypes: PHOTO_VIDEO_TYPES,
+  },
+  LEASES: {
+    label: "condition photo",
     maxBytes: 10 * MB,
     contentTypes: IMAGE_TYPES,
   },
@@ -74,6 +89,24 @@ export function describeLimits(scope: MediaScope): string {
       ? (labels[0] ?? "")
       : `${labels.slice(0, -1).join(", ")} or ${labels[labels.length - 1]}`;
   return `${formats} up to ${formatMaxSize(maxBytes)}`;
+}
+
+/** True when `contentType` is a video the platform accepts. */
+export function isVideoType(contentType: string): boolean {
+  return (VIDEO_TYPES as readonly string[]).includes(contentType);
+}
+
+/**
+ * Best-effort video detection for an already-stored asset, which arrives as a
+ * URL rather than a `File`. Cloudinary tags video assets with `/video/upload/`
+ * in the path; the extension check covers other storage shapes.
+ */
+export function isVideoUrl(url: string): boolean {
+  const path = url.split(/[?#]/)[0]?.toLowerCase() ?? "";
+  return (
+    path.includes("/video/upload/") ||
+    VIDEO_EXTENSIONS.some((extension) => path.endsWith(extension))
+  );
 }
 
 /**

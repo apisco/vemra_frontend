@@ -194,6 +194,11 @@ export interface paths {
                                 /** @example Oluwaseun Adepoju */
                                 displayName: string | null;
                                 /**
+                                 * Format: uri
+                                 * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                                 */
+                                avatarUrl?: string | null;
+                                /**
                                  * @description Stored unverified — SMS verification is not enabled.
                                  * @example +2348012345678
                                  */
@@ -379,6 +384,11 @@ export interface paths {
                                 /** @example Oluwaseun Adepoju */
                                 displayName: string | null;
                                 /**
+                                 * Format: uri
+                                 * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                                 */
+                                avatarUrl?: string | null;
+                                /**
                                  * @description Stored unverified — SMS verification is not enabled.
                                  * @example +2348012345678
                                  */
@@ -450,6 +460,496 @@ export interface paths {
                 };
                 /** @description The handle is already taken. */
                 409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/me/avatar/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request signed upload ticket for profile avatar
+         * @description Generates a signed upload ticket to upload a user avatar image directly to Cloudinary.
+         *
+         *     **🔑 Authentication Required** (Any Role)
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Original file name with extension
+                         * @example avatar.jpg
+                         */
+                        fileName: string;
+                        /**
+                         * @description MIME type of the avatar image
+                         * @example image/jpeg
+                         * @enum {string}
+                         */
+                        contentType: "image/jpeg" | "image/png" | "image/webp";
+                        /**
+                         * @description File size in bytes (max 5MB)
+                         * @example 1048576
+                         */
+                        sizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Signed upload ticket. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/image/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example avatars/user_id/uuid-avatar.jpg */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description The account is not active. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update profile avatar
+         * @description Update the authenticated user's avatar image URL after direct upload to Cloudinary.
+         *
+         *     **🔑 Authentication Required** (Any Role)
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uri
+                         * @description The public URL of the uploaded avatar
+                         * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                         */
+                        avatarUrl: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description The updated profile. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /**
+                                 * Format: uuid
+                                 * @example 123e4567-e89b-12d3-a456-426614174000
+                                 */
+                                userId: string;
+                                /**
+                                 * Format: email
+                                 * @example seun.adepoju@example.com
+                                 */
+                                email: string;
+                                /**
+                                 * @description True once the account is ACTIVE.
+                                 * @example true
+                                 */
+                                emailVerified: boolean;
+                                /** @example Oluwaseun Adepoju */
+                                displayName: string | null;
+                                /**
+                                 * Format: uri
+                                 * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                                 */
+                                avatarUrl?: string | null;
+                                /**
+                                 * @description Stored unverified — SMS verification is not enabled.
+                                 * @example +2348012345678
+                                 */
+                                phone: string | null;
+                                /** @example seun_ade */
+                                handle: string | null;
+                                /**
+                                 * @example [
+                                 *       "TENANT"
+                                 *     ]
+                                 */
+                                roles: ("TENANT" | "LANDLORD" | "PROPERTY_ADMIN" | "SUPER_ADMIN" | "SUPPORT")[];
+                                /**
+                                 * @example ACTIVE
+                                 * @enum {string}
+                                 */
+                                accountStatus: "PENDING" | "ACTIVE" | "SUSPENDED" | "DELETED";
+                                onboarding: {
+                                    /**
+                                     * @example COMPLETE
+                                     * @enum {string}
+                                     */
+                                    nextStep: "EMAIL_VERIFICATION" | "KYC_SUBMISSION" | "UNDER_REVIEW" | "ACTION_REQUIRED" | "COMPLETE";
+                                    /**
+                                     * @example APPROVED
+                                     * @enum {string|null}
+                                     */
+                                    kycStatus: "PENDING" | "SUBMITTED" | "UNDER_REVIEW" | "ACTION_REQUIRED" | "APPROVED" | "REJECTED" | "EXPIRED" | null;
+                                    /** @example null */
+                                    attemptsRemaining: number | null;
+                                    /**
+                                     * @description Neutral text from the reviewer.
+                                     * @example All documents verified.
+                                     */
+                                    applicantMessage: string | null;
+                                };
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description The account is not active. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        /**
+         * Remove profile avatar
+         * @description Remove the authenticated user's avatar image.
+         *
+         *     **🔑 Authentication Required** (Any Role)
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The updated profile with avatar removed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /**
+                                 * Format: uuid
+                                 * @example 123e4567-e89b-12d3-a456-426614174000
+                                 */
+                                userId: string;
+                                /**
+                                 * Format: email
+                                 * @example seun.adepoju@example.com
+                                 */
+                                email: string;
+                                /**
+                                 * @description True once the account is ACTIVE.
+                                 * @example true
+                                 */
+                                emailVerified: boolean;
+                                /** @example Oluwaseun Adepoju */
+                                displayName: string | null;
+                                /**
+                                 * Format: uri
+                                 * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                                 */
+                                avatarUrl?: string | null;
+                                /**
+                                 * @description Stored unverified — SMS verification is not enabled.
+                                 * @example +2348012345678
+                                 */
+                                phone: string | null;
+                                /** @example seun_ade */
+                                handle: string | null;
+                                /**
+                                 * @example [
+                                 *       "TENANT"
+                                 *     ]
+                                 */
+                                roles: ("TENANT" | "LANDLORD" | "PROPERTY_ADMIN" | "SUPER_ADMIN" | "SUPPORT")[];
+                                /**
+                                 * @example ACTIVE
+                                 * @enum {string}
+                                 */
+                                accountStatus: "PENDING" | "ACTIVE" | "SUSPENDED" | "DELETED";
+                                onboarding: {
+                                    /**
+                                     * @example COMPLETE
+                                     * @enum {string}
+                                     */
+                                    nextStep: "EMAIL_VERIFICATION" | "KYC_SUBMISSION" | "UNDER_REVIEW" | "ACTION_REQUIRED" | "COMPLETE";
+                                    /**
+                                     * @example APPROVED
+                                     * @enum {string|null}
+                                     */
+                                    kycStatus: "PENDING" | "SUBMITTED" | "UNDER_REVIEW" | "ACTION_REQUIRED" | "APPROVED" | "REJECTED" | "EXPIRED" | null;
+                                    /** @example null */
+                                    attemptsRemaining: number | null;
+                                    /**
+                                     * @description Neutral text from the reviewer.
+                                     * @example All documents verified.
+                                     */
+                                    applicantMessage: string | null;
+                                };
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description The account is not active. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Update profile avatar
+         * @description Update the authenticated user's avatar image URL after direct upload to Cloudinary.
+         *
+         *     **🔑 Authentication Required** (Any Role)
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uri
+                         * @description The public URL of the uploaded avatar
+                         * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                         */
+                        avatarUrl: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description The updated profile. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /**
+                                 * Format: uuid
+                                 * @example 123e4567-e89b-12d3-a456-426614174000
+                                 */
+                                userId: string;
+                                /**
+                                 * Format: email
+                                 * @example seun.adepoju@example.com
+                                 */
+                                email: string;
+                                /**
+                                 * @description True once the account is ACTIVE.
+                                 * @example true
+                                 */
+                                emailVerified: boolean;
+                                /** @example Oluwaseun Adepoju */
+                                displayName: string | null;
+                                /**
+                                 * Format: uri
+                                 * @example https://res.cloudinary.com/vemra/image/upload/v1234/avatars/user.jpg
+                                 */
+                                avatarUrl?: string | null;
+                                /**
+                                 * @description Stored unverified — SMS verification is not enabled.
+                                 * @example +2348012345678
+                                 */
+                                phone: string | null;
+                                /** @example seun_ade */
+                                handle: string | null;
+                                /**
+                                 * @example [
+                                 *       "TENANT"
+                                 *     ]
+                                 */
+                                roles: ("TENANT" | "LANDLORD" | "PROPERTY_ADMIN" | "SUPER_ADMIN" | "SUPPORT")[];
+                                /**
+                                 * @example ACTIVE
+                                 * @enum {string}
+                                 */
+                                accountStatus: "PENDING" | "ACTIVE" | "SUSPENDED" | "DELETED";
+                                onboarding: {
+                                    /**
+                                     * @example COMPLETE
+                                     * @enum {string}
+                                     */
+                                    nextStep: "EMAIL_VERIFICATION" | "KYC_SUBMISSION" | "UNDER_REVIEW" | "ACTION_REQUIRED" | "COMPLETE";
+                                    /**
+                                     * @example APPROVED
+                                     * @enum {string|null}
+                                     */
+                                    kycStatus: "PENDING" | "SUBMITTED" | "UNDER_REVIEW" | "ACTION_REQUIRED" | "APPROVED" | "REJECTED" | "EXPIRED" | null;
+                                    /** @example null */
+                                    attemptsRemaining: number | null;
+                                    /**
+                                     * @description Neutral text from the reviewer.
+                                     * @example All documents verified.
+                                     */
+                                    applicantMessage: string | null;
+                                };
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description The account is not active. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1642,6 +2142,204 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/super-admin/identity/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get super admin dashboard overview
+         * @description Retrieve system overview and dashboard metrics for Super Admins.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The super admin dashboard data. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/rent-savings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get rent savings balance and settings
+         * @description Get current rent savings balance and configuration for the authenticated tenant.
+         *
+         *     **🛡️ Requires Role:** Tenant
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Rent savings balance and config */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /** @description Rent savings balance in minor units (kobo/cents). */
+                                balanceMinor: number;
+                                /** @description Whether accumulated savings are applied automatically toward rent. */
+                                useSavingsForRent: boolean;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update rent savings settings
+         * @description Toggle whether rent savings are automatically used for upcoming rent payments.
+         *
+         *     **🛡️ Requires Role:** Tenant
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Enable or disable applying savings toward rent. */
+                        useSavingsForRent: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Updated rent savings setting */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                useSavingsForRent: boolean;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description No bearer token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Validation or business constraint error. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/v1/me/settings": {
         parameters: {
             query?: never;
@@ -1736,6 +2434,167 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/v1/super-admin/identity/users/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suspend a user account
+         * @description Suspends an active user account and immediately revokes all of their active authentication sessions.
+         *
+         *     **🛡️ Requires Role:** Super Admin (MFA required)
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @example Violation of platform terms of service */
+                        reason: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Account successfully suspended */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                success: boolean;
+                                status: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description No bearer token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden - requires Super Admin and MFA */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/identity/users/{id}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reactivate a suspended user account
+         * @description Reactivates a previously suspended user account back to ACTIVE status.
+         *
+         *     **🛡️ Requires Role:** Super Admin (MFA required)
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Account successfully reactivated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                success: boolean;
+                                status: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description No bearer token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden - requires Super Admin and MFA */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/kyc/documents/grants": {
@@ -2804,23 +3663,37 @@ export interface paths {
         /**
          * List all properties
          * @description List all properties in the system (Super Admin only).
+         *
+         *     **🛡️ Requires Role:** Super Admin
          */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    status?: string;
+                    propertyType?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Success */
+                /** @description List of all properties */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": unknown;
+                        "application/json": {
+                            data: {
+                                properties: unknown[];
+                                pagination?: unknown;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
                     };
                 };
                 /** @description Unauthorized */
@@ -2828,14 +3701,18 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
                 };
                 /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
                 };
             };
         };
@@ -3720,6 +4597,153 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/properties/{propertyId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete media
+         * @description Delete an attached media item from a property.
+         *
+         *     **🔒 Requires Role:** Landlord
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyId: string;
+                    mediaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Media deleted. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not Found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Update media
+         * @description Update media item (set as primary thumbnail or update sort order).
+         *
+         *     **🔒 Requires Role:** Landlord
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyId: string;
+                    mediaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @description Whether this is the primary cover image */
+                        isMain?: boolean;
+                        /** @description Sort order in the media gallery */
+                        order?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Media updated. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not Found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/v1/properties/{propertyId}/publish": {
         parameters: {
             query?: never;
@@ -3996,6 +5020,141 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/property-admins/{propertyAdminId}/properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List properties assigned to Property Admin
+         * @description Retrieve the list of property IDs assigned to a Property Admin.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyAdminId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Assigned property IDs */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                propertyIds: string[];
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden - requires Super Admin */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/property-admins/{propertyAdminId}/assignments/{propertyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Unassign property from Property Admin
+         * @description Remove a Property Admin assignment from a property.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyAdminId: string;
+                    propertyId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Property unassigned successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden - requires Super Admin */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -4295,6 +5454,296 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/properties/{propertyId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete media
+         * @description Delete an attached media item from a property.
+         *
+         *     **🔒 Requires Role:** Super Admin
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyId: string;
+                    mediaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Media deleted. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not Found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Update media
+         * @description Update media item (set as primary thumbnail or update sort order).
+         *
+         *     **🔒 Requires Role:** Super Admin
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyId: string;
+                    mediaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        isMain?: boolean;
+                        order?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Media updated. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not Found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/property-admin/properties/{propertyId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete media
+         * @description Delete an attached media item from a property.
+         *
+         *     **🔒 Requires Role:** Property Admin
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyId: string;
+                    mediaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Media deleted. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not Found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Update media
+         * @description Update media item (set as primary thumbnail or update sort order).
+         *
+         *     **🔒 Requires Role:** Property Admin
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    propertyId: string;
+                    mediaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        isMain?: boolean;
+                        order?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Media updated. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                message: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Not Found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/v1/super-admin/properties/{propertyId}/publish": {
@@ -4647,9 +6096,9 @@ export interface paths {
         put?: never;
         /**
          * Submit a new lease application
-         * @description Submit an application for a specific property. Documents should be pre-uploaded via Cloudinary grants (similar to KYC) and the resulting `storagePath` passed here.
+         * @description Submit an application for a specific property. Tenants must have an approved KYC verification to apply. Documents should be pre-uploaded via Cloudinary grants (similar to KYC) and the resulting `storagePath` passed here.
          *
-         *     **🔒 Requires Role:** Tenant
+         *     **🔒 Requires Role:** Tenant (with Approved KYC)
          */
         post: {
             parameters: {
@@ -4715,6 +6164,127 @@ export interface paths {
                 };
                 /** @description Unauthorized. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. Tenant must have approved KYC to apply for rent, or landlords attempting to apply. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/documents/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request signed upload ticket for an application document
+         * @description Generates a signed upload ticket to upload application supporting documents (e.g. proof of income, bank statement, employment letter) directly to private cloud storage.
+         *
+         *     **🔒 Requires Role:** Tenant
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The name of the file to upload
+                         * @example employment_letter.pdf
+                         */
+                        fileName: string;
+                        /**
+                         * @description MIME type of the document
+                         * @example application/pdf
+                         */
+                        contentType: string;
+                        /**
+                         * @description Maximum allowed size in bytes (up to 10MB)
+                         * @example 5242880
+                         */
+                        maxSizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Signed upload ticket. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/auto/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example applications/tenant_id/uuid-employment_letter.pdf */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Validation error. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Unauthorized. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5774,7 +7344,78 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List rent change requests for lease
+         * @description List all rent change requests for a managed lease.
+         *
+         *     **🛡️ Requires Role:** Property Admin
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Rent change requests list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                rentChanges: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    /** Format: uuid */
+                                    leaseId: string;
+                                    /** Format: uuid */
+                                    propertyAdminId: string;
+                                    proposedRentMinor: string;
+                                    proposedRentCurrency: string;
+                                    effectiveFrom: string;
+                                    /** @enum {string} */
+                                    status: "PROPOSED" | "APPROVED" | "REJECTED";
+                                    /** Format: uuid */
+                                    decidedBy: string | null;
+                                    decidedAt: string | null;
+                                    createdAt: string;
+                                    updatedAt: string;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Lease not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         put?: never;
         /**
          * Propose a rent change
@@ -5991,6 +7632,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/leases/{leaseId}/rent-changes/{requestId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve rent change (Landlord)
+         * @description Landlords approve a tenant-requested rent change for their property.
+         *
+         *     **🛡️ Requires Role:** Landlord
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Rent change approved. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden - requires property Landlord */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leases/{leaseId}/rent-changes/{requestId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject rent change (Landlord)
+         * @description Landlords reject a tenant-requested rent change for their property.
+         *
+         *     **🛡️ Requires Role:** Landlord
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Rent change rejected. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden - requires property Landlord */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/super-admin/leases/{leaseId}/conditions": {
         parameters: {
             query?: never;
@@ -6052,6 +7821,98 @@ export interface paths {
                                 id: string;
                                 leaseId: string;
                                 status: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/leases/{leaseId}/conditions/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request signed upload ticket for lease move-in condition media
+         * @description Generates a signed upload ticket to upload inspection photos directly to Cloudinary.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @example living_room.jpg */
+                        fileName: string;
+                        /** @example image/jpeg */
+                        contentType: string;
+                        /** @example 5242880 */
+                        maxSizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Upload ticket generated */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/image/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example inspections/lease_id/uuid-living_room.jpg */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
                             };
                         };
                     };
@@ -6165,6 +8026,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/property-admin/leases/{leaseId}/conditions/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request signed upload ticket for lease move-in condition media
+         * @description Generates a signed upload ticket to upload inspection photos directly to Cloudinary.
+         *
+         *     **🛡️ Requires Role:** Property Admin
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @example living_room.jpg */
+                        fileName: string;
+                        /** @example image/jpeg */
+                        contentType: string;
+                        /** @example 5242880 */
+                        maxSizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Upload ticket generated */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/image/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example inspections/lease_id/uuid-living_room.jpg */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/leases": {
         parameters: {
             query?: never;
@@ -6197,7 +8150,39 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                applicationId: string;
+                                /** Format: uuid */
+                                propertyId: string;
+                                /** Format: uuid */
+                                tenantId: string;
+                                /** @enum {string} */
+                                status: "DRAFT" | "SIGNED" | "ACTIVE" | "TERMINATED";
+                                annualRent: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                termYears: number;
+                                cautionDeposit: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                startDate: string;
+                                endDate: string;
+                                billingSchedules: {
+                                    id: string;
+                                    amount: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    dueDate: string;
+                                    /** @enum {string} */
+                                    status: "PENDING" | "PAID" | "OVERDUE";
+                                }[];
+                                createdAt: string;
+                                updatedAt: string;
                             }[];
                         };
                     };
@@ -6253,7 +8238,15 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                frequency: string;
+                                startDate: string;
+                                schedules?: {
+                                    id: string;
+                                    amountMinor: string;
+                                    currency: string;
+                                    dueDate: string;
+                                    status: string;
+                                }[];
                             };
                         };
                     };
@@ -6303,7 +8296,15 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                frequency: string;
+                                startDate: string;
+                                schedules?: {
+                                    id: string;
+                                    amountMinor: string;
+                                    currency: string;
+                                    dueDate: string;
+                                    status: string;
+                                }[];
                             };
                         };
                     };
@@ -6357,7 +8358,13 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                /** Format: uuid */
+                                leaseId: string;
+                                cautionDepositMinor: string;
+                                currency: string;
+                                status: string;
+                                deductionsMinor?: string;
+                                refundAmountMinor?: string;
                             };
                         };
                     };
@@ -6415,7 +8422,8 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                message: string;
+                                status?: string;
                             };
                         };
                     };
@@ -6477,7 +8485,8 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                message: string;
+                                status?: string;
                             };
                         };
                     };
@@ -6491,6 +8500,173 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/leases/{leaseId}/rent-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List rent change requests for lease
+         * @description List all proposed and historical rent change requests for a lease.
+         *
+         *     **🔑 Authentication Required** (Tenant / Landlord)
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Rent change requests list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                rentChanges: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    /** Format: uuid */
+                                    leaseId: string;
+                                    /** Format: uuid */
+                                    propertyAdminId: string;
+                                    proposedRentMinor: string;
+                                    proposedRentCurrency: string;
+                                    effectiveFrom: string;
+                                    /** @enum {string} */
+                                    status: "PROPOSED" | "APPROVED" | "REJECTED";
+                                    /** Format: uuid */
+                                    decidedBy: string | null;
+                                    decidedAt: string | null;
+                                    createdAt: string;
+                                    updatedAt: string;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Lease not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/leases/{leaseId}/rent-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List rent change requests for lease
+         * @description List all rent change requests for any lease globally.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    leaseId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Rent change requests list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                rentChanges: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    /** Format: uuid */
+                                    leaseId: string;
+                                    /** Format: uuid */
+                                    propertyAdminId: string;
+                                    proposedRentMinor: string;
+                                    proposedRentCurrency: string;
+                                    effectiveFrom: string;
+                                    /** @enum {string} */
+                                    status: "PROPOSED" | "APPROVED" | "REJECTED";
+                                    /** Format: uuid */
+                                    decidedBy: string | null;
+                                    decidedAt: string | null;
+                                    createdAt: string;
+                                    updatedAt: string;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Lease not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6720,6 +8896,62 @@ export interface paths {
         /**
          * List withdrawals
          * @description List withdrawal requests for properties managed by the property admin.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                    limit?: number;
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Withdrawal requests. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data?: unknown;
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/property-admin/withdrawals/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all withdrawals (Property Admin)
+         * @description List all withdrawal requests for properties managed by the property admin.
          */
         get: {
             parameters: {
@@ -7104,7 +9336,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional idempotency key to prevent duplicate initializations */
+                    "idempotency-key"?: string;
+                };
                 path: {
                     id: string;
                 };
@@ -7120,7 +9355,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             data: {
-                                /** Format: uri */
+                                paymentId: string;
+                                reference: string;
                                 checkoutUrl: string;
                                 breakdown: {
                                     rentMinor: string;
@@ -7165,6 +9401,15 @@ export interface paths {
                 };
                 /** @description Lease not found */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description An active payment session already exists for this lease */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7746,6 +9991,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/payments/{reference}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get payment status by reference
+         * @description Retrieve a single payment intent record by reference to check checkout or settlement status.
+         *
+         *     **🔑 Authentication Required**
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    reference: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Payment status record. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                payment: {
+                                    id: string;
+                                    reference: string;
+                                    amountMinor: string;
+                                    currency: string;
+                                    status: string;
+                                    leaseId: string | null;
+                                    tenantId: string;
+                                    createdAt: string;
+                                    updatedAt: string;
+                                };
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Payment not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/wallet": {
         parameters: {
             query?: never;
@@ -8077,6 +10399,138 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/super-admin/withdrawals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List platform withdrawals
+         * @description Super Admins view all withdrawal requests with optional status filtering.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                    limit?: number;
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Platform withdrawal requests. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                withdrawals: {
+                                    id: string;
+                                    userId: string;
+                                    amountMinor: string;
+                                    currency: string;
+                                    status: string;
+                                    bankCode: string;
+                                    accountNumber: string;
+                                    accountName: string;
+                                    recommendedBy: string | null;
+                                    approvedBy: string | null;
+                                    rejectionReason: string | null;
+                                    createdAt: string;
+                                    updatedAt: string;
+                                }[];
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/paystack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Paystack webhook receiver
+         * @description Receives and validates cryptographic HMAC-SHA512 webhooks directly from Paystack (e.g. charge.success, transfer.success, transfer.failed).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description HMAC SHA512 signature computed with Paystack secret key over raw body. */
+                    "x-paystack-signature": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Webhook received and processed or queued. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Invalid webhook signature or payload. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/wallet/payout-accounts": {
         parameters: {
             query?: never;
@@ -8109,7 +10563,18 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                accounts: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    /** Format: uuid */
+                                    userId: string;
+                                    bankName: string;
+                                    accountNumber: string;
+                                    isPrimary: boolean;
+                                    recipientCode?: string | null;
+                                    createdAt?: string;
+                                    updatedAt?: string;
+                                }[];
                             };
                         };
                     };
@@ -8156,7 +10621,8 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                id: string;
+                                isPrimary: boolean;
                             };
                         };
                     };
@@ -8212,7 +10678,8 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                /** @enum {boolean} */
+                                success: true;
                             };
                         };
                     };
@@ -8268,7 +10735,8 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                valid: boolean;
+                                accountName?: string;
                             };
                         };
                     };
@@ -8325,7 +10793,8 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                /** @enum {boolean} */
+                                success: true;
                             };
                         };
                     };
@@ -8745,6 +11214,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/maintenance/{id}/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update a maintenance issue (Tenant / Landlord)
+         * @description Tenants or landlords update notes or additional media on their reported issue.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        notes?: string;
+                        /** @enum {string} */
+                        status?: "REPORTED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+                        mediaUrls?: string[];
+                    };
+                };
+            };
+            responses: {
+                /**
+                 * @description Updated successfully
+                 *
+                 *     **🔑 Authentication Required** (Tenant or Landlord)
+                 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                propertyId: string;
+                                /** Format: uuid */
+                                reporterId: string;
+                                title: string;
+                                description: string;
+                                /** @enum {string} */
+                                priority: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
+                                /** @enum {string} */
+                                status: "REPORTED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+                                assignedTo: string | null;
+                                createdAt: string;
+                                updatedAt: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/super-admin/maintenance/{id}/update": {
         parameters: {
             query?: never;
@@ -8881,6 +11424,249 @@ export interface paths {
                                 assignedTo: string | null;
                                 createdAt: string;
                                 updatedAt: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/maintenance/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request upload ticket for maintenance photo/video
+         * @description Generate a presigned upload ticket to upload photos or videos of a maintenance issue directly to Cloudinary.
+         *
+         *     **🔑 Authentication Required** (Tenant, Landlord, Admin)
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @example 550e8400-e29b-41d4-a716-446655440000
+                         */
+                        propertyId: string;
+                        /** @example leak.jpg */
+                        fileName: string;
+                        /** @example image/jpeg */
+                        contentType: string;
+                        /** @example 5242880 */
+                        maxSizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Upload ticket generated */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/image/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example maintenance/property_id/uuid-leak.jpg */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/super-admin/maintenance/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request upload ticket for maintenance photo/video
+         * @description Generate a presigned upload ticket to upload photos or videos of a maintenance issue directly to Cloudinary.
+         *
+         *     **🔒 Requires Role:** Super Admin
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @example 550e8400-e29b-41d4-a716-446655440000
+                         */
+                        propertyId: string;
+                        /** @example leak.jpg */
+                        fileName: string;
+                        /** @example image/jpeg */
+                        contentType: string;
+                        /** @example 5242880 */
+                        maxSizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Upload ticket generated */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/image/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example maintenance/property_id/uuid-leak.jpg */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/property-admin/maintenance/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request upload ticket for maintenance photo/video
+         * @description Generate a presigned upload ticket to upload photos or videos of a maintenance issue directly to Cloudinary.
+         *
+         *     **🔒 Requires Role:** Property Admin
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @example 550e8400-e29b-41d4-a716-446655440000
+                         */
+                        propertyId: string;
+                        /** @example leak.jpg */
+                        fileName: string;
+                        /** @example image/jpeg */
+                        contentType: string;
+                        /** @example 5242880 */
+                        maxSizeBytes?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Upload ticket generated */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "success";
+                            data: {
+                                /** @example https://api.cloudinary.com/v1_1/cloud_name/image/upload */
+                                uploadUrl: string;
+                                /**
+                                 * @example {
+                                 *       "api_key": "123456789"
+                                 *     }
+                                 */
+                                fields: {
+                                    [key: string]: string;
+                                };
+                                /** @example signature_hash */
+                                signature: string;
+                                /** @example maintenance/property_id/uuid-leak.jpg */
+                                publicId: string;
+                                /**
+                                 * Format: date-time
+                                 * @example 2026-10-14T12:00:00.000Z
+                                 */
+                                expiresAt: string;
                             };
                         };
                     };
@@ -10244,7 +13030,49 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update platform setting
+         * @description Update a specific platform setting and log the reason. Accessible only to Super Admins.
+         *
+         *     **🛡️ Requires Role:** Super Admin
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    key: "fee.platform_commission_bps" | "fee.platform_commission_renewal_bps" | "fee.tenant_platform_fee_bps" | "fee.tenant_platform_fee_renewal_bps" | "fee.paystack_fee_bps" | "payout.escrow_hold_days" | "payout.arrival_business_days" | "deposit.caution_percentage_bps" | "deposit.dispute_window_days" | "invitation.expiry_hours" | "invitation.require_mfa" | "rent.reminder_lead_days" | "rent.escalation_trigger_limit" | "rent.grace_period_days" | "installment.min_installments" | "installment.max_installments" | "installment.min_first_payment_bps" | "installment.enabled_from_lease_year" | "referral.reward_percentage_bps" | "referral.qualifying_event" | "referral.enabled" | "notification.enabled_channels" | "notification.sms_escalation_enabled" | "savings_plan.enabled" | "lease.term_years" | "lease.notice_period_days" | "kyc.provider";
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @description The new JSON-serialized value for the setting. For money, provide a string representing integer minor units (e.g., "50000" for 500 NGN). For percentages, use a decimal string (e.g., "0.05" for 5%). For boolean toggles, use "true" or "false". */
+                        value: string;
+                        /** @description Reason for the change. This is critical as it will be immutably saved in the global audit log. */
+                        changeReason: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Setting updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                success: boolean;
+                            };
+                            /** @description Correlates this response with the server logs. */
+                            requestId: string;
+                        };
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/v1/super-admin/audit-logs": {
@@ -10919,7 +13747,7 @@ export interface paths {
             };
             responses: {
                 /** @description Statement exported */
-                200: {
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -10928,7 +13756,7 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                url: string;
                             };
                         };
                     };
@@ -10982,7 +13810,10 @@ export interface paths {
                             /** @enum {string} */
                             status: "success";
                             data: {
-                                [key: string]: unknown;
+                                breakdown: {
+                                    type: string;
+                                    amountMinor: string;
+                                }[];
                             };
                         };
                     };

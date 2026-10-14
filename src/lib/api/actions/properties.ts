@@ -4,13 +4,19 @@ import { revalidatePath } from "next/cache";
 
 import { toActionFailure } from "@/lib/api/actions/action-result";
 import type { ActionResult } from "@/lib/api/actions/action-result";
+import type { TicketFileInput } from "@/lib/api/actions/media";
 import { unwrapData } from "@/lib/api/adapters";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { requireRole } from "@/lib/api/resources/auth";
 import { apiDelete, apiPatch, apiPost } from "@/lib/api/server";
+import { isAllowedDeliveryUrl } from "@/lib/media/cloudinary";
+import { MEDIA_SCOPES, validateFile } from "@/lib/media/scopes";
+import { readUploadTicket } from "@/lib/media/ticket";
 import { isUuid } from "@/lib/validation";
+import type { UploadTicket } from "@/types/api/media";
 
 const INVALID_PROPERTY = "That property could not be found.";
+const INVALID_MEDIA = "That photo could not be found.";
 
 export interface PropertyDraft {
   title: string;
@@ -44,9 +50,9 @@ export interface PropertyUpdate {
   rentPeriod?: "monthly" | "yearly";
 }
 
-export interface MediaTicket {
-  url: string;
-  fields: Record<string, string>;
+export interface MediaUpdate {
+  isMain?: boolean;
+  order?: number;
 }
 
 export async function createPropertyAction(
@@ -101,40 +107,34 @@ export async function updatePropertyAction(
 
 export async function createMediaTicketAction(
   propertyId: string,
-  fileName: string,
-  contentType: string,
-  maxSizeBytes: number,
-): Promise<ActionResult<MediaTicket>> {
+  input: TicketFileInput,
+): Promise<ActionResult<UploadTicket>> {
   if (!isUuid(propertyId)) {
     return { ok: false, message: INVALID_PROPERTY };
   }
 
+  const problem = validateFile("PROPERTY_MEDIA", {
+    name: input.fileName.trim(),
+    size: input.sizeBytes,
+    type: input.contentType,
+  });
+  if (problem !== null) {
+    return { ok: false, message: problem };
+  }
+
   try {
     await requireRole("LANDLORD");
-    const body = await apiPost<unknown>(
-      ENDPOINTS.landlord.mediaTicket(propertyId),
-      { fileName, contentType, maxSizeBytes },
+    const ticket = readUploadTicket(
+      await apiPost<unknown>(ENDPOINTS.landlord.mediaTicket(propertyId), {
+        fileName: input.fileName.trim(),
+        contentType: input.contentType,
+        maxSizeBytes: MEDIA_SCOPES.PROPERTY_MEDIA.maxBytes,
+      }),
     );
-    const payload = unwrapData<{ url?: unknown; fields?: unknown }>(body);
 
-    if (
-      typeof payload?.url !== "string" ||
-      payload.fields === null ||
-      typeof payload.fields !== "object"
-    ) {
-      return {
-        ok: false,
-        message: "Vemra did not return a usable upload ticket.",
-      };
-    }
-
-    return {
-      ok: true,
-      data: {
-        url: payload.url,
-        fields: payload.fields as Record<string, string>,
-      },
-    };
+    return ticket === null
+      ? { ok: false, message: "Vemra did not return a usable upload ticket." }
+      : { ok: true, data: ticket };
   } catch (error) {
     return toActionFailure(error);
   }
@@ -149,8 +149,11 @@ export async function attachMediaAction(
   if (!isUuid(propertyId)) {
     return { ok: false, message: INVALID_PROPERTY };
   }
-  if (url.trim() === "") {
-    return { ok: false, message: "The uploaded photo has no URL." };
+  if (!isAllowedDeliveryUrl(url)) {
+    return {
+      ok: false,
+      message: "That photo address is not a Vemra storage URL.",
+    };
   }
 
   try {
@@ -160,6 +163,62 @@ export async function attachMediaAction(
       isMain,
       order,
     });
+    revalidatePath(`/landlord/properties/${propertyId}`);
+    return { ok: true, data: null };
+  } catch (error) {
+    return toActionFailure(error);
+  }
+}
+
+/** `PATCH /properties/:propertyId/media/:mediaId` — set the cover or reorder. */
+export async function updateMediaAction(
+  propertyId: string,
+  mediaId: string,
+  update: MediaUpdate,
+): Promise<ActionResult<null>> {
+  if (!isUuid(propertyId)) {
+    return { ok: false, message: INVALID_PROPERTY };
+  }
+  if (mediaId.trim() === "") {
+    return { ok: false, message: INVALID_MEDIA };
+  }
+  if (update.isMain === undefined && update.order === undefined) {
+    return { ok: false, message: "There was nothing to change on that photo." };
+  }
+
+  try {
+    await requireRole("LANDLORD");
+    await apiPatch<unknown>(
+      ENDPOINTS.landlord.mediaItem(propertyId, mediaId),
+      update,
+    );
+    revalidatePath("/landlord/properties");
+    revalidatePath(`/landlord/properties/${propertyId}`);
+    return { ok: true, data: null };
+  } catch (error) {
+    return toActionFailure(error);
+  }
+}
+
+/**
+ * `DELETE /properties/:propertyId/media/:mediaId`. Detaches the photo from the
+ * listing and destroys the Cloudinary asset behind it.
+ */
+export async function deleteMediaAction(
+  propertyId: string,
+  mediaId: string,
+): Promise<ActionResult<null>> {
+  if (!isUuid(propertyId)) {
+    return { ok: false, message: INVALID_PROPERTY };
+  }
+  if (mediaId.trim() === "") {
+    return { ok: false, message: INVALID_MEDIA };
+  }
+
+  try {
+    await requireRole("LANDLORD");
+    await apiDelete<unknown>(ENDPOINTS.landlord.mediaItem(propertyId, mediaId));
+    revalidatePath("/landlord/properties");
     revalidatePath(`/landlord/properties/${propertyId}`);
     return { ok: true, data: null };
   } catch (error) {

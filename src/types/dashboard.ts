@@ -12,6 +12,7 @@ export interface DashboardUser {
   name: string;
   role: string;
   initials: string;
+  avatarUrl?: string | null;
 }
 
 export type MetricTone = "default" | "warning" | "brand";

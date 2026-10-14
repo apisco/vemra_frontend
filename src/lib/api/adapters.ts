@@ -22,6 +22,7 @@ import type {
   NextRentDue,
   PropertyAdmin,
   PropertyAdminRef,
+  PropertyPhoto,
   RevenuePoint,
 } from "@/types/api/landlord";
 import type {
@@ -48,6 +49,7 @@ import type {
 
 
 export interface BackendPropertyMedia {
+  id?: string;
   url: string;
   isMain?: boolean;
   order?: number;
@@ -466,6 +468,45 @@ function toImageList(value: unknown, alt: string): readonly ImageRef[] {
     .filter((item): item is ImageRef => item !== null);
 }
 
+/**
+ * Listing photos with their media ids, for the landlord media manager.
+ *
+ * `order` falls back to the array position so the manager always has a
+ * contiguous sequence to send back on reorder, even when the backend omits it.
+ */
+function toPropertyPhotos(
+  value: unknown,
+  alt: string,
+): readonly PropertyPhoto[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      const image = toImageRef(item, alt);
+      if (image === null) {
+        return null;
+      }
+      const record = readRecord(item);
+      return {
+        ...image,
+        id: readString(readField(record, "id", "mediaId", "media_id")),
+        isMain: Boolean(readField(record, "isMain", "is_main")),
+        order: readNumber(record.order),
+      };
+    })
+    .filter(
+      (item): item is ImageRef & {
+        id: string | null;
+        isMain: boolean;
+        order: number | null;
+      } => item !== null,
+    )
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((item, index) => ({ ...item, order: item.order ?? index }));
+}
+
 function toRentDue(value: unknown): RentDue | null {
   const record = readRecord(value);
   if (Object.keys(record).length === 0) {
@@ -664,7 +705,7 @@ export function toLandlordProperty(value: unknown): LandlordProperty {
     listedSince: readString(
       readField(record, "listedSince", "listed_since", "createdAt", "created_at"),
     ),
-    photos: toImageList(media, summary.name),
+    photos: toPropertyPhotos(media, summary.name),
     amenities: Array.isArray(amenities)
       ? amenities.filter((item): item is string => typeof item === "string")
       : [],

@@ -4,8 +4,10 @@ import { TENANT_ROUTES } from "@/constants/tenant";
 import { LoadErrorPanel } from "@/features/errors/load-error-panel";
 import { UnsupportedPanel } from "@/features/errors/unsupported-panel";
 import { NotificationPreferencesForm } from "@/features/settings/notification-preferences-form";
+import { AvatarUploader } from "@/features/settings/avatar-uploader";
 import { ProfileForm } from "@/features/settings/profile-form";
 import { LeasePicker } from "@/features/tenant/lease-picker";
+import { MaintenanceReportForm } from "@/features/tenant/maintenance-report-form";
 import {
   DepositDecisionActions,
   MarkNotificationReadButton,
@@ -13,7 +15,7 @@ import {
   UnsavePropertyButton,
 } from "@/features/tenant/tenant-actions";
 import { UNSUPPORTED } from "@/lib/api/capabilities";
-import { getAccount } from "@/lib/api/resources/auth";
+import { getAccount, getSession } from "@/lib/api/resources/auth";
 import {
   getConversations,
   getDeposit,
@@ -166,19 +168,51 @@ async function renderScreen(screen: TenantScreenKey, leaseId: string | null) {
     }
 
     case "maintenance": {
-      const data = await getTenantMaintenance();
+      const [data, leases] = await Promise.all([
+        getTenantMaintenance(),
+        getTenantLeases(),
+      ]);
+
+      // One entry per property the tenant actually holds a lease on — the
+      // ticket endpoint needs a propertyId it can authorise them against.
+      const properties = leases.ok
+        ? [
+            ...new Map(
+              leases.data
+                .filter(
+                  (lease): lease is typeof lease & { propertyId: string } =>
+                    typeof lease.propertyId === "string" &&
+                    lease.propertyId !== "",
+                )
+                .map((lease, index) => [
+                  lease.propertyId,
+                  {
+                    propertyId: lease.propertyId,
+                    label:
+                      lease.status === undefined
+                        ? `Rental ${index + 1}`
+                        : `Rental ${index + 1} · ${lease.status}`,
+                  },
+                ]),
+            ).values(),
+          ]
+        : [];
+
       return (
-        <Panel>
-          <DataList
-            items={data.requests.map(
-              (item) =>
-                `${item.title} · ${item.status} · ${formatDate(
-                  item.submittedAt,
-                )}`,
-            )}
-            empty="No maintenance requests yet."
-          />
-        </Panel>
+        <div className="flex flex-col gap-4 md:gap-6">
+          <MaintenanceReportForm properties={properties} />
+          <Panel>
+            <DataList
+              items={data.requests.map(
+                (item) =>
+                  `${item.title} · ${item.status} · ${formatDate(
+                    item.submittedAt,
+                  )}`,
+              )}
+              empty="No maintenance requests yet."
+            />
+          </Panel>
+        </div>
       );
     }
 
@@ -389,7 +423,10 @@ async function renderScreen(screen: TenantScreenKey, leaseId: string | null) {
     }
 
     case "profile": {
-      const account = await getAccount();
+      const [account, session] = await Promise.all([
+        getAccount(),
+        getSession(),
+      ]);
       return account === null ? (
         <LoadErrorPanel
           label="Your profile"
@@ -401,12 +438,19 @@ async function renderScreen(screen: TenantScreenKey, leaseId: string | null) {
           }}
         />
       ) : (
-        <ProfileForm
-          displayName={account.displayName ?? ""}
-          email={account.email}
-          phone={account.phone ?? ""}
-          handle={account.handle ?? ""}
-        />
+        <div className="flex flex-col gap-4 md:gap-6">
+          <AvatarUploader
+            name={account.displayName ?? account.email}
+            initials={session?.user.initials ?? ""}
+            avatarUrl={account.avatarUrl ?? null}
+          />
+          <ProfileForm
+            displayName={account.displayName ?? ""}
+            email={account.email}
+            phone={account.phone ?? ""}
+            handle={account.handle ?? ""}
+          />
+        </div>
       );
     }
   }

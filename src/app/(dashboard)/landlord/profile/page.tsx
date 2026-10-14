@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { LoadErrorPanel } from "@/features/errors/load-error-panel";
 import { Screen } from "@/features/landlord/landlord-secondary-screens";
+import { AvatarUploader } from "@/features/settings/avatar-uploader";
 import { ProfileForm } from "@/features/settings/profile-form";
 import { getAccount, requireRole } from "@/lib/api/resources/auth";
 
@@ -27,12 +28,19 @@ export default async function LandlordProfilePage() {
           }}
         />
       ) : (
-        <ProfileForm
-          displayName={account.displayName ?? session.user.name}
-          email={account.email}
-          phone={account.phone ?? ""}
-          handle={account.handle ?? ""}
-        />
+        <div className="flex flex-col gap-4 md:gap-6">
+          <AvatarUploader
+            name={account.displayName ?? session.user.name}
+            initials={session.user.initials}
+            avatarUrl={account.avatarUrl ?? null}
+          />
+          <ProfileForm
+            displayName={account.displayName ?? session.user.name}
+            email={account.email}
+            phone={account.phone ?? ""}
+            handle={account.handle ?? ""}
+          />
+        </div>
       )}
     </Screen>
   );

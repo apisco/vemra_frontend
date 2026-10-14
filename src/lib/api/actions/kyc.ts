@@ -5,25 +5,44 @@ import { revalidatePath } from "next/cache";
 import { ACCOUNT_PATHS } from "@/lib/api/actions/account-paths";
 import { toActionFailure } from "@/lib/api/actions/action-result";
 import type { ActionResult } from "@/lib/api/actions/action-result";
+import type { TicketFileInput } from "@/lib/api/actions/media";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import { apiPostData } from "@/lib/api/server";
-import type {
-  KycSubmissionPayload,
-  KycSubmissionResult,
-  KycUploadGrant,
-  KycUploadGrantRequest,
-} from "@/types/api/auth";
+import { apiPost, apiPostData } from "@/lib/api/server";
+import { MEDIA_SCOPES, validateFile } from "@/lib/media/scopes";
+import { readUploadTicket } from "@/lib/media/ticket";
+import type { KycSubmissionPayload, KycSubmissionResult } from "@/types/api/auth";
+import type { UploadTicket } from "@/types/api/media";
 
-
+/**
+ * `POST /kyc/documents/grants`.
+ *
+ * This endpoint predates the other ticket routes and returns `{ url, fields }`
+ * rather than `{ uploadUrl, fields, ... }`; `readUploadTicket` normalises both.
+ */
 export async function createKycUploadGrantAction(
-  input: KycUploadGrantRequest,
-): Promise<ActionResult<KycUploadGrant>> {
+  input: TicketFileInput,
+): Promise<ActionResult<UploadTicket>> {
+  const problem = validateFile("KYC", {
+    name: input.fileName.trim(),
+    size: input.sizeBytes,
+    type: input.contentType,
+  });
+  if (problem !== null) {
+    return { ok: false, message: problem };
+  }
+
   try {
-    const data = await apiPostData<KycUploadGrant>(
-      ENDPOINTS.kyc.documentGrants,
-      input,
+    const ticket = readUploadTicket(
+      await apiPost<unknown>(ENDPOINTS.kyc.documentGrants, {
+        fileName: input.fileName.trim(),
+        contentType: input.contentType,
+        maxSizeBytes: MEDIA_SCOPES.KYC.maxBytes,
+      }),
     );
-    return { ok: true, data };
+
+    return ticket === null
+      ? { ok: false, message: "Vemra did not return a usable upload ticket." }
+      : { ok: true, data: ticket };
   } catch (error) {
     return toActionFailure(error);
   }

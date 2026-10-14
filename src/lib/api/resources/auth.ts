@@ -77,7 +77,7 @@ async function toSession(account: AccountProfile): Promise<Session> {
     initials: initialsFrom(name),
     email: account.email,
     phone: account.phone,
-    avatarUrl: null,
+    avatarUrl: account.avatarUrl ?? null,
     roles,
     isEmailVerified: account.emailVerified,
     isIdentityVerified: account.onboarding.kycStatus === "APPROVED",

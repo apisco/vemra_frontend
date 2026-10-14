@@ -17,6 +17,7 @@ export default async function TenantCheckoutLayout({
     name: session.user.name,
     role: ROLE_LABELS[session.activeRole],
     initials: session.user.initials,
+    avatarUrl: session.user.avatarUrl,
   };
 
   return (

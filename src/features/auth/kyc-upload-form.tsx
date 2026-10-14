@@ -2,74 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useCallback, useId, useState } from "react";
 
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createKycUploadGrantAction, submitKycAction } from "@/lib/api/actions/kyc";
 import { AuthCard } from "@/features/auth/auth-card";
 import { KYC_CHECKS } from "@/features/auth/verification-steps";
+import { acceptAttribute, describeLimits } from "@/lib/media/scopes";
+import { useMediaUpload } from "@/lib/media/use-media-upload";
 import { cn } from "@/lib/cn";
 import type { AccountProfile, KycDocumentInput } from "@/types/api/auth";
 
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-const UPLOAD_TIMEOUT_MS = 60_000;
-const ACCEPT = "image/*,application/pdf";
-
 type Phase = "idle" | "uploading" | "submitting" | "done";
-
-interface CloudinaryUpload {
-  public_id?: string;
-  secure_url?: string;
-}
-
-async function uploadToCloudinary(
-  file: File,
-  checkType: string,
-): Promise<string> {
-  const grantResult = await createKycUploadGrantAction({
-    fileName: file.name,
-    contentType: file.type || "application/octet-stream",
-    maxSizeBytes: MAX_UPLOAD_BYTES,
-  });
-
-  if (!grantResult.ok) {
-    throw new Error(grantResult.message);
-  }
-
-  const { url, fields } = grantResult.data;
-  const body = new FormData();
-  for (const [key, value] of Object.entries(fields)) {
-    body.append(key, value);
-  }
-  body.append("file", file);
-
-  const response = await fetch(url, {
-    method: "POST",
-    body,
-    signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
-  }).catch((cause: unknown) => {
-    const timedOut =
-      cause instanceof DOMException &&
-      (cause.name === "TimeoutError" || cause.name === "AbortError");
-    throw new Error(
-      timedOut
-        ? `Upload of ${checkType} timed out. Please try again.`
-        : `Upload of ${checkType} could not reach storage. Check your connection and try again.`,
-    );
-  });
-
-  if (!response.ok) {
-    throw new Error(`Upload of ${checkType} failed (${response.status}).`);
-  }
-
-  const payload = (await response.json()) as CloudinaryUpload;
-  const storagePath = payload.public_id ?? payload.secure_url;
-  if (storagePath === undefined || storagePath === "") {
-    throw new Error("Upload succeeded but no storage path was returned.");
-  }
-  return storagePath;
-}
 
 export interface KycUploadFormProps {
   account: AccountProfile;
@@ -90,8 +35,20 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
 
+  const requestTicket = useCallback(
+    (file: File) =>
+      createKycUploadGrantAction({
+        fileName: file.name,
+        contentType: file.type,
+        sizeBytes: file.size,
+      }),
+    [],
+  );
+  const upload = useMediaUpload("KYC", requestTicket);
+
   const isBusy = phase === "uploading" || phase === "submitting";
   const hasRequiredFile = files.IDENTITY !== undefined && files.IDENTITY !== null;
+  const problem = error ?? upload.error;
 
   const setFile = (checkType: string, file: File | null) => {
     setFiles((current) => ({ ...current, [checkType]: file }));
@@ -99,6 +56,7 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
 
   const handleSubmit = async () => {
     setError(null);
+    upload.reset();
 
     const selected = KYC_CHECKS.map((check) => ({
       checkType: check.checkType,
@@ -125,56 +83,44 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
       return;
     }
 
-    const tooLarge = selected.find((entry) => entry.file.size > MAX_UPLOAD_BYTES);
-    if (tooLarge !== undefined) {
-      setError(
-        `${tooLarge.file.name} is larger than 5 MB. Choose a smaller file.`,
-      );
+    setPhase("uploading");
+    const assets = await upload.uploadAll(selected.map((entry) => entry.file));
+
+    if (assets === null) {
+      setPhase("idle");
       return;
     }
 
-    try {
-      setPhase("uploading");
-      const documents: KycDocumentInput[] = await Promise.all(
-        selected.map(async (entry) => ({
-          checkType: entry.checkType,
-          storagePath: await uploadToCloudinary(entry.file, entry.checkType),
-        })),
-      );
+    // KYC documents are stored in private delivery mode, so the submission
+    // records the storage path rather than a public URL.
+    const documents: KycDocumentInput[] = selected.map((entry, index) => ({
+      checkType: entry.checkType,
+      storagePath: assets[index]?.storagePath ?? "",
+    }));
 
-      setPhase("submitting");
-      const claims: Record<string, string> = {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        nin: nin.trim(),
-        dateOfBirth: dob.trim(),
-        currentAddress: address.trim(),
-      };
-      const trimmedMiddleName = middleName.trim();
-      if (trimmedMiddleName !== "") {
-        claims.middleName = trimmedMiddleName;
-      }
-      const result = await submitKycAction({
-        documents,
-        claims,
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        setPhase("idle");
-        return;
-      }
-
-      setPhase("done");
-      router.refresh();
-    } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Something went wrong. Please try again.",
-      );
-      setPhase("idle");
+    setPhase("submitting");
+    const claims: Record<string, string> = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      nin: nin.trim(),
+      dateOfBirth: dob.trim(),
+      currentAddress: address.trim(),
+    };
+    const trimmedMiddleName = middleName.trim();
+    if (trimmedMiddleName !== "") {
+      claims.middleName = trimmedMiddleName;
     }
+
+    const result = await submitKycAction({ documents, claims });
+
+    if (!result.ok) {
+      setError(result.message);
+      setPhase("idle");
+      return;
+    }
+
+    setPhase("done");
+    router.refresh();
   };
 
   if (phase === "done") {
@@ -229,7 +175,7 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
               id={inputId}
               name={check.checkType}
               type="file"
-              accept={ACCEPT}
+              accept={acceptAttribute("KYC")}
               disabled={isBusy}
               onChange={(event) =>
                 setFile(check.checkType, event.target.files?.[0] ?? null)
@@ -240,9 +186,9 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
                 "focus:border-brand-700 focus:outline-1 focus:outline-brand-700 disabled:cursor-not-allowed disabled:bg-neutral-50",
               )}
             />
-            {file ? (
-              <p className="text-label-sm text-neutral-700">{file.name}</p>
-            ) : null}
+            <p className="text-label-sm text-neutral-700">
+              {file !== null ? file.name : describeLimits("KYC")}
+            </p>
           </div>
         );
       })}
@@ -255,7 +201,7 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
         onClick={handleSubmit}
       >
         {phase === "uploading"
-          ? "Uploading documents…"
+          ? `Uploading documents… ${upload.progress}%`
           : phase === "submitting"
             ? "Submitting for review…"
             : "Submit for review"}
@@ -268,9 +214,9 @@ export function KycUploadForm({ account, className, skipHref }: KycUploadFormPro
         Skip for now
       </Link>
 
-      {error ? (
+      {problem !== null ? (
         <p role="alert" className="text-center text-label-sm text-error-600">
-          {error}
+          {problem}
         </p>
       ) : null}
     </AuthCard>

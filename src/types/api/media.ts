@@ -21,6 +21,11 @@ export type MediaScope =
 export interface UploadTicket {
   uploadUrl: string;
   fields: Readonly<Record<string, string>>;
+  /**
+   * Cloudinary's signature. The backend declares it as a sibling of `fields`,
+   * so it is carried separately and merged into `fields` before the upload.
+   */
+  signature: string | null;
   publicId: string | null;
   expiresAt: Iso8601 | null;
 }

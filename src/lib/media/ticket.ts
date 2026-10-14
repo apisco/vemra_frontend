@@ -60,9 +60,19 @@ export function readUploadTicket(body: unknown): UploadTicket | null {
     return null;
   }
 
+  // The backend returns `signature` as a sibling of `fields` (the OpenAPI marks
+  // it required there), but Cloudinary needs it as a multipart field. Without
+  // this the upload goes out unsigned and Cloudinary answers 401.
+  const signature = readString(payload.signature);
+  const uploadFields =
+    signature !== null && fields.signature === undefined
+      ? { ...fields, signature }
+      : fields;
+
   return {
     uploadUrl,
-    fields,
+    fields: uploadFields,
+    signature,
     publicId: readString(payload.publicId),
     expiresAt: readString(payload.expiresAt),
   };

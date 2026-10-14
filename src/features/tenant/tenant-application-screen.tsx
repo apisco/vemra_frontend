@@ -58,7 +58,11 @@ export async function TenantApplicationScreen({
 }) {
   const [applications, listing] = await Promise.all([
     getTenantApplications(),
-    propertyId === null ? Promise.resolve(null) : getListing(propertyId),
+    // The listing is only used for a heading. A property that is unavailable,
+    // unpublished or gone must not take the applications list down with it.
+    propertyId === null
+      ? Promise.resolve(null)
+      : getListing(propertyId).catch(() => null),
   ]);
 
   return (

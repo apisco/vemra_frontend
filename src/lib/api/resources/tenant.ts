@@ -12,6 +12,7 @@ import {
   type BackendMaintenanceRequest,
 } from "@/lib/api/adapters";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { isApiError } from "@/lib/api/errors";
 import { recoverableRead, safeRead } from "@/lib/api/resilient";
 import type { ReadResult } from "@/lib/api/resilient";
 import {
@@ -36,7 +37,9 @@ import type {
   Conversation,
   ConversationSummary,
   NotificationFeed,
+  Referral,
   ReferralProgram,
+  ReferralStatus,
   SavedProperty,
   TenantApplication,
   TenantDashboard,
@@ -280,7 +283,23 @@ export const getSavedProperties = cache(
     recoverableRead(
       "saved properties",
       async () => {
-        const body = await apiGet<unknown>(ENDPOINTS.tenant.savedProperties);
+        let body: unknown;
+        try {
+          body = await apiGet<unknown>(ENDPOINTS.tenant.savedProperties);
+        } catch (error) {
+          // A 400 naming `PropertyId` means the backend matched this call as
+          // `/properties/{propertyId}` and rejected the literal "saved" as a
+          // UUID. Degrade to an empty list so the page still renders; the real
+          // fix is registering `/properties/saved` ahead of the param route.
+          if (isApiError(error) && error.status === 400) {
+            console.warn(
+              "[api] saved properties: GET /properties/saved was rejected with 400; check backend route ordering. Serving fallback.",
+            );
+            return [];
+          }
+          throw error;
+        }
+
         const payload = unwrapData<unknown>(body);
         const rows = Array.isArray(payload)
           ? payload
@@ -385,12 +404,117 @@ export const getNotificationPreferences = cache(
     }),
 );
 
+const REFERRAL_STATUSES: Readonly<Record<string, ReferralStatus>> = {
+  PENDING: "pending",
+  QUALIFIED: "joined",
+  REWARDED: "completed",
+};
+
+function readRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function readAmountMinor(value: unknown): number | null {
+  return typeof value === "string" && /^\d+$/.test(value)
+    ? Number(value)
+    : null;
+}
+
+function toReferral(value: unknown): Referral | null {
+  const record = readRecord(value);
+  const id = typeof record.id === "string" ? record.id : null;
+  if (id === null) {
+    return null;
+  }
+
+  const rewardMinor = readAmountMinor(record.rewardMinor);
+  return {
+    id,
+    name:
+      (typeof record.name === "string" && record.name !== ""
+        ? record.name
+        : null) ??
+      (typeof record.referredId === "string" && record.referredId !== ""
+        ? record.referredId
+        : "Referral"),
+    status:
+      typeof record.status === "string"
+        ? (REFERRAL_STATUSES[record.status.toUpperCase()] ?? "pending")
+        : "pending",
+    joinedAt: typeof record.createdAt === "string" ? record.createdAt : null,
+    completedAt:
+      typeof record.qualifiedAt === "string" ? record.qualifiedAt : null,
+    reward:
+      rewardMinor === null
+        ? null
+        : {
+            minor: rewardMinor,
+            currency:
+              typeof record.currency === "string" ? record.currency : "NGN",
+          },
+  };
+}
+
+/**
+ * `GET /referrals` returns a bare array of referral rows while the counts live
+ * on `/referrals/stats` and the code on `/referrals/code`, so the three are
+ * composed into the single `ReferralProgram` the screen expects. An array-only
+ * payload used to be cast straight to `ReferralProgram`, which then crashed
+ * reading `.referrals.map` off it.
+ */
 export const getReferralProgram = cache(
   async (): Promise<ReferralProgram | null> =>
     recoverableRead(
       "referrals",
-      async () =>
-        apiGetOptional<ReferralProgram>(ENDPOINTS.tenant.referrals),
+      async () => {
+        const [list, stats, code] = await Promise.all([
+          apiGetOptional<unknown>(ENDPOINTS.tenant.referrals),
+          apiGetOptional<unknown>(ENDPOINTS.tenant.referralStats),
+          apiGetOptional<unknown>(ENDPOINTS.tenant.referralCode),
+        ]);
+
+        if (list === null && stats === null && code === null) {
+          return null;
+        }
+
+        const listRecord = readRecord(list);
+        const rows = Array.isArray(list)
+          ? list
+          : Array.isArray(listRecord.referrals)
+            ? (listRecord.referrals as readonly unknown[])
+            : [];
+
+        const referrals = rows
+          .map(toReferral)
+          .filter((referral): referral is Referral => referral !== null);
+
+        const statsRecord = readRecord(stats);
+        const codeRecord = readRecord(code);
+        const rewardsEarnedMinor = readAmountMinor(statsRecord.totalRewardMinor);
+
+        return {
+          shareUrl: typeof codeRecord.code === "string" ? codeRecord.code : "",
+          referredCount:
+            typeof statsRecord.totalReferrals === "number"
+              ? statsRecord.totalReferrals
+              : referrals.length,
+          successfulCount:
+            typeof statsRecord.rewardedCount === "number"
+              ? statsRecord.rewardedCount
+              : referrals.filter((referral) => referral.status === "completed")
+                  .length,
+          rewardsEarned: {
+            minor: rewardsEarnedMinor ?? 0,
+            currency:
+              typeof statsRecord.currency === "string"
+                ? statsRecord.currency
+                : "NGN",
+          },
+          referrals,
+        } satisfies ReferralProgram;
+      },
       null,
     ),
 );

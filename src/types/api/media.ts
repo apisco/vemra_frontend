@@ -10,7 +10,8 @@ export type MediaScope =
   | "PROPERTY_MEDIA"
   | "KYC"
   | "APPLICATIONS"
-  | "MAINTENANCE";
+  | "MAINTENANCE"
+  | "LEASES";
 
 /**
  * A presigned upload ticket, normalised from the two shapes the backend

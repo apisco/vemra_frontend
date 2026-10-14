@@ -1,5 +1,4 @@
-import Image from "next/image";
-
+import { MediaPreview } from "@/components/media/media-preview";
 import { LANDLORD_MANAGE_LISTING } from "@/constants/landlord";
 import type { LandlordProperty } from "@/types/api/landlord";
 
@@ -14,8 +13,8 @@ export function ListingGallery({ property }: ListingGalleryProps) {
 
   return (
     <section aria-label={gallery.label} className="flex flex-col gap-2 md:hidden">
-      <Image
-        src={cover?.url ?? "/marketing/listing-maple-9th.png"}
+      <MediaPreview
+        url={cover?.url ?? "/marketing/listing-maple-9th.png"}
         alt={cover?.alt ?? ""}
         width={358}
         height={160}
@@ -27,8 +26,8 @@ export function ListingGallery({ property }: ListingGalleryProps) {
       <ul className="grid grid-cols-3 gap-2">
         {thumbnails.map((image, index) => (
           <li key={image.url}>
-            <Image
-              src={image.url}
+            <MediaPreview
+              url={image.url}
               alt={image.alt || `${property.name} — photo ${index + 2}`}
               width={114}
               height={48}

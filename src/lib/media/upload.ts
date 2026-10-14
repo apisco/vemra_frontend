@@ -63,7 +63,9 @@ function readUploadedAsset(text: string): UploadedAsset | null {
 
 /**
  * Cloudinary reports failures as `{ error: { message } }`. Its messages are
- * written for developers, so only surface ones short enough to be readable.
+ * written for developers, so the useful ones are surfaced (truncated) rather
+ * than hidden behind a generic message — without them a 401 is undiagnosable
+ * from the page.
  */
 function uploadFailureMessage(text: string, status: number): string {
   const payload = parseJson(text);
@@ -73,8 +75,10 @@ function uploadFailureMessage(text: string, status: number): string {
       ? readString(error as Record<string, unknown>, "message")
       : null;
 
-  if (message !== null && message.length <= 160) {
-    return `Storage rejected the upload: ${message}`;
+  const detail =
+    message ?? (text.trim() === "" ? null : text.trim().replace(/\s+/g, " "));
+  if (detail !== null) {
+    return `Storage rejected the upload: ${detail.slice(0, 200)}`;
   }
   return `The upload failed (HTTP ${status}). Please try again.`;
 }
@@ -104,8 +108,10 @@ export async function uploadToCloudinary(
   }
 
   const body = new FormData();
+  const fieldNames: string[] = [];
   for (const [key, value] of Object.entries(ticket.fields)) {
     body.append(key, value);
+    fieldNames.push(key);
   }
   body.append("file", file);
 
@@ -138,6 +144,15 @@ export async function uploadToCloudinary(
       cleanup();
 
       if (xhr.status < 200 || xhr.status >= 300) {
+        // Field names (never values) plus Cloudinary's raw reply make a 401
+        // diagnosable: a missing/mismatched `signature` or `timestamp` shows up
+        // as a difference between what was sent and what the ticket carried.
+        console.warn("[media] Cloudinary upload failed", {
+          status: xhr.status,
+          uploadUrl: ticket.uploadUrl,
+          sentFields: [...fieldNames].sort(),
+          response: xhr.responseText.slice(0, 300),
+        });
         reject(new Error(uploadFailureMessage(xhr.responseText, xhr.status)));
         return;
       }

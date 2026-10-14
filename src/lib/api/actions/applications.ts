@@ -10,18 +10,6 @@ import { requireRole } from "@/lib/api/resources/auth";
 import { apiPost } from "@/lib/api/server";
 import { isUuid } from "@/lib/validation";
 
-/**
- * Document kinds the backend recognises. It takes `documentType` as a free
- * string, so this list drives the picker rather than validating an enum.
- */
-export const APPLICATION_DOCUMENT_TYPES = [
-  { value: "PAYSLIP", label: "Payslip" },
-  { value: "EMPLOYMENT_LETTER", label: "Employment letter" },
-  { value: "BANK_STATEMENT", label: "Bank statement" },
-  { value: "TAX_RETURN", label: "Tax return" },
-  { value: "OTHER", label: "Other supporting document" },
-] as const;
-
 export interface ApplicationDocumentInput {
   documentType: string;
   /**

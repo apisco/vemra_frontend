@@ -4,10 +4,8 @@ import { useCallback, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import {
-  APPLICATION_DOCUMENT_TYPES,
-  submitApplicationAction,
-} from "@/lib/api/actions/applications";
+import { APPLICATION_DOCUMENT_TYPES } from "@/constants/applications";
+import { submitApplicationAction } from "@/lib/api/actions/applications";
 import { createApplicationDocumentTicketAction } from "@/lib/api/actions/media";
 import { acceptAttribute, describeLimits, validateFile } from "@/lib/media/scopes";
 import { useMediaUpload } from "@/lib/media/use-media-upload";

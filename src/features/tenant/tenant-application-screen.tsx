@@ -2,12 +2,14 @@ import type { ReactNode } from "react";
 
 import { TENANT_ROUTES } from "@/constants/tenant";
 import { LoadErrorPanel } from "@/features/errors/load-error-panel";
+import { ApplicationForm } from "@/features/tenant/application-form";
 import { LeasePicker } from "@/features/tenant/lease-picker";
 import {
   DepositDecisionActions,
   SignLeaseButton,
   WithdrawApplicationButton,
 } from "@/features/tenant/tenant-actions";
+import { getListing } from "@/lib/api/resources/public";
 import {
   getDeposit,
   getLease,
@@ -49,14 +51,28 @@ function selectionFailure(
   };
 }
 
-export async function TenantApplicationScreen() {
-  const applications = await getTenantApplications();
+export async function TenantApplicationScreen({
+  propertyId = null,
+}: {
+  propertyId?: string | null;
+}) {
+  const [applications, listing] = await Promise.all([
+    getTenantApplications(),
+    propertyId === null ? Promise.resolve(null) : getListing(propertyId),
+  ]);
 
   return (
     <TenantFormShell
       title="Your applications"
       description="Vemra reviews every application and records the decision here."
     >
+      {propertyId === null ? null : (
+        <ApplicationForm
+          propertyId={propertyId}
+          propertyTitle={listing?.title ?? null}
+        />
+      )}
+
       {!applications.ok ? (
         <LoadErrorPanel label="Your applications" failure={applications} />
       ) : applications.data.length === 0 ? (

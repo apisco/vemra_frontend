@@ -63,13 +63,27 @@ export interface LandlordPropertySummary {
   coverImage: ImageRef | null;
 }
 
+/**
+ * A listing photo, with the media id needed to reorder, re-cover or delete it.
+ *
+ * `id` is null when the backend omits it: `GET /properties/{propertyId}` has no
+ * published schema for its `media` entries, so the id cannot be relied on. The
+ * media manager falls back to read-only when it is missing rather than sending
+ * a request that cannot succeed.
+ */
+export interface PropertyPhoto extends ImageRef {
+  id: string | null;
+  isMain: boolean;
+  order: number;
+}
+
 export interface LandlordProperty extends LandlordPropertySummary {
   description: string;
   bedrooms: number | null;
   bathrooms: number | null;
   address: string;
   listedSince: Iso8601 | null;
-  photos: readonly ImageRef[];
+  photos: readonly PropertyPhoto[];
   amenities: readonly string[];
   isPubliclyListed: boolean;
 }

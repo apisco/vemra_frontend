@@ -8,6 +8,7 @@ import {
   LANDLORD_ROUTES,
 } from "@/constants/landlord";
 import { ListingGallery } from "@/features/landlord/listing-gallery";
+import { ListingMediaManager } from "@/features/landlord/listing-media-manager";
 import { ManageListingForm } from "@/features/landlord/manage-listing-form";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
@@ -100,6 +101,11 @@ export default async function ManageListingPage({
       </div>
 
       <ListingGallery property={property} />
+
+      <ListingMediaManager
+        propertyId={property.id}
+        photos={property.photos}
+      />
 
       <ManageListingForm property={property} />
     </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,12 @@ import {
   publishPropertyAction,
 } from "@/lib/api/actions/properties";
 import type { PropertyDraft } from "@/lib/api/actions/properties";
+import {
+  acceptAttribute,
+  describeLimits,
+  validateFiles,
+} from "@/lib/media/scopes";
+import { useMediaUpload } from "@/lib/media/use-media-upload";
 
 type Step = "details" | "review" | "published";
 
@@ -58,8 +64,6 @@ const AMENITIES = [
 ] as const;
 
 const PROPERTY_TYPES = ["Apartment", "House", "Duplex", "Studio"] as const;
-
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
 function toMinor(value: string): number | null {
   const trimmed = value.trim().replace(/,/g, "");
@@ -113,30 +117,6 @@ function FlowHeader({ step }: { step: Step }) {
   );
 }
 
-async function uploadPhoto(
-  ticket: { url: string; fields: Record<string, string> },
-  file: File,
-): Promise<string | null> {
-  const form = new FormData();
-  for (const [key, value] of Object.entries(ticket.fields)) {
-    form.append(key, value);
-  }
-  form.append("file", file);
-
-  const response = await fetch(ticket.url, { method: "POST", body: form });
-  if (!response.ok) {
-    return null;
-  }
-
-  const payload: unknown = await response.json();
-  if (payload === null || typeof payload !== "object") {
-    return null;
-  }
-  const url = (payload as { secure_url?: unknown; url?: unknown }).secure_url ??
-    (payload as { url?: unknown }).url;
-  return typeof url === "string" ? url : null;
-}
-
 export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
@@ -147,6 +127,25 @@ export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [publishedId, setPublishedId] = useState<string | null>(null);
+
+  // The ticket endpoint is scoped to a property, which only exists once the
+  // draft has been created — so the id is filled in mid-publish.
+  const propertyIdRef = useRef<string | null>(null);
+  const requestTicket = useCallback((file: File) => {
+    const propertyId = propertyIdRef.current;
+    if (propertyId === null) {
+      return Promise.resolve({
+        ok: false as const,
+        message: "The listing must be created before photos can be uploaded.",
+      });
+    }
+    return createMediaTicketAction(propertyId, {
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    });
+  }, []);
+  const upload = useMediaUpload("PROPERTY_MEDIA", requestTicket);
 
   function update(field: keyof ListingDetails, value: string) {
     setDetails((current) => ({ ...current, [field]: value }));
@@ -170,6 +169,7 @@ export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
     setIsPublishing(true);
     setError(null);
     setFieldErrors({});
+    upload.reset();
 
     const draft: PropertyDraft = {
       title: details.title.trim(),
@@ -202,48 +202,39 @@ export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
     }
 
     const propertyId = created.data.propertyId;
+    propertyIdRef.current = propertyId;
 
-    for (const [index, file] of photos.entries()) {
-      setProgress(`Uploading photo ${index + 1} of ${photos.length}…`);
+    if (photos.length > 0) {
+      setProgress(`Uploading ${photos.length} photo${photos.length === 1 ? "" : "s"}…`);
+      const assets = await upload.uploadAll(photos);
 
-      const ticket = await createMediaTicketAction(
-        propertyId,
-        file.name,
-        file.type,
-        MAX_PHOTO_BYTES,
-      );
-      if (!ticket.ok) {
+      if (assets === null) {
         setError(
-          `The listing was created but photo ${index + 1} could not be uploaded: ${ticket.message}`,
+          `The listing was created but its photos could not be uploaded: ${
+            upload.error ?? "the upload failed"
+          }. Add them from the listing page.`,
         );
         setProgress(null);
         setIsPublishing(false);
         return;
       }
 
-      const url = await uploadPhoto(ticket.data, file);
-      if (url === null) {
-        setError(
-          `The listing was created but photo ${index + 1} failed to upload. Add photos from the listing page.`,
+      for (const [index, asset] of assets.entries()) {
+        setProgress(`Attaching photo ${index + 1} of ${assets.length}…`);
+        const attached = await attachMediaAction(
+          propertyId,
+          asset.url,
+          index === 0,
+          index,
         );
-        setProgress(null);
-        setIsPublishing(false);
-        return;
-      }
-
-      const attached = await attachMediaAction(
-        propertyId,
-        url,
-        index === 0,
-        index,
-      );
-      if (!attached.ok) {
-        setError(
-          `The listing was created but photo ${index + 1} could not be attached: ${attached.message}`,
-        );
-        setProgress(null);
-        setIsPublishing(false);
-        return;
+        if (!attached.ok) {
+          setError(
+            `The listing was created but photo ${index + 1} could not be attached: ${attached.message}`,
+          );
+          setProgress(null);
+          setIsPublishing(false);
+          return;
+        }
       }
     }
 
@@ -375,7 +366,10 @@ export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
                 {error}
               </span>
             ) : progress !== null ? (
-              <span className="text-neutral-700">{progress}</span>
+              <span className="text-neutral-700">
+                {progress}
+                {upload.isUploading ? ` ${upload.progress}%` : ""}
+              </span>
             ) : null}
           </p>
         </div>
@@ -569,22 +563,37 @@ export function ListPropertyFlow({ initialStep }: { initialStep: Step }) {
               : `${photos.length} photo${photos.length === 1 ? "" : "s"} selected`}
           </span>
           <span className="text-label-sm text-neutral-700">
-            PNG, JPG up to 10MB each
+            {describeLimits("PROPERTY_MEDIA")} each
           </span>
           <input
             type="file"
-            accept="image/png,image/jpeg"
+            accept={acceptAttribute("PROPERTY_MEDIA")}
             multiple
             className="sr-only"
-            onChange={(event) =>
-              setPhotos(
-                [...(event.target.files ?? [])].filter(
-                  (file) => file.size <= MAX_PHOTO_BYTES,
-                ),
-              )
-            }
+            onChange={(event) => {
+              const selected = [...(event.target.files ?? [])];
+              const problem = validateFiles("PROPERTY_MEDIA", selected);
+
+              if (problem !== null) {
+                setError(problem);
+                setPhotos([]);
+                event.target.value = "";
+                return;
+              }
+
+              setError(null);
+              setPhotos(selected);
+            }}
           />
         </label>
+
+        <p aria-live="polite" className="min-h-5 text-label-sm">
+          {error === null ? null : (
+            <span role="alert" className="text-error-600">
+              {error}
+            </span>
+          )}
+        </p>
       </section>
 
       <div className="flex items-center justify-between gap-3">

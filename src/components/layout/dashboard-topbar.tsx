@@ -49,7 +49,12 @@ export function DashboardTopbar({
           aria-label={`Open ${user.name} profile`}
           className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          <Avatar name={user.name} initials={user.initials} size="sm" />
+          <Avatar
+            name={user.name}
+            src={user.avatarUrl ?? undefined}
+            initials={user.initials}
+            size="sm"
+          />
         </Link>
         <SignOutButton tone="dark" compact />
       </div>

@@ -10,6 +10,8 @@ export const ENDPOINTS = {
     activities: "/my-activities",
     tenantDashboard: "/me/tenant-dashboard",
     landlordDashboard: "/me/landlord-dashboard",
+    avatar: "/me/avatar",
+    avatarTicket: "/me/avatar/ticket",
   },
 
   kyc: {
@@ -52,6 +54,9 @@ export const ENDPOINTS = {
     savedProperty: (propertyId: string) =>
       `/properties/saved/${seg(propertyId)}`,
     maintenance: "/maintenance",
+    maintenanceTicket: "/maintenance/ticket",
+    maintenanceUpdate: (issueId: string) =>
+      `/maintenance/${seg(issueId)}/update`,
     conversations: "/messaging",
     conversationMessages: (conversationId: string) =>
       `/messaging/${seg(conversationId)}/messages`,
@@ -63,6 +68,7 @@ export const ENDPOINTS = {
     referralCode: "/referrals/code",
     referralStats: "/referrals/stats",
     applications: "/applications",
+    applicationDocumentTicket: "/applications/documents/ticket",
     withdrawApplication: (applicationId: string) =>
       `/applications/${seg(applicationId)}/withdraw`,
   },
@@ -77,6 +83,8 @@ export const ENDPOINTS = {
     mediaTicket: (propertyId: string) =>
       `/properties/${seg(propertyId)}/media/ticket`,
     media: (propertyId: string) => `/properties/${seg(propertyId)}/media`,
+    mediaItem: (propertyId: string, mediaId: string) =>
+      `/properties/${seg(propertyId)}/media/${seg(mediaId)}`,
     publishProperty: (propertyId: string) =>
       `/properties/${seg(propertyId)}/publish`,
     unlistProperty: (propertyId: string) =>

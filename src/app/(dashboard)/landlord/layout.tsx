@@ -22,6 +22,7 @@ export default async function LandlordLayout({
         name: session.user.name,
         role: ROLE_LABELS[session.activeRole],
         initials: session.user.initials,
+        avatarUrl: session.user.avatarUrl,
       }}
       userProfileHref="/landlord/profile"
       banner={

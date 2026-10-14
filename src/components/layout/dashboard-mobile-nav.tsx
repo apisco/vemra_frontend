@@ -172,7 +172,12 @@ export function DashboardMobileNav({
               aria-label={`Open ${user.name} profile`}
               className="flex items-center gap-3 rounded-md px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
             >
-              <Avatar name={user.name} initials={user.initials} size="sm" />
+              <Avatar
+                name={user.name}
+                src={user.avatarUrl ?? undefined}
+                initials={user.initials}
+                size="sm"
+              />
               <div className="min-w-0">
                 <p className="truncate text-label-md font-semibold text-neutral-900">
                   {user.name}

@@ -136,6 +136,8 @@ export interface AccountProfile {
   email: string;
   emailVerified: boolean;
   displayName: string | null;
+  /** Absent rather than null when never set — it is not a required field on `GET /me`. */
+  avatarUrl?: string | null;
   phone: string | null;
   handle: string | null;
   roles: readonly AccountRole[];
@@ -151,21 +153,9 @@ export interface ProfileUpdatePayload {
 
 
 
-export interface KycUploadGrantRequest {
-  fileName: string;
-  contentType: string;
-  maxSizeBytes: number;
-}
-
-
-export interface KycUploadGrant {
-  url: string;
-  fields: Record<string, string>;
-}
-
 export interface KycDocumentInput {
   checkType: string;
-  
+
   storagePath: string;
 }
 

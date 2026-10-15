@@ -168,7 +168,7 @@ export function apiErrorMessage(error: unknown): string {
       return byCode;
     }
     if (error.code === "VALIDATION_ERROR" || error.code === "UNPROCESSABLE") {
-      return error.message;
+      return withFieldErrors(error.message, error.fieldErrors);
     }
   }
 
@@ -189,6 +189,27 @@ export function apiErrorMessage(error: unknown): string {
   }
 
   return error.message;
+}
+
+/**
+ * Backend validation failures often arrive as a generic "Request validation
+ * failed." with the real reason in `fieldErrors` (parsed from `details`).
+ * Appending it turns an unactionable message into "… failed. (contentType:
+ * Invalid content type)".
+ */
+function withFieldErrors(
+  message: string,
+  fieldErrors: Readonly<Record<string, string>> | null,
+): string {
+  if (fieldErrors === null) {
+    return message;
+  }
+
+  const reasons = Object.entries(fieldErrors)
+    .filter(([, reason]) => typeof reason === "string" && reason.trim() !== "")
+    .map(([field, reason]) => `${field}: ${reason}`);
+
+  return reasons.length === 0 ? message : `${message} (${reasons.join("; ")})`;
 }
 
 export function supportReference(error: unknown): string | null {

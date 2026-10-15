@@ -10,7 +10,7 @@ import { ENDPOINTS } from "@/lib/api/endpoints";
 import { requireRole } from "@/lib/api/resources/auth";
 import { apiDelete, apiPatch, apiPost } from "@/lib/api/server";
 import { isAllowedDeliveryUrl } from "@/lib/media/cloudinary";
-import { MEDIA_SCOPES, validateFile } from "@/lib/media/scopes";
+import { maxBytesFor, validateFile } from "@/lib/media/scopes";
 import { readUploadTicket } from "@/lib/media/ticket";
 import { isUuid } from "@/lib/validation";
 import type { UploadTicket } from "@/types/api/media";
@@ -128,7 +128,7 @@ export async function createMediaTicketAction(
       await apiPost<unknown>(ENDPOINTS.landlord.mediaTicket(propertyId), {
         fileName: input.fileName.trim(),
         contentType: input.contentType,
-        maxSizeBytes: MEDIA_SCOPES.PROPERTY_MEDIA.maxBytes,
+        maxSizeBytes: maxBytesFor("PROPERTY_MEDIA", input.contentType),
       }),
     );
 

@@ -5,7 +5,7 @@ import type { ActionResult } from "@/lib/api/actions/action-result";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { requireRole, requireSession } from "@/lib/api/resources/auth";
 import { apiPost } from "@/lib/api/server";
-import { MEDIA_SCOPES, validateFile } from "@/lib/media/scopes";
+import { maxBytesFor, validateFile } from "@/lib/media/scopes";
 import { readUploadTicket } from "@/lib/media/ticket";
 import { isUuid } from "@/lib/validation";
 import type { MediaScope, UploadTicket } from "@/types/api/media";
@@ -98,7 +98,7 @@ export async function createApplicationDocumentTicketAction(
     {
       fileName: input.fileName.trim(),
       contentType: input.contentType,
-      maxSizeBytes: MEDIA_SCOPES.APPLICATIONS.maxBytes,
+      maxSizeBytes: maxBytesFor("APPLICATIONS", input.contentType),
     },
   );
 }
@@ -118,6 +118,6 @@ export async function createMaintenanceTicketAction(
     propertyId,
     fileName: input.fileName.trim(),
     contentType: input.contentType,
-    maxSizeBytes: MEDIA_SCOPES.MAINTENANCE.maxBytes,
+    maxSizeBytes: maxBytesFor("MAINTENANCE", input.contentType),
   });
 }

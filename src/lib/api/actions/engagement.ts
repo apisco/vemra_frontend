@@ -22,6 +22,7 @@ export async function withdrawApplicationAction(
       ENDPOINTS.tenant.withdrawApplication(applicationId),
     );
     revalidatePath("/tenant/apply");
+    revalidatePath("/tenant/applications");
     return { ok: true, data: null };
   } catch (error) {
     return toActionFailure(error);

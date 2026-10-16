@@ -57,6 +57,7 @@ export async function submitApplicationAction(
     const payload = unwrapData<{ id?: unknown; status?: unknown }>(body);
 
     revalidatePath("/tenant/apply");
+    revalidatePath("/tenant/applications");
 
     if (typeof payload?.id !== "string" || payload.id === "") {
       return {

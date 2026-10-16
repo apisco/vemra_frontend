@@ -217,16 +217,6 @@ export function readRequestId(body: unknown): string | null {
   return typeof value === "string" && value !== "" ? value : null;
 }
 
-export interface BackendApplication {
-  id: string;
-  propertyId: string;
-  applicantId: string;
-  status: string;
-  documents?: unknown;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export type BackendApplicationList = SpecApplicationList;
 
 const APPLICATION_STATUS: Record<string, TenantApplication["status"]> = {
@@ -236,14 +226,42 @@ const APPLICATION_STATUS: Record<string, TenantApplication["status"]> = {
   WITHDRAWN: "declined",
 };
 
-export function toTenantApplication(
-  application: BackendApplication,
-): TenantApplication {
+/**
+ * Reads a tenant application tolerantly. The backend's list items are not
+ * typed in the spec and have drifted from it, so field names are accepted in
+ * the shapes seen in practice (`id`/`applicationId`, `createdAt`/`submittedAt`,
+ * and an embedded `property`/`listing` title).
+ */
+export function toTenantApplication(value: unknown): TenantApplication {
+  const record = readRecord(value);
+  const property = readRecord(readField(record, "property", "listing"));
+  const listingTitle =
+    readString(
+      readField(
+        record,
+        "propertyTitle",
+        "property_title",
+        "propertyName",
+        "listingTitle",
+      ),
+    ) ?? readString(readField(property, "title", "name"));
+
   return {
-    id: application.id,
-    listing: null,
-    status: APPLICATION_STATUS[application.status] ?? "submitted",
-    submittedAt: application.createdAt,
+    id:
+      readString(readField(record, "id", "applicationId", "application_id")) ??
+      "",
+    listing:
+      listingTitle === null
+        ? null
+        : ({ title: listingTitle } as unknown as ListingSummary),
+    status:
+      APPLICATION_STATUS[
+        (readString(readField(record, "status", "applicationStatus")) ?? "")
+          .toUpperCase()
+      ] ?? "submitted",
+    submittedAt: readString(
+      readField(record, "submittedAt", "submitted_at", "createdAt", "created_at"),
+    ),
     moveInDate: null,
     decisionWindow: null,
     reviewers: [],

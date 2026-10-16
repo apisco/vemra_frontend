@@ -8,7 +8,6 @@ import {
   toTenantPayment,
   toTenantProfile,
   unwrapData,
-  type BackendApplication,
   type BackendMaintenanceRequest,
 } from "@/lib/api/adapters";
 import { ENDPOINTS } from "@/lib/api/endpoints";
@@ -50,14 +49,17 @@ import type {
 
 const ACTIVE_LEASE_STATUSES = new Set(["ACTIVE", "SIGNED", "DRAFT"]);
 
-function rowsOf(payload: unknown, key: string): readonly unknown[] {
+function rowsOf(payload: unknown, ...keys: string[]): readonly unknown[] {
   if (Array.isArray(payload)) {
     return payload;
   }
   if (payload !== null && typeof payload === "object") {
-    const value = (payload as Record<string, unknown>)[key];
-    if (Array.isArray(value)) {
-      return value;
+    const record = payload as Record<string, unknown>;
+    for (const key of keys) {
+      const value = record[key];
+      if (Array.isArray(value)) {
+        return value;
+      }
     }
   }
   return [];
@@ -524,11 +526,30 @@ export const getTenantApplications = cache(
     safeRead("tenant applications", async () => {
       const body = await apiGet<unknown>(ENDPOINTS.tenant.applications);
       const payload = unwrapData<unknown>(body);
-      const rows = rowsOf(payload, "data");
+      const rows = rowsOf(
+        payload,
+        "data",
+        "applications",
+        "items",
+        "results",
+        "rows",
+      );
+
+      if (rows.length === 0) {
+        // The list items are untyped in the spec and the endpoint has drifted
+        // from it, so surface the envelope's keys when nothing is found.
+        console.warn(
+          "[api] tenant applications: no rows found; payload keys =",
+          payload !== null && typeof payload === "object"
+            ? Object.keys(payload as Record<string, unknown>)
+            : typeof payload,
+        );
+      }
+
       return rows
         .filter(
-          (row): row is BackendApplication =>
-            row !== null && typeof row === "object" && "id" in row,
+          (row): row is Record<string, unknown> =>
+            row !== null && typeof row === "object",
         )
         .map(toTenantApplication);
     }),

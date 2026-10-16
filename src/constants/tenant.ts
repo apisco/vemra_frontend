@@ -20,6 +20,8 @@ export type { DashboardNavItem, DashboardUser, MetricTone };
 
 export const TENANT_ROUTES = {
   overview: "/tenant",
+  applications: "/tenant/applications",
+  apply: "/tenant/apply",
   messages: "/tenant/messages",
   paymentPlan: "/tenant/payment-plan",
   paymentHistory: "/tenant/payment-history",
@@ -35,6 +37,11 @@ export const TENANT_ROUTES = {
 
 export const TENANT_NAV: readonly DashboardNavItem[] = [
   { href: TENANT_ROUTES.overview, label: "Overview", icon: LayoutGridIcon },
+  {
+    href: TENANT_ROUTES.applications,
+    label: "Applications",
+    icon: FileTextIcon,
+  },
   { href: TENANT_ROUTES.messages, label: "Messages", icon: MessageCircleIcon },
   {
     href: TENANT_ROUTES.paymentPlan,

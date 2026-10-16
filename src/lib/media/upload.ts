@@ -58,6 +58,7 @@ function readUploadedAsset(text: string): UploadedAsset | null {
     storagePath: readString(payload, "public_id") ?? url,
     bytes: readNumber(payload, "bytes"),
     format: readString(payload, "format"),
+    uploadedAt: readString(payload, "created_at"),
   };
 }
 

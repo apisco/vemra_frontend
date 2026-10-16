@@ -3,10 +3,13 @@ import Link from "next/link";
 
 import { buttonClasses } from "@/components/ui/button";
 import { ResponsiveText } from "@/components/ui/responsive-text";
+import { AUTH_ROUTES } from "@/constants/auth";
 import { TENANT_ROUTES } from "@/constants/tenant";
 import { LoadErrorPanel } from "@/features/errors/load-error-panel";
+import { KycAlert } from "@/features/tenant/kyc-alert";
 import { MetricCardRow } from "@/features/tenant/metric-card-row";
 import { RecentPaymentsPanel } from "@/features/tenant/recent-payments-panel";
+import { getSession } from "@/lib/api/resources/auth";
 import {
   getTenantDashboard,
   getTenantPayments,
@@ -18,9 +21,10 @@ export const metadata: Metadata = {
 };
 
 export default async function TenantOverviewPage() {
-  const [dashboard, payments] = await Promise.all([
+  const [dashboard, payments, session] = await Promise.all([
     getTenantDashboard(),
     getTenantPayments(),
+    getSession(),
   ]);
 
   return (
@@ -49,6 +53,10 @@ export default async function TenantOverviewPage() {
           <ResponsiveText copy={{ base: "Pay Rent", md: "Make a payment" }} />
         </Link>
       </div>
+
+      {session !== null && !session.user.isIdentityVerified ? (
+        <KycAlert href={AUTH_ROUTES.signupVerification} />
+      ) : null}
 
       {dashboard.ok ? (
         <MetricCardRow dashboard={dashboard.data} />

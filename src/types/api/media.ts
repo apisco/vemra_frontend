@@ -42,4 +42,6 @@ export interface UploadedAsset {
   storagePath: string;
   bytes: number | null;
   format: string | null;
+  /** Cloudinary's `created_at`, i.e. when the bytes landed. */
+  uploadedAt: string | null;
 }

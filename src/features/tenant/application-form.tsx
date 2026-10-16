@@ -33,9 +33,8 @@ export interface ApplicationFormProps {
 /**
  * Submits a rental application with its supporting documents.
  *
- * Application documents live in Cloudinary's private delivery mode, so the
- * submission records each file's `storagePath` (its `public_id`) rather than a
- * CDN URL. The backend signs a short-lived URL when a reviewer opens one.
+ * Each document is sent as the file's type, its uploaded URL and the time it
+ * landed, which is the shape `POST /applications` validates.
  */
 export function ApplicationForm({
   propertyId,
@@ -100,8 +99,9 @@ export function ApplicationForm({
     const result = await submitApplicationAction({
       propertyId,
       documents: attached.map((row, index) => ({
-        documentType: row.documentType,
-        storagePath: assets[index]?.storagePath ?? "",
+        type: row.documentType,
+        url: assets[index]?.url ?? "",
+        uploadedAt: assets[index]?.uploadedAt ?? new Date().toISOString(),
       })),
     });
 

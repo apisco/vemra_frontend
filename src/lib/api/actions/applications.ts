@@ -11,13 +11,12 @@ import { apiPost } from "@/lib/api/server";
 import { isUuid } from "@/lib/validation";
 
 export interface ApplicationDocumentInput {
-  documentType: string;
-  /**
-   * Cloudinary `public_id`, not a URL. Application documents are stored in
-   * private delivery mode, so the path is what gets persisted and the backend
-   * signs a short-lived URL when someone needs to read it.
-   */
-  storagePath: string;
+  /** Document kind the backend recognises, e.g. `PAYSLIP`. */
+  type: string;
+  /** URL of the uploaded file. */
+  url: string;
+  /** ISO timestamp of when the file finished uploading. */
+  uploadedAt: string;
 }
 
 export interface ApplicationSubmission {
@@ -37,13 +36,11 @@ export async function submitApplicationAction(
 
   const documents = submission.documents
     .map((document) => ({
-      documentType: document.documentType.trim(),
-      storagePath: document.storagePath.trim(),
+      type: document.type.trim(),
+      url: document.url.trim(),
+      uploadedAt: document.uploadedAt,
     }))
-    .filter(
-      (document) =>
-        document.documentType !== "" && document.storagePath !== "",
-    );
+    .filter((document) => document.type !== "" && document.url !== "");
 
   if (documents.length !== submission.documents.length) {
     return {
